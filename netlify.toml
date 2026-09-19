@@ -1,0 +1,13 @@
+# =============================================================================
+# netlify.toml — le dice a Netlify dónde está cada cosa
+# =============================================================================
+[build]
+  # Carpeta con lo que ve el público (index.html).
+  publish = "public"
+  # Carpeta con las funciones de servidor (el intermediario con Gemini).
+  # Tiene que estar FUERA de "public", si no el código quedaría descargable.
+  functions = "netlify/functions"
+
+# No hay "command" a propósito: este proyecto no necesita compilar nada.
+# IMPORTANTE: la clave GEMINI_API_KEY NO se escribe acá.
+# Se carga en el panel de Netlify (Environment variables).

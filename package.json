@@ -1,0 +1,6 @@
+{
+  "name": "validador-autenticidad-texto",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Herramienta web que analiza si un texto suena humano o generado por IA (Gemini + Netlify)."
+}
