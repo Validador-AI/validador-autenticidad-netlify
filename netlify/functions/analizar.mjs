@@ -10,8 +10,13 @@
 // La clave se lee de una "variable de entorno" llamada GEMINI_API_KEY.
 // Esa variable la configurás en el panel de Netlify; NUNCA se escribe acá.
 //
-// La dirección pública de esta función es /api/analizar (ver "config" al final),
-// así que index.html funciona sin cambios.
+// La dirección pública de esta función es /api/analizar (ver "config" al final).
+//
+// La función acepta DOS formas de entrada:
+//   1) Texto pegado: llega como JSON  ->  { "texto": "..." }
+//   2) Archivo PDF o DOCX: llega como formulario (multipart) con el campo "archivo".
+//      En ese caso el servidor extrae el texto del archivo y sigue igual que en (1).
+// El archivo se lee en memoria y NO se guarda en ningún lado.
 // =============================================================================
 
 // ----- Ajustes que podés cambiar ---------------------------------------------
@@ -25,6 +30,11 @@ const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 // Largo permitido del texto que pega la persona (en caracteres).
 const LARGO_MINIMO = 50;
 const LARGO_MAXIMO = 8000;
+
+// Archivos: tamaño máximo (4 MB; Netlify no deja pasar pedidos de más de ~6 MB)
+// y cuántas páginas de un PDF se leen como máximo.
+const TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024;
+const PAGINAS_A_LEER = 60;
 
 // Freno simple contra abusos: máximo de análisis por minuto desde una misma IP.
 const MAX_POR_MINUTO = 8;
@@ -173,6 +183,168 @@ function mensajeParaError(status, detalle) {
   return 'No se pudo completar el análisis. Probá de nuevo en unos minutos.';
 }
 
+// ----- Lectura de archivos (PDF y DOCX) ---------------------------------------
+
+// Mira los primeros bytes del archivo para saber qué es REALMENTE.
+// No nos fiamos solo del nombre, porque cualquiera puede cambiarlo.
+function detectarTipo(bytes, nombre) {
+  const inicio = Buffer.from(bytes.subarray(0, 1024)).toString('latin1');
+  if (inicio.includes('%PDF-')) return 'pdf';
+  // Los .docx son archivos comprimidos (empiezan con "PK").
+  if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
+    return /\.docx$/i.test(nombre) ? 'docx' : 'otro';
+  }
+  // Los .doc viejos de Word empiezan con esta otra firma.
+  if (bytes[0] === 0xd0 && bytes[1] === 0xcf && bytes[2] === 0x11 && bytes[3] === 0xe0) return 'doc-antiguo';
+  return 'otro';
+}
+
+// Extrae el texto de un PDF con la librería "unpdf".
+// Lee página por página y se detiene apenas junta suficiente texto,
+// para no gastar tiempo en documentos larguísimos.
+async function extraerDePDF(bytes) {
+  const { getDocumentProxy } = await import('unpdf'); // se carga solo si hace falta
+  const pdf = await getDocumentProxy(bytes);
+  try {
+    const totalPaginas = pdf.numPages;
+    const hasta = Math.min(totalPaginas, PAGINAS_A_LEER);
+    let texto = '';
+    let ultimaLeida = 0;
+    for (let n = 1; n <= hasta; n++) {
+      const pagina = await pdf.getPage(n);
+      const contenido = await pagina.getTextContent();
+      texto +=
+        contenido.items
+          .filter((item) => item.str != null)
+          .map((item) => item.str + (item.hasEOL ? '\n' : ''))
+          .join('') + '\n';
+      ultimaLeida = n;
+      if (texto.length >= LARGO_MAXIMO * 1.5) break; // ya tenemos de sobra
+    }
+    return { texto, leyoTodo: ultimaLeida >= totalPaginas };
+  } finally {
+    try {
+      await pdf.destroy();
+    } catch (e) {
+      /* no pasa nada */
+    }
+  }
+}
+
+// Extrae el texto de un DOCX con la librería "mammoth".
+async function extraerDeDOCX(bytes) {
+  const modulo = await import('mammoth'); // se carga solo si hace falta
+  const mammoth = modulo.default || modulo;
+  const resultado = await mammoth.extractRawText({ buffer: Buffer.from(bytes) });
+  return { texto: resultado.value, leyoTodo: true };
+}
+
+// Deja el texto extraído "limpio": sin caracteres raros ni espacios de más.
+// En los PDF cada renglón termina con un salto de línea, aunque la oración siga
+// en el renglón de abajo. Por eso, en PDF unimos los renglones que no terminan
+// en un punto (o similar) y arreglamos las palabras cortadas con guion.
+function limpiarTexto(crudo, esPDF) {
+  let t = String(crudo)
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[\u0000\u200b-\u200d\ufeff]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ?\n ?/g, '\n');
+  if (esPDF) {
+    t = t.replace(/([a-záéíóúüñ])-\n([a-záéíóúüñ])/g, '$1$2');
+    t = t.replace(/([^.!?…:;"”»)\]\n])\n(?!\n)/g, '$1 ');
+  }
+  return t.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// Si el texto pasa el máximo, lo corta en un final de oración (si hay uno cerca).
+function recortar(texto, maximo) {
+  if (texto.length <= maximo) return { texto, recortado: false };
+  let corte = texto.slice(0, maximo);
+  const ultimo = Math.max(corte.lastIndexOf('. '), corte.lastIndexOf('? '), corte.lastIndexOf('! '), corte.lastIndexOf('\n'));
+  if (ultimo > maximo * 0.7) corte = corte.slice(0, ultimo + 1);
+  return { texto: corte.trim(), recortado: true };
+}
+
+// Recibe el pedido con el archivo y devuelve { texto, aviso } o { estado, error }.
+async function textoDesdeArchivo(req) {
+  let formulario;
+  try {
+    formulario = await req.formData();
+  } catch (e) {
+    return { estado: 400, error: 'No pudimos leer el archivo que enviaste. Probá de nuevo.' };
+  }
+
+  const archivo = formulario.get('archivo');
+  if (!archivo || typeof archivo === 'string' || typeof archivo.arrayBuffer !== 'function') {
+    return { estado: 400, error: 'No llegó ningún archivo. Elegí un PDF o DOCX e intentá de nuevo.' };
+  }
+  if (archivo.size === 0) {
+    return { estado: 400, error: 'El archivo está vacío.' };
+  }
+  if (archivo.size > TAMANO_MAXIMO_ARCHIVO) {
+    return {
+      estado: 413,
+      error: `El archivo es muy grande. El máximo es de ${Math.round(TAMANO_MAXIMO_ARCHIVO / 1048576)} MB.`,
+    };
+  }
+
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
+  const nombre = String(archivo.name || '');
+  const tipo = detectarTipo(bytes, nombre);
+
+  if (tipo === 'doc-antiguo') {
+    return {
+      estado: 415,
+      error: 'El formato .doc (Word antiguo) no se puede leer. Abrilo en Word y guardalo como .docx, o exportalo a PDF.',
+    };
+  }
+  if (tipo === 'otro') {
+    return { estado: 415, error: 'Solo se pueden subir archivos PDF o Word (.docx).' };
+  }
+
+  let extraido;
+  try {
+    extraido = tipo === 'pdf' ? await extraerDePDF(bytes) : await extraerDeDOCX(bytes);
+  } catch (e) {
+    // Solo registramos el tipo de error, nunca el contenido del archivo.
+    console.error('No se pudo leer el archivo', tipo, e && e.name, e && e.message);
+    if (e && e.name === 'PasswordException') {
+      return { estado: 422, error: 'El PDF está protegido con contraseña. Sacale la protección y volvé a subirlo.' };
+    }
+    if (tipo === 'pdf') {
+      return { estado: 422, error: 'No pudimos leer este PDF: puede estar dañado. Probá con otro archivo o pegá el texto directamente.' };
+    }
+    return { estado: 422, error: 'No pudimos leer este documento de Word: puede estar dañado. Probá guardarlo de nuevo como .docx o pegá el texto directamente.' };
+  }
+
+  const limpio = limpiarTexto(extraido.texto, tipo === 'pdf');
+
+  if (limpio.length === 0) {
+    return {
+      estado: 422,
+      error:
+        tipo === 'pdf'
+          ? 'No encontramos texto en este PDF. Si es un documento escaneado (fotos de páginas), no se puede leer. Probá con un PDF donde se pueda seleccionar el texto, o pegá el texto directamente.'
+          : 'No encontramos texto en este documento.',
+    };
+  }
+  if (limpio.length < LARGO_MINIMO) {
+    return {
+      estado: 422,
+      error: `El archivo tiene muy poco texto (${limpio.length} caracteres). Hacen falta al menos ${LARGO_MINIMO}.`,
+    };
+  }
+
+  const { texto, recortado } = recortar(limpio, LARGO_MAXIMO);
+  const aviso =
+    recortado || !extraido.leyoTodo
+      ? `Tu archivo es más largo de lo que se puede analizar de una vez, así que se analizó solo el comienzo (unos ${texto.length} caracteres).`
+      : null;
+
+  return { texto, aviso };
+}
+
 // ----- La función principal ---------------------------------------------------
 // Netlify ejecuta esta función cada vez que alguien visita /api/analizar.
 // Recibe un "pedido" (req) y tiene que devolver una "respuesta" (Response).
@@ -202,17 +374,29 @@ export default async (req, context) => {
       return responder(429, { error: 'Hiciste muchos análisis seguidos. Esperá un minuto y probá de nuevo.' });
     }
 
-    // 3) Leer y validar el texto que mandó la página.
-    let cuerpo = {};
-    try {
-      cuerpo = await req.json();
-    } catch (e) {
-      cuerpo = {};
+    // 3) Obtener el texto: pegado (JSON) o extraído de un archivo (multipart).
+    const tipoContenido = String(req.headers.get('content-type') || '').toLowerCase();
+    let texto = '';
+    let aviso = null;
+
+    if (tipoContenido.startsWith('multipart/form-data')) {
+      const lectura = await textoDesdeArchivo(req);
+      if (lectura.error) return responder(lectura.estado, { error: lectura.error });
+      texto = lectura.texto;
+      aviso = lectura.aviso;
+    } else {
+      let cuerpo = {};
+      try {
+        cuerpo = await req.json();
+      } catch (e) {
+        cuerpo = {};
+      }
+      texto = cuerpo && typeof cuerpo.texto === 'string' ? cuerpo.texto : '';
     }
-    // Sacamos las marcas del prompt por si alguien las escribe adentro del texto.
-    const texto = (cuerpo && typeof cuerpo.texto === 'string' ? cuerpo.texto : '')
-      .replace(/<\/?texto_a_analizar>/gi, '')
-      .trim();
+
+    // Sacamos las marcas del prompt por si alguien las escribe adentro del texto
+    // (o del archivo), para que no puedan confundir a Gemini.
+    texto = texto.replace(/<\/?texto_a_analizar>/gi, '').trim();
 
     if (texto.length < LARGO_MINIMO) {
       return responder(400, { error: `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.` });
@@ -296,6 +480,8 @@ export default async (req, context) => {
     }
 
     // 6) Todo bien: devolvemos el JSON a la página.
+    // Si el archivo era muy largo, sumamos un "aviso" para que la página lo muestre.
+    if (aviso) resultado.aviso = aviso;
     return responder(200, resultado);
   } catch (error) {
     console.error('Error inesperado en /api/analizar:', error);
