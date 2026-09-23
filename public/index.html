@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PuroTexto — Análisis de naturalidad de texto</title>
   <meta name="description" content="Pegá un texto y descubrí si suena humano o generado por IA, con las frases puntuales que lo delatan y cómo reescribirlas.">
+  <link rel="icon" type="image/png" href="/favicon.png">
 
   <!-- Tipografía Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -106,6 +107,7 @@
     }
 
     .nav-contenedor {
+      position: relative;
       max-width: 1080px;
       margin: 0 auto;
       padding: 14px 24px;
@@ -145,11 +147,35 @@
       text-transform: uppercase;
     }
 
+    .nav-derecha {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
     .nav-enlaces {
       display: flex;
       align-items: center;
       gap: 24px;
     }
+
+    /* Botón hamburguesa: oculto en desktop, se muestra solo en mobile (ver media query) */
+    .btn-menu-movil {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--petroleo);
+      cursor: pointer;
+    }
+    .btn-menu-movil svg { width: 24px; height: 24px; }
+    .btn-menu-movil .icono-cerrar { display: none; }
+    .btn-menu-movil[aria-expanded="true"] .icono-hamburguesa { display: none; }
+    .btn-menu-movil[aria-expanded="true"] .icono-cerrar { display: block; }
 
     /* 1. Botón "Iniciar sesión" y enlaces */
     .nav-enlaces a {
@@ -1018,7 +1044,37 @@
 
     /* Responsivo Celular */
     @media (max-width: 600px) {
-      .nav-enlaces a:not(.boton-nav-acento) { display: none; }
+      .logo-texto { font-size: 1.3rem; }
+      .badge-beta { font-size: 0.65rem; padding: 2px 7px; }
+      .boton-nav-acento { padding: 7px 13px; font-size: 0.84rem; }
+
+      .btn-menu-movil { display: inline-flex; }
+
+      /* El grupo de links pasa a ser un panel desplegable debajo de la barra */
+      .nav-enlaces {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 16px;
+        right: 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: var(--hueso);
+        border: 1px solid var(--linea);
+        border-radius: 14px;
+        box-shadow: 0 16px 32px rgba(38, 75, 74, 0.14);
+        padding: 8px;
+        z-index: 90;
+      }
+      .nav-enlaces.abierto { display: flex; }
+      .nav-enlaces a {
+        padding: 13px 14px;
+        border-radius: 9px;
+        font-size: 1rem;
+      }
+      .nav-enlaces a:hover { background: rgba(38, 75, 74, 0.06); }
+
       .contenedor { padding-top: 20px; }
       .entrada { padding: 18px; }
       .accion-contenedor { justify-content: stretch; }
@@ -1048,12 +1104,27 @@
         <span class="logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
         <span class="badge-beta">v1.0 Beta</span>
       </a>
-      <div class="nav-enlaces">
-        <a href="#como-funciona">Tutoriales</a>
-        <a href="#beneficios">Recursos</a>
-        <a href="#faq">Preguntas frecuentes</a>
-        <!-- 1. Enlace agregado justo antes del botón principal -->
-        <a href="#login">Iniciar sesión</a>
+      <div class="nav-derecha">
+        <div class="nav-enlaces" id="menu-movil">
+          <a href="#como-funciona">Tutoriales</a>
+          <a href="#beneficios">Recursos</a>
+          <a href="#faq">Preguntas frecuentes</a>
+          <!-- 1. Enlace agregado justo antes del botón principal -->
+          <a href="#login">Iniciar sesión</a>
+        </div>
+
+        <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
+          <svg class="icono-hamburguesa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="6" y1="18" x2="18" y2="6"></line>
+          </svg>
+        </button>
+
         <a href="#editor" class="boton-nav-acento">Analizar texto</a>
       </div>
     </nav>
@@ -1390,11 +1461,56 @@
       'use strict';
 
       /* ----------------------------------------------------------------------
-         5. INTERSECTION OBSERVER PARA FADE-IN EN SCROLL
+         VARIABLE GLOBAL: si el usuario prefiere reducir el movimiento
          ---------------------------------------------------------------------- */
       var reducirMovimiento = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+      /* ----------------------------------------------------------------------
+         MENÚ HAMBURGUESA (mobile, < 600px)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var btnMenu = document.getElementById('btn-menu-movil');
+        var menu = document.getElementById('menu-movil');
+        if (!btnMenu || !menu) return;
+
+        function abrirMenu() {
+          menu.classList.add('abierto');
+          btnMenu.setAttribute('aria-expanded', 'true');
+          btnMenu.setAttribute('aria-label', 'Cerrar menú');
+        }
+        function cerrarMenu() {
+          menu.classList.remove('abierto');
+          btnMenu.setAttribute('aria-expanded', 'false');
+          btnMenu.setAttribute('aria-label', 'Abrir menú');
+        }
+
+        btnMenu.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (menu.classList.contains('abierto')) cerrarMenu(); else abrirMenu();
+        });
+
+        // Cerrar al hacer clic en cualquier enlace del menú
+        Array.prototype.forEach.call(menu.querySelectorAll('a'), function (enlace) {
+          enlace.addEventListener('click', cerrarMenu);
+        });
+
+        // Cerrar al hacer clic afuera del menú y del botón
+        document.addEventListener('click', function (e) {
+          if (!menu.classList.contains('abierto')) return;
+          if (menu.contains(e.target) || btnMenu.contains(e.target)) return;
+          cerrarMenu();
+        });
+
+        // Cerrar con la tecla Escape
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') cerrarMenu();
+        });
+      })();
+
+      /* ----------------------------------------------------------------------
+         5. INTERSECTION OBSERVER PARA FADE-IN EN SCROLL
+         ---------------------------------------------------------------------- */
       if (!reducirMovimiento && 'IntersectionObserver' in window) {
         var opcionesObserver = {
           root: null,
