@@ -176,19 +176,33 @@
       font-family: var(--fuente);
       font-weight: 500;
       font-size: 0.9rem;
-      box-shadow: 0 4px 12px rgba(196, 95, 69, 0.2);
+      box-shadow: 0 4px 12px rgba(184, 78, 46, 0.2);
       transition: all 0.3s ease !important;
     }
 
     .boton-nav-acento:hover {
       background: var(--terracota-hover) !important;
       transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3) !important;
+      box-shadow: 0 8px 16px rgba(184, 78, 46, 0.3) !important;
     }
 
     /* ==========================================================================
        6. HERO & TÍTULO CON ANIMACIÓN DE ENTRADA
        ========================================================================== */
+    .hero-marca {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 2px;
+      margin: 0 0 18px;
+      font-family: var(--fuente-editorial);
+      font-style: italic;
+      font-weight: 600;
+      font-size: 1.4rem;
+      letter-spacing: 0.01em;
+      color: var(--petroleo);
+    }
+    .hero-marca-acento { color: var(--terracota); }
+
     .hero-seccion {
       text-align: center;
       margin: 48px 0 36px;
@@ -292,6 +306,60 @@
       background: var(--superficie);
     }
 
+    .demo-etiqueta { text-align: center; margin-bottom: 14px; }
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-family: var(--fuente);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .demo-seccion { margin-bottom: 40px; }
+    .demo-seccion .frases { margin-top: 14px; }
+    .demo-nota { margin: 16px 0 0; font-size: 0.8rem; color: var(--texto-suave); text-align: center; }
+
+    .demo-mini-editor { padding: 22px 24px; text-align: left; }
+    .demo-texto-simulado {
+      min-height: 84px;
+      margin: 8px 0 18px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--texto);
+    }
+    .demo-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      margin-left: 1px;
+      background: var(--petroleo);
+      vertical-align: -0.15em;
+      animation: demo-parpadeo 0.9s steps(1) infinite;
+    }
+    @keyframes demo-parpadeo { 50% { opacity: 0; } }
+
+    .demo-play-btn { width: 100%; }
+    .demo-play-btn:disabled { opacity: 0.6; cursor: progress; }
+
+    .demo-cargando {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      color: var(--texto-suave);
+      font-size: 0.92rem;
+    }
+
+    .demo-reiniciar {
+      display: block;
+      margin: 14px auto 0;
+    }
+
     .entrada {
       padding: 24px;
     }
@@ -306,7 +374,7 @@
 
     .caja-escritura:focus-within {
       border-color: var(--terracota);
-      box-shadow: 0 0 0 4px rgba(196, 95, 69, 0.12);
+      box-shadow: 0 0 0 4px rgba(184, 78, 46, 0.12);
     }
 
     textarea {
@@ -516,7 +584,7 @@
       font-size: 1.05rem;
       font-weight: 500;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(196, 95, 69, 0.25);
+      box-shadow: 0 6px 20px rgba(184, 78, 46, 0.25);
       
       /* Transición funcional suave */
       transition: all 0.3s ease;
@@ -525,7 +593,7 @@
     .boton-principal:hover:not(:disabled) {
       background: var(--terracota-hover); /* #A8492F */
       transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3);
+      box-shadow: 0 8px 16px rgba(184, 78, 46, 0.3);
     }
 
     .boton-principal:active:not(:disabled) { transform: translateY(0); }
@@ -765,7 +833,7 @@
       border-color: var(--terracota);
       color: #FFF;
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(196, 95, 69, 0.2);
+      box-shadow: 0 4px 10px rgba(184, 78, 46, 0.2);
     }
 
     .sin-frases { padding: 20px; color: var(--texto-suave); }
@@ -890,6 +958,12 @@
     }
 
     /* FAQ */
+    #faq {
+      padding: 40px 32px;
+      background: #EFE6D9;
+      border-radius: 24px;
+    }
+
     .faq { display: grid; gap: 12px; }
     .faq details {
       border: 1px solid var(--linea);
@@ -989,9 +1063,78 @@
 
     <!-- ===== 6. HERO Y TÍTULO CON ANIMACIÓN DE ENTRADA ===== -->
     <section class="hero-seccion">
+      <p class="hero-marca">Puro<span class="hero-marca-acento">Texto</span></p>
       <h1 class="titulo-principal">¿Tu texto suena realmente a vos?</h1>
       <p class="subtitulo">Analizá la naturalidad de tu texto en segundos. Especializado en español latinoamericano: entiende voseo, tuteo y modismos regionales.</p>
     </section>
+
+    <!-- ===== DEMO ILUSTRATIVA: muestra cómo se ve un resultado, sin backend real ===== -->
+    <div class="demo-seccion fade-in" id="demo">
+      <div class="demo-etiqueta">
+        <span class="demo-badge">👀 Mirá cómo funciona PuroTexto</span>
+      </div>
+
+      <div class="tarjeta demo-mini-editor">
+        <span class="campo-titulo">Texto de ejemplo</span>
+        <p class="demo-texto-simulado"><span id="demo-texto-escrito"></span><span id="demo-cursor" class="demo-cursor" aria-hidden="true"></span></p>
+
+        <button type="button" id="btn-demo-play" class="boton-principal demo-play-btn">▶ Ver cómo funciona</button>
+
+        <div id="demo-cargando" class="demo-cargando" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Analizando el texto...</span>
+        </div>
+      </div>
+
+      <div id="demo-resultado-wrap" hidden>
+        <div class="tarjeta puntaje-tarjeta" data-nivel="bajo">
+          <div class="resultado-grid">
+            <div class="col-puntaje">
+              <p class="puntaje-etiqueta">Naturalidad del texto</p>
+              <div class="puntaje-fila">
+                <span id="demo-puntaje" class="puntaje">0</span>
+                <span class="puntaje-max">%</span>
+              </div>
+            </div>
+
+            <div class="col-explicacion">
+              <p class="puntaje-etiqueta" style="margin-bottom: 8px;">Explicación visual</p>
+              <h2 class="veredicto">Suena claramente a IA</h2>
+
+              <div class="medidor" aria-hidden="true">
+                <div class="medidor-pista"></div>
+                <div id="demo-marca" class="medidor-marca"></div>
+              </div>
+              <div class="medidor-escala" aria-hidden="true">
+                <span>Suena a IA</span>
+                <span>Suena humano</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ul class="frases">
+          <li class="tarjeta frase">
+            <blockquote class="cita">“Es fundamental destacar que la tecnología desempeña un papel clave en nuestra sociedad actual.”</blockquote>
+            <div class="campo">
+              <span class="campo-titulo">Por qué suena a IA</span>
+              <p style="margin:0;">Frase genérica y sin voz propia, típica de textos generados automáticamente.</p>
+            </div>
+            <div class="reescritura">
+              <div>
+                <span class="campo-titulo">Cómo reescribirla</span>
+                <p>“La tecnología ya es parte de todo lo que hacemos, para bien y para mal.”</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <button type="button" id="btn-demo-reiniciar" class="chip demo-reiniciar">🔁 Ver de nuevo</button>
+      </div>
+
+      <p class="demo-nota">Ejemplo ilustrativo. Probá con tu propio texto acá abajo 👇</p>
+    </div>
+
 
     <!-- ===== CUADRO DE ENTRADA Y FORMULARIO ===== -->
     <section id="editor" class="tarjeta entrada">
@@ -1280,6 +1423,95 @@
           elemento.classList.add('visible');
         });
       }
+
+      /* ----------------------------------------------------------------------
+         DEMO ILUSTRATIVA: simula "escribir" el texto, "analizarlo" y mostrar
+         el resultado. Se dispara con un botón, una sola vez por reproducción
+         (no depende del análisis real, es solo para mostrar cómo se ve).
+         ---------------------------------------------------------------------- */
+      (function () {
+        var btnPlay = document.getElementById('btn-demo-play');
+        var btnReiniciar = document.getElementById('btn-demo-reiniciar');
+        var textoEscrito = document.getElementById('demo-texto-escrito');
+        var cursor = document.getElementById('demo-cursor');
+        var cargando = document.getElementById('demo-cargando');
+        var resultadoWrap = document.getElementById('demo-resultado-wrap');
+        var demoPuntaje = document.getElementById('demo-puntaje');
+        var demoMarca = document.getElementById('demo-marca');
+        if (!btnPlay || !textoEscrito || !resultadoWrap || !demoPuntaje || !demoMarca) return;
+
+        var TEXTO_DEMO = 'En la era digital actual, es fundamental destacar que la tecnología desempeña un papel clave en nuestra sociedad actual. Gracias a ella, podemos acceder a información de manera instantánea y conectarnos con personas de todo el mundo.';
+        var VALOR_DEMO = 22;
+
+        function animarPuntaje() {
+          if (reducirMovimiento) {
+            demoPuntaje.textContent = VALOR_DEMO;
+            demoMarca.style.left = VALOR_DEMO + '%';
+            return;
+          }
+          demoPuntaje.textContent = '0';
+          demoMarca.style.left = '0%';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () { demoMarca.style.left = VALOR_DEMO + '%'; });
+          });
+          var inicio = null, duracion = 1000;
+          (function paso(t) {
+            if (inicio === null) inicio = t;
+            var avance = Math.min(1, (t - inicio) / duracion);
+            var suave = 1 - Math.pow(1 - avance, 3);
+            demoPuntaje.textContent = Math.round(VALOR_DEMO * suave);
+            if (avance < 1) requestAnimationFrame(paso);
+          })(performance.now());
+        }
+
+        function escribirTexto(callback) {
+          if (reducirMovimiento) {
+            textoEscrito.textContent = TEXTO_DEMO;
+            callback();
+            return;
+          }
+          var i = 0;
+          var intervalo = setInterval(function () {
+            i++;
+            textoEscrito.textContent = TEXTO_DEMO.slice(0, i);
+            if (i >= TEXTO_DEMO.length) {
+              clearInterval(intervalo);
+              callback();
+            }
+          }, 18);
+        }
+
+        function reproducirDemo() {
+          btnPlay.disabled = true;
+          btnPlay.textContent = 'Escribiendo...';
+
+          escribirTexto(function () {
+            if (cursor) cursor.hidden = true;
+            btnPlay.hidden = true;
+            cargando.hidden = false;
+
+            setTimeout(function () {
+              cargando.hidden = true;
+              resultadoWrap.hidden = false;
+              animarPuntaje();
+              resultadoWrap.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'nearest' });
+            }, 900);
+          });
+        }
+
+        function reiniciarDemo() {
+          resultadoWrap.hidden = true;
+          textoEscrito.textContent = '';
+          if (cursor) cursor.hidden = false;
+          btnPlay.hidden = false;
+          btnPlay.disabled = false;
+          btnPlay.textContent = '▶ Ver cómo funciona';
+          reproducirDemo();
+        }
+
+        btnPlay.addEventListener('click', reproducirDemo);
+        if (btnReiniciar) btnReiniciar.addEventListener('click', reiniciarDemo);
+      })();
 
       /* ----------------------------------------------------------------------
          LOGICA DE APLICACIÓN Y ANALISIS DE TEXTO
