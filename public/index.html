@@ -1465,11 +1465,6 @@
         }
 
         function escribirTexto(callback) {
-          if (reducirMovimiento) {
-            textoEscrito.textContent = TEXTO_DEMO;
-            callback();
-            return;
-          }
           var i = 0;
           var intervalo = setInterval(function () {
             i++;
