@@ -3,236 +3,257 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PuroTexto</title>
+  <title>PuroTexto — Análisis de naturalidad de texto</title>
   <meta name="description" content="Pegá un texto y descubrí si suena humano o generado por IA, con las frases puntuales que lo delatan y cómo reescribirlas.">
 
-  <!-- Tipografía (Google Fonts). Si no carga, se usa la fuente del sistema y todo sigue funcionando. -->
+  <!-- Tipografía Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
     /* ==========================================================================
-       ESTILOS
-       Todos los colores están definidos acá arriba, en :root.
-       Si querés cambiar la paleta, tocá solo estas líneas.
+       VARIABLES Y PALETA DE COLORES
        ========================================================================== */
     :root {
-      /* Fondos: blanco roto cálido */
-      --fondo: #FBF8F3;
+      --terracota: #B84E2E;
+      --terracota-hover: #9E3C1F;
+      --petroleo: #264B4A;
+      --petroleo-oscuro: #1E3A3A;
+      --petroleo-suave: #3A5C5A;
+      --hueso: #F5EFE7;
+      --hueso-suave: #E8DFD3;
+      --hueso-barra: rgba(253, 250, 245, 0.85);
+      --arena: #D9C6AF;
+
+      --fondo: var(--hueso);
       --superficie: #FFFFFF;
-      --superficie-suave: #F6F1E8;
+      --superficie-suave: #EDE6DD;
 
-      /* Textos: casi negro cálido y gris cálido (nada de gris frío) */
-      --texto: #211F1C;
-      --texto-suave: #665F54;
+      --texto: var(--petroleo-oscuro);
+      --texto-suave: #576564;
 
-      /* Líneas y bordes */
-      --linea: #EAE3D6;
-      --linea-fuerte: #D6CDBB;
+      --linea: #E2D7C8;
+      --linea-fuerte: #C3B4A2;
 
-      /* Acento: verde suave */
-      --acento: #2B7A57;          /* verde principal */
-      --acento-oscuro: #1F5F43;
-      --acento-suave: #E3F0E7;
-      --acento-borde: #B9D8C5;
+      --tono: var(--terracota);
+      --tono-suave: #FBECE8;
 
-      --alerta: #9A6410;          /* ámbar: "algo artificial" */
-      --alerta-suave: #FCF1DB;
+      --alerta: #B8762D;
+      --alerta-suave: #FAF0E1;
 
-      --peligro: #B3402E;         /* rojo apagado: "suena a IA" y errores */
-      --peligro-suave: #FCE9E4;
+      --exito: #2D7A58;
+      --exito-suave: #E5F3EC;
 
-      --fuente-titulos: 'Poppins', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      --fuente: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      --peligro: #B84E2E;
+      --peligro-suave: #FBECE8;
+
+      --fuente-editorial: 'Lora', Georgia, serif;
+      --fuente-titulos: 'Poppins', system-ui, -apple-system, sans-serif;
+      --fuente: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     * { box-sizing: border-box; }
-
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 
     body {
       margin: 0;
       background: var(--fondo);
       color: var(--texto);
       font-family: var(--fuente);
+      font-weight: 500;
       font-size: 1rem;
-      line-height: 1.55;
+      line-height: 1.6;
     }
 
     .contenedor {
-      max-width: 720px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 44px 20px 80px;
+      padding: 32px 24px 80px;
     }
 
-    h1 {
-      margin: 0 0 10px;
-      font-family: var(--fuente-titulos);
-      font-size: clamp(2.1rem, 6.5vw, 3rem);
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      font-weight: 700;
+    /* ==========================================================================
+       5. FADE-IN AL SCROLL (IntersectionObserver)
+       ========================================================================== */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      will-change: opacity, transform;
     }
 
-    .subtitulo {
-      max-width: 60ch;
-      margin: 0 0 28px;
-      font-size: 1.1rem;
-      line-height: 1.55;
-      color: var(--texto-suave);
-    }
-    .subtitulo strong { color: var(--texto); font-weight: 600; }
-
-    /* ---------- Tarjeta con el cuadro de texto ---------- */
-    .tarjeta {
-      background: var(--superficie);
-      border: 1px solid var(--linea);
-      border-radius: 14px;
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .entrada { padding: 16px 18px 14px; transition: border-color .15s, box-shadow .15s; }
-    .entrada:focus-within {
-      border-color: var(--acento);
-      box-shadow: 0 0 0 3px var(--acento-suave);
+    /* ==========================================================================
+       4. BARRA SUPERIOR CON GLASSMORPHISM
+       ========================================================================== */
+    .franja-superior {
+      height: 4px;
+      background: var(--petroleo);
     }
 
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 230px;
-      resize: vertical;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--texto);
-      font: inherit;
-      line-height: 1.6;
+    .encabezado-fijo {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(253, 250, 245, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(38, 75, 74, 0.08);
     }
-    textarea::placeholder { color: #9A9285; }
 
-    .entrada-pie {
+    .nav-contenedor {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      padding-top: 12px;
-      border-top: 1px solid var(--linea);
     }
 
-    .entrada-info {
+    .logo-marca {
       display: flex;
       align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      font-size: .9rem;
-      color: var(--texto-suave);
-    }
-    #contador.excedido { color: var(--peligro); font-weight: 600; }
-
-    .enlace-boton {
-      background: none;
-      border: 0;
-      padding: 0;
-      font: inherit;
-      color: var(--acento-oscuro);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      cursor: pointer;
-    }
-    .enlace-boton:hover { color: var(--acento); }
-
-    /* ---------- Ejemplos precargados ---------- */
-    .ejemplos {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .ejemplos-titulo { margin-right: 4px; font-size: .9rem; font-weight: 600; color: var(--texto-suave); }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      min-height: 38px;
-      padding: 7px 16px;
-      border: 1px solid var(--linea-fuerte);
-      border-radius: 999px;
-      background: var(--superficie);
-      color: var(--texto);
-      font: inherit;
-      font-size: .92rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s, border-color .15s, color .15s;
-    }
-    .chip:hover { background: var(--acento-suave); border-color: var(--acento-borde); color: var(--acento-oscuro); }
-
-    .boton {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       gap: 10px;
-      min-height: 54px;
-      padding: 14px 32px;
-      border: 0;
-      border-radius: 14px;
-      background: var(--acento);
-      color: #fff;
+      text-decoration: none;
+      color: var(--petroleo);
+    }
+
+    .logo-texto {
       font-family: var(--fuente-titulos);
-      font-size: 1.05rem;
+      font-size: 1.65rem;
       font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 8px 18px -8px rgba(43, 122, 87, .7);
-      transition: background .18s, transform .18s, box-shadow .18s;
+      letter-spacing: -0.02em;
+      color: var(--petroleo);
     }
-    .boton:hover:not(:disabled) {
-      background: var(--acento-oscuro);
-      transform: translateY(-1px);
-      box-shadow: 0 12px 22px -10px rgba(31, 95, 67, .75);
+
+    .logo-texto-acento { color: var(--terracota); }
+
+    .badge-beta {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-family: var(--fuente);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
-    .boton:active:not(:disabled) { transform: translateY(0); }
-    .boton:disabled { opacity: .75; cursor: progress; }
 
-    :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
-    textarea:focus-visible { outline: none; } /* el foco ya se ve en el borde de la tarjeta */
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: girar .7s linear infinite;
-    }
-    @keyframes girar { to { transform: rotate(360deg); } }
-
-    /* ---------- Aviso de privacidad (bien visible) ---------- */
-    .privacidad-caja {
+    .nav-enlaces {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-top: 14px;
-      padding: 13px 16px;
-      border: 1px solid var(--acento-borde);
-      border-radius: 14px;
-      background: var(--acento-suave);
-      color: var(--acento-oscuro);
+      align-items: center;
+      gap: 24px;
     }
-    .privacidad-caja svg { flex: none; width: 22px; height: 22px; margin-top: 1px; }
-    .privacidad-caja strong { display: block; color: #17482F; font-weight: 700; }
-    .privacidad-caja span { display: block; font-size: .9rem; color: #2F5B44; }
 
-    /* ---------- Selector "Pegar texto / Subir archivo" ---------- */
+    /* 1. Botón "Iniciar sesión" y enlaces */
+    .nav-enlaces a {
+      color: var(--texto-suave);
+      text-decoration: none;
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+
+    .nav-enlaces a:hover {
+      color: var(--terracota);
+    }
+
+    /* 3. Botón con elevación en Barra Superior */
+    .boton-nav-acento {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 18px;
+      border-radius: 10px;
+      background: var(--terracota);
+      color: #FFF !important;
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px rgba(196, 95, 69, 0.2);
+      transition: all 0.3s ease !important;
+    }
+
+    .boton-nav-acento:hover {
+      background: var(--terracota-hover) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3) !important;
+    }
+
+    /* ==========================================================================
+       6. HERO & TÍTULO CON ANIMACIÓN DE ENTRADA
+       ========================================================================== */
+    .hero-seccion {
+      text-align: center;
+      margin: 48px 0 36px;
+    }
+
+    h1.titulo-principal {
+      margin: 0 0 16px;
+      font-family: var(--fuente-editorial);
+      color: var(--petroleo);
+      font-size: clamp(2.4rem, 5.5vw, 3.5rem);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      font-weight: 400;
+      
+      /* Animación suave de entrada al cargar la página */
+      animation: entradaHero 0.8s ease forwards;
+    }
+
+    @keyframes entradaHero {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .subtitulo {
+      max-width: 58ch;
+      margin: 0 auto;
+      font-size: 1.15rem;
+      line-height: 1.5;
+      color: var(--texto-suave);
+      font-weight: 500;
+    }
+
+    /* ==========================================================================
+       TARJETAS Y CUADRO DE ENTRADA
+       ========================================================================== */
+    .tarjeta {
+      background: var(--superficie);
+      border: 1px solid var(--linea);
+      border-radius: 16px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 1px 2px rgba(38, 75, 74, 0.06),
+        0 14px 28px rgba(38, 75, 74, 0.08);
+    }
+
+    .modos-contenedor {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 16px;
+    }
+
     .modos {
       display: inline-flex;
-      gap: 3px;
-      margin-bottom: 14px;
-      padding: 4px;
-      border-radius: 14px;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 12px;
       background: var(--superficie-suave);
     }
+
     .modo { position: relative; }
     .modo input {
       position: absolute;
@@ -241,419 +262,798 @@
       margin: 0;
       cursor: pointer;
     }
+
     .modo span {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-size: .95rem;
-      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 9px;
+      font-family: var(--fuente);
+      font-size: 0.92rem;
+      font-weight: 400;
       color: var(--texto-suave);
       cursor: pointer;
-      transition: background .15s, color .15s;
+      transition: all 0.3s ease;
     }
-    .modo span svg { flex: none; width: 19px; height: 19px; }
-    .modo:hover input:not(:checked) + span { background: rgba(255, 255, 255, .65); color: var(--texto); }
+
     .modo input:checked + span {
       background: var(--superficie);
-      color: var(--acento-oscuro);
-      box-shadow: 0 1px 3px rgba(70, 50, 20, .16);
+      color: var(--petroleo);
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(38, 75, 74, 0.08);
     }
-    .modo input:focus-visible + span { outline: 3px solid var(--acento); outline-offset: 1px; }
 
-    /* ---------- Subida de archivos ---------- */
+    .modo:hover span {
+      background: rgba(38, 75, 74, 0.08);
+      color: var(--petroleo);
+    }
+    .modo input:checked:hover + span {
+      background: var(--superficie);
+    }
+
+    .entrada {
+      padding: 24px;
+    }
+
+    .caja-escritura {
+      position: relative;
+      background: var(--superficie);
+      border: 1.5px solid var(--linea);
+      border-radius: 14px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .caja-escritura:focus-within {
+      border-color: var(--terracota);
+      box-shadow: 0 0 0 4px rgba(196, 95, 69, 0.12);
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 220px;
+      padding: 18px 18px 36px 18px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--texto);
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 1.02rem;
+      line-height: 1.65;
+    }
+
+    textarea::placeholder { color: #A0988C; }
+
+    .textarea-pie {
+      position: absolute;
+      bottom: 12px;
+      right: 18px;
+      pointer-events: none;
+    }
+
+    .contador-box {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--texto-suave);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    #contador.excedido { color: var(--peligro); font-weight: 600; }
+
+    /* 3. BOTONES DE EJEMPLO CON ELEVACIÓN */
+    .ejemplos-seccion {
+      margin-top: 18px;
+    }
+
+    .ejemplos-fila-superior {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .ejemplos-titulo {
+      display: block;
+      font-size: 0.88rem;
+      font-family: var(--fuente);
+      font-weight: 400;
+      color: var(--texto-suave);
+    }
+
+    .ejemplos-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ejemplos-grid .chip {
+      flex: 1 1 140px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 10px;
+      background: var(--hueso);
+      color: var(--petroleo);
+      font-family: var(--fuente);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .chip:hover {
+      background: var(--arena);
+      border-color: var(--petroleo);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(38, 75, 74, 0.08);
+    }
+
+    /* Chips oscuros: los 3 ejemplos (IA / humano / dudoso) */
+    .chip-oscuro {
+      background: rgba(38, 75, 74, 0.08);
+      color: var(--petroleo);
+      border-color: rgba(38, 75, 74, 0.2);
+    }
+
+    .chip-oscuro:hover {
+      background: rgba(38, 75, 74, 0.15);
+      border-color: rgba(38, 75, 74, 0.2);
+      color: var(--petroleo);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(38, 75, 74, 0.12);
+    }
+
+    /* Subida de archivos */
     .zona {
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      min-height: 230px;
       justify-content: center;
-      padding: 28px 16px;
-      border: 1.5px dashed var(--linea-fuerte);
-      border-radius: 12px;
-      background: #FDFBF7;
+      gap: 8px;
+      min-height: 230px;
+      padding: 28px 20px;
+      border: 2px dashed var(--linea-fuerte);
+      border-radius: 14px;
+      background: var(--hueso);
       text-align: center;
       cursor: pointer;
-      transition: border-color .15s, background .15s;
+      transition: all 0.3s ease;
     }
-    .zona:hover, .zona.arrastrando { border-color: var(--acento); background: var(--acento-suave); }
-    .zona:focus-within { outline: 3px solid var(--acento); outline-offset: 2px; }
+
+    .zona:hover, .zona.arrastrando {
+      border-color: var(--terracota);
+      background: var(--superficie-suave);
+      transform: translateY(-2px);
+    }
+
     .zona input {
       position: absolute;
       width: 1px; height: 1px;
       opacity: 0;
       pointer-events: none;
     }
-    .zona-icono { color: var(--acento); margin-bottom: 6px; }
-    .zona-titulo { font-weight: 600; }
-    .zona-detalle { font-size: .9rem; color: var(--texto-suave); }
+
+    .zona-icono {
+      color: var(--terracota);
+      margin-bottom: 4px;
+    }
+
+    .zona-titulo { font-weight: 600; color: var(--petroleo); }
+    .zona-detalle { font-size: 0.88rem; color: var(--texto-suave); }
 
     .archivo-elegido {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 16px;
-      border: 1px solid var(--linea);
+      gap: 16px;
+      padding: 16px 20px;
+      border: 1px solid var(--linea-fuerte);
       border-radius: 12px;
-      background: #FDFBF7;
+      background: var(--hueso);
     }
+
     .archivo-tipo {
       flex: none;
       min-width: 52px;
-      padding: 10px 8px;
-      border-radius: 10px;
-      background: var(--acento-suave);
-      color: var(--acento-oscuro);
-      font-size: .85rem;
-      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--petroleo);
+      color: #FFF;
+      font-size: 0.8rem;
+      font-weight: 600;
       letter-spacing: .04em;
       text-align: center;
     }
+
     .archivo-datos { flex: 1; min-width: 0; }
-    .archivo-nombre {
-      margin: 0;
+    .archivo-nombre { margin: 0; font-weight: 600; color: var(--petroleo); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .archivo-detalle { margin: 0; font-size: 0.85rem; color: var(--texto-suave); }
+
+    .enlace-boton {
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      color: var(--terracota);
       font-weight: 600;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.3s ease;
     }
-    .archivo-detalle { margin: 0; font-size: .9rem; color: var(--texto-suave); }
+    .enlace-boton:hover { color: var(--terracota-hover); }
 
-    .aviso-recorte {
-      margin: 0 0 14px;
-      padding: 12px 14px;
-      border: 1px solid #EBD9AE;
-      border-left: 4px solid var(--alerta);
-      border-radius: 10px;
-      background: var(--alerta-suave);
-      color: #5F4410;
-      font-size: .95rem;
+    /* 3. BOTÓN PRINCIPAL "ANALIZAR TEXTO" */
+    .accion-contenedor {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
     }
 
-    /* ---------- Estado de carga y errores ---------- */
+    .boton-principal {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 14px 36px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--terracota);
+      color: #FFF;
+      font-family: var(--fuente);
+      font-size: 1.05rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(196, 95, 69, 0.25);
+      
+      /* Transición funcional suave */
+      transition: all 0.3s ease;
+    }
+
+    .boton-principal:hover:not(:disabled) {
+      background: var(--terracota-hover); /* #A8492F */
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3);
+    }
+
+    .boton-principal:active:not(:disabled) { transform: translateY(0); }
+    .boton-principal:disabled { opacity: 0.75; cursor: progress; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #FFF;
+      border-radius: 50%;
+      animation: girar .7s linear infinite;
+    }
+    @keyframes girar { to { transform: rotate(360deg); } }
+
+    /* Aviso de privacidad */
+    .privacidad-caja {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-top: 20px;
+      padding: 14px 18px;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 12px;
+      background: var(--superficie);
+      color: var(--petroleo-oscuro);
+    }
+    .privacidad-caja svg { flex: none; width: 20px; height: 20px; margin-top: 2px; color: var(--terracota); }
+    .privacidad-caja strong { display: block; font-family: var(--fuente); font-weight: 500; color: var(--petroleo); font-size: 0.95rem; }
+    .privacidad-caja span { display: block; font-size: 0.88rem; color: var(--texto-suave); }
+
+    /* Estado de carga y errores */
     .estado {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 18px;
-      color: var(--texto-suave);
+      gap: 12px;
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--superficie);
+      color: var(--petroleo);
+      font-weight: 500;
     }
-    .estado .spinner { border-color: var(--linea-fuerte); border-top-color: var(--acento); }
+    .estado .spinner { border-color: var(--linea-fuerte); border-top-color: var(--terracota); }
 
     .error {
-      margin-top: 18px;
-      padding: 14px 16px;
+      margin-top: 24px;
+      padding: 16px 20px;
       border: 1px solid #EBC3B9;
-      border-left: 4px solid var(--peligro);
-      border-radius: 10px;
+      border-left: 5px solid var(--peligro);
+      border-radius: 12px;
       background: var(--peligro-suave);
       color: #6E2A1E;
     }
-    .error strong { display: block; margin-bottom: 2px; }
+    .error strong { display: block; margin-bottom: 2px; font-weight: 600; }
 
     [hidden] { display: none !important; }
 
-    /* ---------- Resultados ---------- */
-    #resultados { margin-top: 28px; outline: none; }
+    /* ==========================================================================
+       RESULTADOS Y TARJETA
+       ========================================================================== */
+    #resultados { margin-top: 40px; outline: none; }
 
-    /* El "tono" cambia según el puntaje (verde / ámbar / rojo) */
-    [data-nivel="alto"], [data-nivel="medio-alto"] { --tono: var(--acento); --tono-suave: var(--acento-suave); }
+    [data-nivel="alto"], [data-nivel="medio-alto"] { --tono: var(--exito); --tono-suave: var(--exito-suave); }
     [data-nivel="medio"] { --tono: var(--alerta); --tono-suave: var(--alerta-suave); }
     [data-nivel="bajo"]  { --tono: var(--peligro); --tono-suave: var(--peligro-suave); }
 
-    .puntaje-tarjeta { padding: 24px 22px 22px; }
+    .resultado-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
 
-    .puntaje-etiqueta { margin: 0; font-size: .95rem; font-weight: 600; color: var(--texto-suave); }
+    @media (min-width: 680px) {
+      .resultado-grid { grid-template-columns: 220px 1fr; }
+    }
 
-    .puntaje-fila { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 4px; }
+    .puntaje-tarjeta {
+      padding: 28px 24px;
+    }
+
+    .col-puntaje {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 0;
+      padding-right: 0;
+    }
+
+    @media (min-width: 680px) {
+      .col-puntaje {
+        border-right: 1px solid var(--linea);
+        padding-right: 24px;
+      }
+    }
+
+    .puntaje-etiqueta {
+      margin: 0 0 6px;
+      font-family: var(--fuente);
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--texto-suave);
+    }
+
+    .puntaje-fila {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
     .puntaje {
-      font-size: clamp(4rem, 17vw, 5.75rem);
+      font-family: var(--fuente-editorial);
+      font-size: clamp(3.5rem, 8vw, 4.5rem);
       line-height: 1;
-      font-weight: 700;
-      letter-spacing: -0.04em;
+      font-weight: 400;
+      letter-spacing: -0.02em;
       color: var(--tono);
       font-variant-numeric: tabular-nums;
     }
-    .puntaje-max { font-size: 1.25rem; color: var(--texto-suave); font-weight: 500; }
+
+    .puntaje-max {
+      font-size: 1.2rem;
+      color: var(--texto-suave);
+      font-weight: 500;
+    }
+
+    .col-explicacion {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
     .veredicto {
       display: inline-block;
-      margin: 6px 0 20px;
+      align-self: flex-start;
+      margin: 0 0 16px 0;
       padding: 6px 14px;
       border-radius: 999px;
       background: var(--tono-suave);
       color: var(--tono);
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-family: var(--fuente);
+      font-size: 1rem;
+      font-weight: 500;
     }
 
-    /* Barra que va de "suena a IA" a "suena humano" */
-    /* Barra del puntaje: de rojo (suena a IA) a verde (suena humano) */
-    .medidor { position: relative; height: 16px; margin: 0 13px; }
+    .medidor { position: relative; height: 10px; margin: 8px 0; }
     .medidor-pista {
       position: absolute; inset: 0;
       border-radius: 999px;
-      background: linear-gradient(90deg, #E4584B 0%, #EF8244 25%, #F3BB3F 48%, #B4CE55 72%, #36A46B 100%);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .14);
+      background: linear-gradient(90deg, var(--peligro) 0%, var(--alerta) 50%, var(--exito) 100%);
+      opacity: 0.85;
     }
     .medidor-marca {
       position: absolute;
-      top: 50%;
-      left: 0;
-      width: 28px;
-      height: 28px;
-      margin: -14px 0 0 -14px;
-      border: 4px solid #fff;
+      top: 50%; left: 0;
+      width: 20px; height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 3px solid #FFF;
       border-radius: 50%;
       background: var(--tono);
-      box-shadow: 0 2px 8px rgba(33, 31, 28, .4);
-      transition: left 1s cubic-bezier(.2, .8, .2, 1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: left 1s cubic-bezier(.16, 1, .3, 1);
     }
+
     .medidor-escala {
       display: flex;
       justify-content: space-between;
-      margin-top: 12px;
-      font-size: .85rem;
-      font-weight: 600;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-family: var(--fuente);
+      font-weight: 400;
     }
     .medidor-escala span:first-child { color: var(--peligro); }
-    .medidor-escala span:last-child { color: var(--acento); }
+    .medidor-escala span:last-child { color: var(--exito); }
 
     .aviso {
-      margin: 14px 2px 0;
-      font-size: .85rem;
+      margin: 14px 0 0;
+      font-size: 0.88rem;
       color: var(--texto-suave);
+      line-height: 1.45;
     }
 
+    /* Frases a revisar */
     .titulo-seccion {
-      margin: 32px 0 4px;
-      font-size: 1.3rem;
+      margin: 40px 0 6px;
+      font-family: var(--fuente-titulos);
+      color: var(--petroleo);
+      font-size: 1.35rem;
+      font-weight: 400;
       letter-spacing: -0.01em;
     }
-    .titulo-seccion-detalle { margin: 0 0 14px; color: var(--texto-suave); }
+    .titulo-seccion-detalle { margin: 0 0 18px; color: var(--texto-suave); font-size: 0.95rem; }
 
-    .frases { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-    .frase { padding: 18px; }
+    .frases { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+    .frase { padding: 22px; }
 
     .cita {
-      margin: 0 0 14px;
-      padding: 10px 14px;
-      border-left: 3px solid var(--linea-fuerte);
-      background: #FDFBF7;
-      border-radius: 0 8px 8px 0;
+      margin: 0 0 16px;
+      padding: 12px 16px;
+      border-left: 3px solid var(--terracota);
+      background: var(--hueso);
+      border-radius: 0 10px 10px 0;
       font-size: 1.02rem;
+      color: var(--petroleo-oscuro);
     }
 
     .campo { margin: 0 0 14px; }
-    .campo-titulo { display: block; margin-bottom: 2px; font-size: .9rem; font-weight: 600; color: var(--texto-suave); }
+    .campo-titulo { display: block; margin-bottom: 4px; font-size: 0.82rem; font-family: var(--fuente); font-weight: 500; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.03em; }
 
     .reescritura {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--acento-suave);
+      gap: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--exito-suave);
     }
-    .reescritura .campo-titulo { color: var(--acento-oscuro); }
-    .reescritura p { margin: 0; }
+    .reescritura .campo-titulo { color: var(--exito); }
+    .reescritura p { margin: 0; font-weight: 500; color: var(--petroleo-oscuro); }
 
     .copiar {
       flex: none;
-      min-height: 40px;
       padding: 8px 16px;
-      border: 1px solid var(--acento-borde);
-      border-radius: 10px;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 8px;
       background: var(--superficie);
-      color: var(--acento-oscuro);
-      font: inherit;
-      font-size: .9rem;
-      font-weight: 700;
+      color: var(--petroleo);
+      font-family: var(--fuente);
+      font-size: 0.88rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: background .15s, color .15s, border-color .15s;
+      transition: all 0.3s ease;
     }
-    .copiar:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
-
-    .sin-frases {
-      padding: 16px 18px;
-      color: var(--texto-suave);
+    .copiar:hover {
+      background: var(--terracota);
+      border-color: var(--terracota);
+      color: #FFF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(196, 95, 69, 0.2);
     }
 
-    /* ---------- ¿Cómo funciona? ---------- */
-    .seccion { margin-top: 72px; }
-    .seccion-titulo {
-      margin: 0;
-      font-family: var(--fuente-titulos);
-      font-size: clamp(1.5rem, 4.5vw, 1.9rem);
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-      font-weight: 700;
-    }
-    .seccion-intro { margin: 8px 0 22px; color: var(--texto-suave); }
+    .sin-frases { padding: 20px; color: var(--texto-suave); }
 
-    .pasos { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 0; padding: 0; list-style: none; }
-    .paso { padding: 24px 22px; }
-    .paso-icono {
+    /* ==========================================================================
+       2. TARJETAS DE BENEFICIOS CON ELEVACIÓN Y SOMBRA CLARA Y FUNCIONAL
+       ========================================================================== */
+    .seccion-beneficios {
+      margin-top: 64px;
+      padding: 40px 32px;
+      background: #EFE6D9;
+      border-radius: 24px;
+    }
+
+    .beneficios-grid {
       display: grid;
-      place-items: center;
-      width: 50px; height: 50px;
-      margin-bottom: 16px;
-      border-radius: 14px;
-      background: var(--acento-suave);
-      color: var(--acento-oscuro);
+      grid-template-columns: 1fr;
+      gap: 20px;
     }
-    .paso-icono svg { width: 26px; height: 26px; }
-    .paso-numero { margin: 0 0 4px; font-size: .85rem; font-weight: 700; letter-spacing: .03em; color: var(--acento); }
-    .paso h3 {
+
+    @media (min-width: 680px) {
+      .beneficios-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .tarjeta-beneficio {
+      padding: 24px 20px;
+      background: var(--arena);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      box-shadow:
+        0 1px 2px rgba(38, 75, 74, 0.05),
+        0 8px 20px rgba(38, 75, 74, 0.07);
+      
+      /* Transición fluida explícita */
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      will-change: transform, box-shadow;
+    }
+
+    /* Elevación visible y notoria al hacer hover */
+    .tarjeta-beneficio:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 2px 4px rgba(38, 75, 74, 0.10),
+        0 24px 44px rgba(38, 75, 74, 0.22);
+      border-color: var(--petroleo);
+    }
+
+    .step-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--hueso);
+      color: var(--petroleo);
+      margin-bottom: 16px;
+    }
+
+    .step-icon svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .tarjeta-beneficio h3 {
       margin: 0 0 8px;
       font-family: var(--fuente-titulos);
       font-size: 1.1rem;
-      line-height: 1.3;
-      font-weight: 600;
+      color: var(--petroleo);
+      font-weight: 500;
     }
-    .paso p:last-child { margin: 0; font-size: .95rem; color: var(--texto-suave); }
 
-    @media (min-width: 720px) {
+    .tarjeta-beneficio p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--petroleo-suave);
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       SECCIÓN ¿CÓMO FUNCIONA? & PREGUNTAS FRECUENTES
+       ========================================================================== */
+    .seccion { margin-top: 64px; }
+
+    .seccion-titulo {
+      margin: 0 0 6px;
+      font-family: var(--fuente-titulos);
+      color: var(--petroleo);
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+      font-weight: 400;
+    }
+
+    .seccion-intro { margin: 0 0 24px; color: var(--texto-suave); }
+
+    .pasos { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 0; padding: 0; list-style: none; }
+    
+    .paso {
+      padding: 24px;
+      background: rgba(38, 75, 74, 0.06);
+      border: 1px solid rgba(38, 75, 74, 0.12);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .paso:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 2px 4px rgba(38, 75, 74, 0.06),
+        0 16px 32px rgba(38, 75, 74, 0.14);
+    }
+
+    .paso .step-icon { background: var(--arena); color: var(--petroleo); }
+
+    .paso-numero { margin: 0 0 6px; font-family: var(--fuente); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em; color: var(--terracota); }
+    .paso h3 { margin: 0 0 8px; font-family: var(--fuente-titulos); font-size: 1.1rem; color: var(--petroleo); font-weight: 500; }
+    .paso p:last-child { margin: 0; font-size: 0.92rem; color: var(--petroleo-suave); }
+
+    @media (min-width: 680px) {
       .pasos { grid-template-columns: repeat(3, 1fr); }
     }
-    @media (max-width: 520px) {
-      .seccion { margin-top: 56px; }
-    }
 
-    /* ---------- Preguntas frecuentes ---------- */
-    .faq { display: grid; gap: 10px; }
+    /* FAQ */
+    .faq { display: grid; gap: 12px; }
     .faq details {
       border: 1px solid var(--linea);
-      border-radius: 14px;
+      border-radius: 12px;
       background: var(--superficie);
-      transition: border-color .15s, box-shadow .15s;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-    .faq details:hover { border-color: var(--linea-fuerte); }
-    .faq details[open] {
-      border-color: var(--acento-borde);
-      box-shadow: 0 1px 2px rgba(70, 50, 20, .05), 0 12px 28px -16px rgba(70, 50, 20, .18);
+    .faq details:hover {
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.05);
     }
+    .faq details[open] { border-color: var(--terracota); }
+
     .faq summary {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      min-height: 56px;
-      padding: 14px 18px;
-      font-weight: 600;
+      padding: 16px 20px;
+      font-family: var(--fuente);
+      font-weight: 500;
+      color: var(--petroleo);
       cursor: pointer;
       list-style: none;
     }
     .faq summary::-webkit-details-marker { display: none; }
     .faq summary::after {
       content: "";
-      flex: none;
-      width: 9px; height: 9px;
-      margin-top: -4px;
-      border-right: 2.5px solid var(--acento);
-      border-bottom: 2.5px solid var(--acento);
+      width: 8px; height: 8px;
+      border-right: 2px solid var(--terracota);
+      border-bottom: 2px solid var(--terracota);
       transform: rotate(45deg);
-      transition: transform .2s, margin .2s;
+      transition: transform 0.3s ease;
     }
-    .faq details[open] summary::after { margin-top: 4px; transform: rotate(-135deg); }
-    .faq .respuesta { padding: 0 18px 18px; color: var(--texto-suave); }
+    .faq details[open] summary::after { transform: rotate(-135deg); }
+    .faq .respuesta { padding: 0 20px 20px; color: var(--texto-suave); font-size: 0.95rem; }
     .faq .respuesta p { margin: 0; }
     .faq .respuesta p + p { margin-top: 8px; }
 
-    /* ---------- Pie de página ---------- */
+    /* ==========================================================================
+       PIE DE PÁGINA
+       ========================================================================== */
     .pie {
-      padding: 28px 20px 40px;
-      border-top: 1px solid var(--linea);
-      background: var(--superficie-suave);
+      margin-top: 80px;
+      padding: 44px 24px;
+      background: var(--petroleo);
       text-align: center;
     }
-    .pie p { max-width: 62ch; margin: 0 auto; }
-    .pie-marca { font-family: var(--fuente-titulos); font-size: 1.05rem; color: var(--texto); }
-    .pie-marca strong { font-weight: 700; }
-    .pie-detalle { margin-top: 8px !important; font-size: .88rem; color: var(--texto-suave); }
+    .pie p { max-width: 60ch; margin: 0 auto; }
+    .pie-marca { font-family: var(--fuente-titulos); font-size: 1.1rem; color: var(--hueso); }
+    .pie-marca strong { font-weight: 600; }
+    .pie-detalle { margin-top: 10px !important; font-size: 0.88rem; color: var(--arena); }
 
-    /* ---------- Celular ---------- */
-    @media (max-width: 520px) {
-      .contenedor { padding-top: 30px; }
-      .boton { width: 100%; }
-      .entrada-pie { flex-direction: column; align-items: stretch; }
+    /* Responsivo Celular */
+    @media (max-width: 600px) {
+      .nav-enlaces a:not(.boton-nav-acento) { display: none; }
+      .contenedor { padding-top: 20px; }
+      .entrada { padding: 18px; }
+      .accion-contenedor { justify-content: stretch; }
+      .boton-principal { width: 100%; }
       .reescritura { flex-direction: column; }
       .copiar { align-self: flex-start; }
-      .modos { display: flex; }
-      .modo { flex: 1; }
-      .modo span { justify-content: center; gap: 6px; padding: 10px 6px; font-size: .9rem; white-space: nowrap; }
-      .zona { min-height: 190px; }
     }
 
-    @media (max-width: 350px) {
-      .modo span svg { display: none; }
-    }
-
-    /* Respeta a quienes desactivan las animaciones en su dispositivo */
     @media (prefers-reduced-motion: reduce) {
-      .medidor-marca { transition: none; }
-      .spinner { animation-duration: 1.6s; }
-      .boton, .copiar, .chip { transition: none; }
-      .faq details, .faq summary::after { transition: none; }
-      .boton:hover:not(:disabled) { transform: none; }
+      .fade-in { transition: none !important; opacity: 1 !important; transform: none !important; }
+      .tarjeta-beneficio:hover { transform: none !important; box-shadow: none !important; }
+      .boton-principal, .boton-nav-acento, .chip { transition: none !important; transform: none !important; }
+      .medidor-marca { transition: none !important; }
+      h1.titulo-principal { animation: none !important; opacity: 1 !important; transform: none !important; }
     }
   </style>
 </head>
 
 <body>
-  <main class="contenedor">
-    <h1>PuroTexto</h1>
-    <p class="subtitulo">Analizá si tu texto suena humano o generado por IA. <strong>Especializado en español latinoamericano:</strong> entiende voseo, tuteo y modismos regionales.</p>
 
-    <!-- ===== Entrada: texto pegado o archivo ===== -->
-    <div class="tarjeta entrada">
-      <!-- Selector de modo (son botones de opción reales, funcionan con teclado) -->
-      <div class="modos" role="radiogroup" aria-label="Cómo querés cargar el texto">
-        <label class="modo">
-          <input type="radio" name="modo" value="texto" checked>
-          <span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h4"></path></svg>
-            Pegar texto
-          </span>
-        </label>
-        <label class="modo">
-          <input type="radio" name="modo" value="archivo">
-          <span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-            Subir archivo
-          </span>
-        </label>
+  <div class="franja-superior" aria-hidden="true"></div>
+
+  <!-- ===== 4. BARRA SUPERIOR CON GLASSMORPHISM (#FDFAF5 0.85 + blur 12px) ===== -->
+  <header class="encabezado-fijo">
+    <nav class="nav-contenedor" aria-label="Navegación principal">
+      <a href="#" class="logo-marca">
+        <span class="logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
+        <span class="badge-beta">v1.0 Beta</span>
+      </a>
+      <div class="nav-enlaces">
+        <a href="#como-funciona">Tutoriales</a>
+        <a href="#beneficios">Recursos</a>
+        <a href="#faq">Preguntas frecuentes</a>
+        <!-- 1. Enlace agregado justo antes del botón principal -->
+        <a href="#login">Iniciar sesión</a>
+        <a href="#editor" class="boton-nav-acento">Analizar texto</a>
       </div>
+    </nav>
+  </header>
 
-      <!-- Modo 1: pegar texto -->
-      <div id="panel-texto">
-        <label for="texto" style="position:absolute;left:-9999px;">Texto a analizar</label>
-        <textarea id="texto" rows="10"
-          placeholder="Pegá acá tu texto (un email, un post, un ensayo...). Por ejemplo: «En el mundo actual, la tecnología desempeña un papel fundamental en nuestras vidas. Además, es importante destacar que...»"></textarea>
+  <main class="contenedor">
 
-        <div class="ejemplos">
-          <span class="ejemplos-titulo">Probá con un ejemplo:</span>
-          <button type="button" id="btn-ejemplo" class="chip">Usar un texto de ejemplo</button>
-          <button type="button" id="btn-ej-ia" class="chip">Texto de IA</button>
-          <button type="button" id="btn-ej-humano" class="chip">Texto humano</button>
-          <button type="button" id="btn-ej-dudoso" class="chip">Texto dudoso</button>
+    <!-- ===== 6. HERO Y TÍTULO CON ANIMACIÓN DE ENTRADA ===== -->
+    <section class="hero-seccion">
+      <h1 class="titulo-principal">¿Tu texto suena realmente a vos?</h1>
+      <p class="subtitulo">Analizá la naturalidad de tu texto en segundos. Especializado en español latinoamericano: entiende voseo, tuteo y modismos regionales.</p>
+    </section>
+
+    <!-- ===== CUADRO DE ENTRADA Y FORMULARIO ===== -->
+    <section id="editor" class="tarjeta entrada">
+
+      <!-- Selector de Modo -->
+      <div class="modos-contenedor">
+        <div class="modos" role="radiogroup" aria-label="Cómo querés cargar el texto">
+          <label class="modo">
+            <input type="radio" name="modo" value="texto" checked>
+            <span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h4"></path></svg>
+              Pegar texto
+            </span>
+          </label>
+          <label class="modo">
+            <input type="radio" name="modo" value="archivo">
+            <span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              Subir archivo
+            </span>
+          </label>
         </div>
       </div>
 
-      <!-- Modo 2: subir un archivo PDF o DOCX -->
+      <!-- Modo 1: Pegar Texto -->
+      <div id="panel-texto">
+        <label for="texto" style="position:absolute;left:-9999px;">Texto a analizar</label>
+        <div class="caja-escritura">
+          <textarea id="texto" rows="9"
+            placeholder="Pegá acá tu texto (un email, un post, un ensayo...). Por ejemplo: «En el mundo actual, la tecnología desempeña un papel fundamental en nuestras vidas. Además, es importante destacar que...»"></textarea>
+          
+          <div class="textarea-pie">
+            <div id="info-texto" class="contador-box">
+              <span id="contador">0 palabras | 0 caracteres</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Botones con elevación al hover -->
+        <div class="ejemplos-seccion">
+          <div class="ejemplos-fila-superior">
+            <span class="ejemplos-titulo">Probá con un ejemplo:</span>
+            <button type="button" id="btn-ejemplo" class="chip">Usar texto de ejemplo</button>
+          </div>
+          <div class="ejemplos-grid">
+            <button type="button" id="btn-ej-ia" class="chip chip-oscuro">Texto de IA</button>
+            <button type="button" id="btn-ej-humano" class="chip chip-oscuro">Texto humano</button>
+            <button type="button" id="btn-ej-dudoso" class="chip chip-oscuro">Texto dudoso</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo 2: Subir Archivo -->
       <div id="panel-archivo" hidden>
         <label id="zona" class="zona" for="archivo">
           <input type="file" id="archivo"
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-          <svg class="zona-icono" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="zona-icono" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path>
           </svg>
           <span class="zona-titulo">Arrastrá tu archivo acá o hacé clic para elegirlo</span>
-          <span class="zona-detalle">PDF o Word (.docx) · hasta 4 MB · el texto tiene que poder seleccionarse</span>
+          <span class="zona-detalle">PDF o Word (.docx) · hasta 4 MB</span>
         </label>
 
         <div id="archivo-elegido" class="archivo-elegido" hidden>
@@ -664,163 +1064,229 @@
           </div>
           <button type="button" id="btn-quitar" class="enlace-boton">Quitar</button>
         </div>
-      </div>
 
-      <div class="entrada-pie">
-        <div id="info-texto" class="entrada-info">
-          <span id="contador">0 / 8000</span>
-        </div>
-        <div id="info-archivo" class="entrada-info" hidden>
+        <div id="info-archivo" style="margin-top: 12px; font-size: 0.88rem; color: var(--texto-suave);" hidden>
           <span>Se analizan los primeros 8000 caracteres del archivo.</span>
         </div>
-        <button type="button" id="btn-analizar" class="boton">Analizar texto</button>
       </div>
-    </div>
 
-    <!-- Aviso de privacidad, bien visible -->
+      <!-- 3. Botón Principal con elevación #A8492F -->
+      <div class="accion-contenedor">
+        <button type="button" id="btn-analizar" class="boton-principal">Analizar texto</button>
+      </div>
+    </section>
+
+    <!-- Aviso de Privacidad -->
     <div class="privacidad-caja" role="note">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
       <div>
         <strong>Tus textos no se guardan. No subas información confidencial.</strong>
-        <span>Para analizarlos, se envían a Google (Gemini).</span>
+        <span>Para analizarlos, se procesan mediante IA únicamente durante la consulta.</span>
       </div>
     </div>
 
-    <!-- ===== Cargando ===== -->
+    <!-- Estado Cargando / Errores -->
     <div id="estado" class="estado" role="status" aria-live="polite" hidden>
       <span class="spinner" aria-hidden="true"></span>
       <span id="estado-texto">Analizando tu texto... puede tardar unos segundos.</span>
     </div>
 
-    <!-- ===== Error ===== -->
     <div id="error" class="error" role="alert" hidden>
       <strong>No pudimos completar el análisis</strong>
       <span id="error-mensaje"></span>
     </div>
 
-    <!-- ===== Resultados (ocultos al inicio) ===== -->
+    <!-- TARJETA DE RESULTADOS -->
     <section id="resultados" tabindex="-1" hidden>
       <p id="aviso-resultado" class="aviso-recorte" hidden></p>
-      <div class="tarjeta puntaje-tarjeta" id="tarjeta-puntaje">
-        <p class="puntaje-etiqueta">Nivel de humanidad</p>
-        <div class="puntaje-fila">
-          <span id="puntaje" class="puntaje">0</span>
-          <span class="puntaje-max">/ 100</span>
-        </div>
-        <h2 id="veredicto" class="veredicto"></h2>
 
-        <div class="medidor" aria-hidden="true">
-          <div class="medidor-pista"></div>
-          <div id="marca" class="medidor-marca"></div>
-        </div>
-        <div class="medidor-escala" aria-hidden="true">
-          <span>Suena a IA</span>
-          <span>Suena humano</span>
+      <div class="tarjeta puntaje-tarjeta" id="tarjeta-puntaje">
+        <div class="resultado-grid">
+          <div class="col-puntaje">
+            <p class="puntaje-etiqueta">Naturalidad del texto</p>
+            <div class="puntaje-fila">
+              <span id="puntaje" class="puntaje">0</span>
+              <span class="puntaje-max">%</span>
+            </div>
+          </div>
+
+          <div class="col-explicacion">
+            <p class="puntaje-etiqueta" style="margin-bottom: 8px;">Explicación visual</p>
+            <h2 id="veredicto" class="veredicto">--</h2>
+            
+            <div class="medidor" aria-hidden="true">
+              <div class="medidor-pista"></div>
+              <div id="marca" class="medidor-marca"></div>
+            </div>
+            <div class="medidor-escala" aria-hidden="true">
+              <span>Suena a IA</span>
+              <span>Suena humano</span>
+            </div>
+            <p class="aviso">Esta estimación analiza patrones léxicos, sintácticos y repetitivos típicos de modelos generativos.</p>
+          </div>
         </div>
       </div>
-      <p class="aviso">Es una estimación orientativa: ningún detector de IA es infalible, y algunos textos humanos muy formales pueden puntuar bajo.</p>
 
       <h2 class="titulo-seccion">Frases para revisar</h2>
-      <p class="titulo-seccion-detalle">Las que más delatan estilo de IA, con una alternativa para cada una.</p>
+      <p class="titulo-seccion-detalle">Detalle de las expresiones detectadas con menor naturalidad y sugerencias de mejora.</p>
       <ul id="lista-frases" class="frases"></ul>
     </section>
 
-    <!-- ===== ¿Cómo funciona? ===== -->
-    <section class="seccion" aria-labelledby="titulo-como">
-      <h2 id="titulo-como" class="seccion-titulo">¿Cómo funciona?</h2>
-      <p class="seccion-intro">Tres pasos, sin registrarte.</p>
+    <!-- ===== 2. & 5. SECCIÓN BENEFICIOS (Con Elevación -8px + Sombra + Fade-in Scroll) ===== -->
+    <section id="beneficios" class="seccion-beneficios fade-in">
+      <div class="beneficios-grid">
+        <div class="tarjeta-beneficio">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <h3>Detectá patrones</h3>
+          <p>Identificá de inmediato transiciones genéricas, muletillas automáticas y estructuras acartonadas que delatan el uso de IA.</p>
+        </div>
+
+        <div class="tarjeta-beneficio">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          </div>
+          <h3>Mejorá la naturalidad</h3>
+          <p>Obtené sugerencias inmediatas de reescritura que aportan fluidez, soltura y frescura a tu contenido.</p>
+        </div>
+
+        <div class="tarjeta-beneficio">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <h3>Escribí con tu propia voz</h3>
+          <p>Conservá tu tono personal y tus giros locales sin perder profesionalismo ni coherencia.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. ¿CÓMO FUNCIONA? (Fade-in Scroll) ===== -->
+    <section id="como-funciona" class="seccion fade-in">
+      <h2 class="seccion-titulo">¿Cómo funciona?</h2>
+      <p class="seccion-intro">Tres pasos sencillos para optimizar tus escritos, sin registros ni complicaciones.</p>
       <ol class="pasos">
         <li class="tarjeta paso">
-          <div class="paso-icono">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h4"></path></svg>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path></svg>
           </div>
           <p class="paso-numero">PASO 1</p>
-          <h3>Pegá tu texto o subí un archivo</h3>
-          <p>Pegá hasta 8000 caracteres, o subí un PDF o Word de hasta 4 MB.</p>
+          <h3>Pegá o subí tu texto</h3>
+          <p>Ingresá hasta 8000 caracteres o cargá un documento PDF o Word (.docx).</p>
         </li>
         <li class="tarjeta paso">
-          <div class="paso-icono">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2"></path></svg>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           </div>
           <p class="paso-numero">PASO 2</p>
-          <h3>Analizamos si suena humano o generado por IA</h3>
-          <p>Evaluamos clichés, transiciones, naturalidad, frases genéricas y estructura.</p>
+          <h3>Análisis de naturalidad</h3>
+          <p>Evaluamos repetitividad, muletillas de IA, fluidez sintáctica y coherencia del lenguaje.</p>
         </li>
         <li class="tarjeta paso">
-          <div class="paso-icono">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"></path><path d="M13.5 6.5l4 4"></path></svg>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
           </div>
           <p class="paso-numero">PASO 3</p>
-          <h3>Te decimos qué frases revisar y cómo reescribirlas</h3>
-          <p>Recibís un puntaje de 0 a 100 y una alternativa lista para copiar en cada frase señalada.</p>
+          <h3>Sugerencias y tono</h3>
+          <p>Revisá las observaciones específicas y adaptá las sugerencias para mantener tu estilo auténtico.</p>
         </li>
       </ol>
     </section>
 
-    <!-- ===== Preguntas frecuentes ===== -->
-    <section class="seccion" aria-labelledby="titulo-faq">
-      <h2 id="titulo-faq" class="seccion-titulo">Preguntas frecuentes</h2>
-      <p class="seccion-intro">Lo que más nos preguntan.</p>
+    <!-- ===== 5. PREGUNTAS FRECUENTES (Fade-in Scroll) ===== -->
+    <section id="faq" class="seccion fade-in">
+      <h2 class="seccion-titulo">Preguntas frecuentes</h2>
+      <p class="seccion-intro">Respuestas claras sobre la herramienta y la privacidad.</p>
       <div class="faq">
         <details>
           <summary>¿Qué formatos de archivo aceptan?</summary>
           <div class="respuesta">
-            <p>PDF y Word (.docx), de hasta 4 MB. El PDF tiene que tener texto que se pueda seleccionar: los escaneados (fotos de páginas) no se pueden leer. Los .doc antiguos tampoco: guardalos como .docx. Si tu archivo es más largo, se analizan los primeros 8000 caracteres.</p>
+            <p>Aceptamos archivos PDF y Word (.docx) de hasta 4 MB. El PDF debe incluir texto seleccionable (los escaneados o imágenes no son compatibles). Si el documento supera los 8000 caracteres, se analizará la primera sección.</p>
           </div>
         </details>
         <details>
           <summary>¿Guardan mis textos?</summary>
           <div class="respuesta">
-            <p>No, no se guardan. PuroTexto no almacena tus textos ni tus archivos.</p>
-            <p>Eso sí: para analizarlos se envían a Google (Gemini) y, según las condiciones de Google para el uso gratuito, ese contenido puede usarse para mejorar sus productos. Por eso, no subas información confidencial.</p>
+            <p>No. PuroTexto no almacena, guarda ni comparte tus escritos ni tus archivos personales.</p>
           </div>
         </details>
         <details>
           <summary>¿Funciona con el español de mi país?</summary>
           <div class="respuesta">
-            <p>Sí. PuroTexto entiende las variantes del español latinoamericano: voseo, tuteo, modismos regionales de Argentina, México, Colombia, España, etc. También analiza textos en otros idiomas, pero está optimizado para hispanohablantes.</p>
+            <p>Sí. Nuestro motor está ajustado para reconocer variantes del español latinoamericano y peninsular, entendiendo giros con voseo, tuteo y modismos regionales sin penalizarlos como errores.</p>
           </div>
         </details>
         <details>
-          <summary>¿Es gratis?</summary>
+          <summary>¿Es totalmente gratuito?</summary>
           <div class="respuesta">
-            <p>Sí, con límites de uso. Si hacés muchos análisis seguidos, puede que tengas que esperar un momento para seguir.</p>
+            <p>Sí, podés usar la herramienta de forma gratuita con límites razonables de solicitudes por minuto.</p>
           </div>
         </details>
         <details>
-          <summary>¿Qué tan preciso es?</summary>
+          <summary>¿Qué tan preciso es el puntaje?</summary>
           <div class="respuesta">
-            <p>Es una estimación, no una prueba definitiva. Ningún detector de IA es infalible: puede marcar como artificial un texto humano muy formal y dejar pasar un texto de IA bien editado. Usalo como orientación.</p>
-          </div>
-        </details>
-        <details>
-          <summary>¿Puedo usar esto para textos académicos o profesionales?</summary>
-          <div class="respuesta">
-            <p>Sí, como orientación: para revisar tu propio texto y detectar frases que suenan genéricas o automáticas. No lo uses como única prueba para acusar a alguien de haber usado IA ni para tomar decisiones importantes.</p>
+            <p>Se trata de una evaluación orientativa. Aunque analiza con precisión patrones sintácticos típicos de modelos generativos, ningún detector es 100% infalible. Te recomendamos usarlo como guía para pulir tu estilo.</p>
           </div>
         </details>
       </div>
     </section>
+
   </main>
 
-  <!-- ===== Pie de página ===== -->
-  <footer class="pie">
+  <!-- ===== 5. PIE DE PÁGINA (Fade-in Scroll) ===== -->
+  <footer class="pie fade-in">
     <p class="pie-marca"><strong>PuroTexto</strong> — Análisis de autenticidad para hispanohablantes</p>
-    <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan. Se envían a Google (Gemini) solo para analizarlos.</p>
+    <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
   </footer>
 
+  <!-- ==========================================================================
+     LÓGICA JAVASCRIPT & INTERSECTION OBSERVER (Ubicado al final del body)
+     ========================================================================== -->
   <script>
-    /* ==========================================================================
-       LÓGICA DE LA PÁGINA
-       1) Toma el texto pegado o el archivo  2) Lo manda a /api/analizar
-       3) Muestra el resultado
-       ========================================================================== */
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
       'use strict';
 
-      var LARGO_MINIMO = 50;                       // tiene que coincidir con analizar.mjs
-      var LARGO_MAXIMO = 8000;                     // tiene que coincidir con analizar.mjs
-      var TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024; // 4 MB, tiene que coincidir con analizar.mjs
+      /* ----------------------------------------------------------------------
+         5. INTERSECTION OBSERVER PARA FADE-IN EN SCROLL
+         ---------------------------------------------------------------------- */
+      var reducirMovimiento = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!reducirMovimiento && 'IntersectionObserver' in window) {
+        var opcionesObserver = {
+          root: null,
+          rootMargin: '0px 0px -50px 0px',
+          threshold: 0.15
+        };
+
+        var observadorScroll = new IntersectionObserver(function (entradas, observer) {
+          entradas.forEach(function (entrada) {
+            if (entrada.isIntersecting) {
+              entrada.target.classList.add('visible');
+              observer.unobserve(entrada.target); // Dejar de observar una vez visible
+            }
+          });
+        }, opcionesObserver);
+
+        // Se observan explícitamente todas las secciones con la clase .fade-in
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          observadorScroll.observe(elemento);
+        });
+      } else {
+        // En caso de reducción de movimiento o falta de soporte, hacer visibles de inmediato
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          elemento.classList.add('visible');
+        });
+      }
+
+      /* ----------------------------------------------------------------------
+         LOGICA DE APLICACIÓN Y ANALISIS DE TEXTO
+         ---------------------------------------------------------------------- */
+      var LARGO_MINIMO = 50;
+      var LARGO_MAXIMO = 8000;
+      var TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024;
 
       var TEXTO_EJEMPLO =
         'En el mundo actual, la tecnología desempeña un papel fundamental en nuestras vidas. ' +
@@ -828,7 +1294,6 @@
         'Por otro lado, resulta esencial adoptar un enfoque equilibrado que permita aprovechar sus beneficios. ' +
         'En conclusión, el futuro depende de nuestra capacidad para navegar este panorama en constante evolución.';
 
-      // Atajos para encontrar elementos de la página por su id
       var $ = function (id) { return document.getElementById(id); };
       var campo = $('texto');
       var botonAnalizar = $('btn-analizar');
@@ -846,7 +1311,6 @@
       var marca = $('marca');
       var listaFrases = $('lista-frases');
 
-      // Elementos del modo "Subir archivo"
       var panelTexto = $('panel-texto');
       var panelArchivo = $('panel-archivo');
       var infoTexto = $('info-texto');
@@ -860,17 +1324,16 @@
       var botonQuitar = $('btn-quitar');
       var radiosModo = document.querySelectorAll('input[name="modo"]');
 
-      var modo = 'texto';        // 'texto' o 'archivo'
-      var archivoElegido = null; // el archivo que eligió la persona
+      var modo = 'texto';
+      var archivoElegido = null;
 
-      var reducirMovimiento = window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      /* ---------- Contador de caracteres ---------- */
       function actualizarContador() {
-        var n = campo.value.length;
-        contador.textContent = n + ' / ' + LARGO_MAXIMO;
-        contador.classList.toggle('excedido', n > LARGO_MAXIMO);
+        var val = campo.value;
+        var car = val.length;
+        var pal = val.trim() ? val.trim().split(/\s+/).length : 0;
+
+        contador.textContent = pal + ' palabras | ' + car + ' caracteres';
+        contador.classList.toggle('excedido', car > LARGO_MAXIMO);
       }
       campo.addEventListener('input', actualizarContador);
 
@@ -880,7 +1343,6 @@
         campo.focus();
       });
 
-      /* ---------- Ejemplos precargados ---------- */
       var EJEMPLOS = {
         ia:
           'En el mundo actual, la inteligencia artificial ha revolucionado la forma en que trabajamos y nos comunicamos. ' +
@@ -907,7 +1369,6 @@
       $('btn-ej-humano').addEventListener('click', function () { cargarEjemplo(EJEMPLOS.humano); });
       $('btn-ej-dudoso').addEventListener('click', function () { cargarEjemplo(EJEMPLOS.dudoso); });
 
-      /* ---------- Mostrar / ocultar estados ---------- */
       function mostrarError(mensaje) {
         mensajeError.textContent = mensaje;
         cajaError.hidden = false;
@@ -929,7 +1390,6 @@
         estado.hidden = !cargando;
       }
 
-      /* ---------- Cambiar entre "Pegar texto" y "Subir archivo" ---------- */
       function cambiarModo(nuevo) {
         modo = nuevo;
         panelTexto.hidden = nuevo !== 'texto';
@@ -944,7 +1404,6 @@
         });
       });
 
-      /* ---------- Elegir un archivo ---------- */
       function formatearTamano(bytes) {
         if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB';
@@ -958,7 +1417,7 @@
         var extension = (nombre.split('.').pop() || '').toLowerCase();
 
         if (extension === 'doc') {
-          mostrarError('El formato .doc (Word antiguo) no se puede leer. Abrilo en Word y guardalo como .docx, o exportalo a PDF.');
+          mostrarError('El formato .doc no se puede leer. Guardalo como .docx o exportalo a PDF.');
           return;
         }
         if (extension !== 'pdf' && extension !== 'docx') {
@@ -994,11 +1453,10 @@
 
       entradaArchivo.addEventListener('change', function () {
         elegirArchivo(entradaArchivo.files && entradaArchivo.files[0]);
-        entradaArchivo.value = ''; // así se puede volver a elegir el mismo archivo
+        entradaArchivo.value = '';
       });
       botonQuitar.addEventListener('click', quitarArchivo);
 
-      // Arrastrar y soltar
       ['dragenter', 'dragover'].forEach(function (evento) {
         zona.addEventListener(evento, function (e) {
           e.preventDefault();
@@ -1015,11 +1473,9 @@
         var archivos = e.dataTransfer && e.dataTransfer.files;
         elegirArchivo(archivos && archivos[0]);
       });
-      // Si sueltan un archivo fuera de la zona, evitamos que el navegador lo abra y se pierda la página
       window.addEventListener('dragover', function (e) { e.preventDefault(); });
       window.addEventListener('drop', function (e) { e.preventDefault(); });
 
-      /* ---------- Nivel de color según el puntaje ---------- */
       function nivelDe(puntaje) {
         if (puntaje >= 80) return 'alto';
         if (puntaje >= 60) return 'medio-alto';
@@ -1033,7 +1489,6 @@
         return 'Suena claramente a IA';
       }
 
-      /* ---------- Copiar una sugerencia ---------- */
       function copiar(texto, boton) {
         function avisar() {
           var original = boton.textContent;
@@ -1047,7 +1502,7 @@
           aux.style.opacity = '0';
           document.body.appendChild(aux);
           aux.select();
-          try { document.execCommand('copy'); } catch (e) { /* sin permiso: no hacemos nada */ }
+          try { document.execCommand('copy'); } catch (e) {}
           document.body.removeChild(aux);
           avisar();
         }
@@ -1058,9 +1513,6 @@
         }
       }
 
-      /* ---------- Armar una tarjeta de frase problemática ----------
-         Usamos textContent (y no innerHTML) a propósito: lo que devuelve
-         la IA nunca se interpreta como código, así que es seguro. */
       function crear(etiqueta, clase, texto) {
         var el = document.createElement(etiqueta);
         if (clase) el.className = clase;
@@ -1096,7 +1548,6 @@
         return li;
       }
 
-      /* ---------- Mostrar el resultado ---------- */
       function mostrarResultados(datos) {
         var puntaje = Math.max(0, Math.min(100, Math.round(Number(datos.puntaje))));
         if (!isFinite(puntaje)) throw new Error('La respuesta no tiene un puntaje válido.');
@@ -1104,7 +1555,6 @@
         tarjetaPuntaje.setAttribute('data-nivel', nivelDe(puntaje));
         textoVeredicto.textContent = datos.veredicto || veredictoDe(puntaje);
 
-        // Aviso (por ejemplo, cuando el archivo era más largo de lo que se puede analizar)
         if (datos.aviso) {
           avisoResultado.textContent = datos.aviso;
           avisoResultado.hidden = false;
@@ -1112,7 +1562,6 @@
           avisoResultado.hidden = true;
         }
 
-        // Frases
         listaFrases.innerHTML = '';
         var frases = Array.isArray(datos.frases) ? datos.frases : [];
         if (frases.length === 0) {
@@ -1123,7 +1572,6 @@
 
         resultados.hidden = false;
 
-        // Animación del número y de la marca (una sola vez, al aparecer el resultado)
         if (reducirMovimiento) {
           numeroPuntaje.textContent = puntaje;
           marca.style.left = puntaje + '%';
@@ -1133,7 +1581,7 @@
           requestAnimationFrame(function () {
             requestAnimationFrame(function () { marca.style.left = puntaje + '%'; });
           });
-          var inicio = null, duracion = 1000; // el número sube de 0 al valor real en 1 segundo
+          var inicio = null, duracion = 1000;
           (function paso(t) {
             if (inicio === null) inicio = t;
             var avance = Math.min(1, (t - inicio) / duracion);
@@ -1147,11 +1595,9 @@
         resultados.focus({ preventScroll: true });
       }
 
-      /* ---------- Pedir el análisis al servidor ---------- */
       async function analizar() {
         ocultarError();
 
-        // Armamos el pedido según el modo elegido
         var pedido;
         if (modo === 'archivo') {
           if (!archivoElegido) {
@@ -1160,7 +1606,6 @@
           }
           var formulario = new FormData();
           formulario.append('archivo', archivoElegido, archivoElegido.name);
-          // No indicamos Content-Type: el navegador lo completa solo para archivos.
           pedido = { method: 'POST', body: formulario };
         } else {
           var texto = campo.value.trim();
@@ -1180,7 +1625,7 @@
         }
 
         if (location.protocol === 'file:') {
-          mostrarError('Esta página necesita estar publicada en Netlify para funcionar. Abrirla directo desde tu computadora no alcanza.');
+          mostrarError('Esta página necesita estar publicada en Netlify para funcionar.');
           return;
         }
 
@@ -1189,9 +1634,8 @@
 
         try {
           var respuesta = await fetch('/api/analizar', pedido);
-
           var datos = null;
-          try { datos = await respuesta.json(); } catch (e) { /* la respuesta no era JSON */ }
+          try { datos = await respuesta.json(); } catch (e) {}
 
           if (!respuesta.ok || !datos) {
             var mensaje = datos && datos.error;
@@ -1203,7 +1647,7 @@
           mostrarResultados(datos);
         } catch (err) {
           if (err instanceof TypeError) {
-            mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet y probá de nuevo.');
+            mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet.');
           } else {
             mostrarError(err.message || 'Ocurrió un error inesperado. Probá de nuevo.');
           }
@@ -1214,17 +1658,15 @@
 
       botonAnalizar.addEventListener('click', analizar);
 
-      // Ctrl + Enter (o Cmd + Enter en Mac) también analiza
       campo.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analizar();
       });
 
-      // Año actual en el pie de página
       var anio = $('anio');
       if (anio) anio.textContent = new Date().getFullYear();
 
       actualizarContador();
-    })();
+    });
   </script>
 </body>
 </html>
