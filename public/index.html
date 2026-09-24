@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <!-- Cliente de Supabase (autenticación) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     /* ==========================================================================
        VARIABLES Y PALETA DE COLORES
@@ -190,6 +193,19 @@
     .nav-enlaces a:hover {
       color: var(--terracota);
     }
+
+    #btn-auth {
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      color: var(--texto-suave);
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+    #btn-auth:hover { color: var(--terracota); }
 
     /* 3. Botón con elevación en Barra Superior */
     .boton-nav-acento {
@@ -593,6 +609,200 @@
       display: flex;
       justify-content: flex-end;
       margin-top: 20px;
+    }
+
+    /* ==========================================================================
+       MODAL DE AUTENTICACIÓN (Supabase)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(34, 30, 24, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 200;
+    }
+    .modal-overlay[hidden] { display: none; }
+
+    .modal-tarjeta {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 32px 28px;
+      text-align: left;
+    }
+
+    .modal-cerrar {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      color: var(--texto-suave);
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .modal-cerrar:hover { background: rgba(38, 75, 74, 0.08); color: var(--petroleo); }
+
+    .modal-titulo {
+      margin: 0 0 20px;
+      font-family: var(--fuente-titulos);
+      font-size: 1.3rem;
+      color: var(--petroleo);
+      text-align: center;
+    }
+
+    .boton-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 12px;
+      background: var(--superficie);
+      color: var(--texto);
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .boton-google svg { width: 20px; height: 20px; flex: none; }
+    .boton-google:hover:not(:disabled) {
+      border-color: var(--petroleo);
+      background: var(--superficie-suave);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(38, 75, 74, 0.12);
+    }
+    .boton-google:active:not(:disabled) { transform: translateY(0); }
+    .boton-google:disabled { opacity: 0.7; cursor: progress; }
+
+    .modal-separador {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--texto-suave);
+      font-size: 0.8rem;
+    }
+    .modal-separador::before,
+    .modal-separador::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--linea);
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      padding: 3px;
+      border-radius: 10px;
+      background: var(--superficie-suave);
+    }
+    .modal-tab {
+      flex: 1;
+      padding: 9px;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.88rem;
+      color: var(--texto-suave);
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .modal-tab.activo {
+      background: var(--superficie);
+      color: var(--petroleo);
+      box-shadow: 0 2px 6px rgba(38, 75, 74, 0.08);
+    }
+    .modal-tab:not(.activo):hover {
+      background: rgba(38, 75, 74, 0.08);
+      color: var(--petroleo);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(38, 75, 74, 0.12);
+    }
+
+    .campo-password-wrap { position: relative; }
+    .campo-password-wrap input { padding-right: 42px; }
+    .btn-toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      background: none;
+      color: var(--texto-suave);
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .btn-toggle-password:hover { color: var(--petroleo); background: rgba(38, 75, 74, 0.08); }
+    .btn-toggle-password svg { width: 19px; height: 19px; }
+
+    .modal-tarjeta .campo { margin-bottom: 14px; }
+    .modal-tarjeta input[type="email"],
+    .modal-tarjeta input[type="password"] {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 10px;
+      background: var(--superficie);
+      color: var(--texto);
+      font-family: var(--fuente);
+      font-size: 0.95rem;
+    }
+    .modal-tarjeta input:focus {
+      outline: none;
+      border-color: var(--petroleo);
+      box-shadow: 0 0 0 3px rgba(38, 75, 74, 0.12);
+    }
+
+    .modal-error {
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--peligro-suave);
+      color: var(--peligro);
+      font-size: 0.85rem;
+    }
+
+    .modal-nota {
+      margin: 16px 0 0;
+      font-size: 0.78rem;
+      color: var(--texto-suave);
+      text-align: center;
+    }
+
+    .modal-cuenta-email {
+      margin: 0 0 20px;
+      text-align: center;
+      color: var(--texto-suave);
+      font-size: 0.95rem;
+      word-break: break-all;
+    }
+
+    @media (max-width: 460px) {
+      .modal-tarjeta { padding: 26px 20px; }
     }
 
     .boton-principal {
@@ -1075,6 +1285,16 @@
       }
       .nav-enlaces a:hover { background: rgba(38, 75, 74, 0.06); }
 
+      #btn-auth {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 13px 14px;
+        border-radius: 9px;
+        font-size: 1rem;
+      }
+      #btn-auth:hover { background: rgba(38, 75, 74, 0.06); }
+
       .contenedor { padding-top: 20px; }
       .entrada { padding: 18px; }
       .accion-contenedor { justify-content: stretch; }
@@ -1109,8 +1329,8 @@
           <a href="#como-funciona">Tutoriales</a>
           <a href="#beneficios">Recursos</a>
           <a href="#faq">Preguntas frecuentes</a>
-          <!-- 1. Enlace agregado justo antes del botón principal -->
-          <a href="#login">Iniciar sesión</a>
+          <!-- 1. Botón de autenticación (cambia según haya sesión activa o no) -->
+          <button type="button" id="btn-auth">Iniciar sesión</button>
         </div>
 
         <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
@@ -1453,6 +1673,69 @@
     <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
   </footer>
 
+  <!-- ===== MODAL DE AUTENTICACIÓN (Supabase) ===== -->
+  <div class="modal-overlay" id="modal-auth" hidden>
+    <div class="tarjeta modal-tarjeta" role="dialog" aria-modal="true" aria-label="Cuenta de PuroTexto">
+      <button type="button" id="btn-cerrar-modal" class="modal-cerrar" aria-label="Cerrar">✕</button>
+
+      <!-- Vista: hay una sesión activa -->
+      <div id="vista-cuenta" hidden>
+        <h2 class="modal-titulo">Mi cuenta</h2>
+        <p class="modal-cuenta-email" id="cuenta-email"></p>
+        <button type="button" id="btn-cerrar-sesion" class="boton-principal" style="width: 100%; justify-content: center;">Cerrar sesión</button>
+      </div>
+
+      <!-- Vista: login / registro -->
+      <div id="vista-auth">
+        <button type="button" id="btn-google" class="boton-google">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+          </svg>
+          Continuar con Google
+        </button>
+
+        <div class="modal-separador"><span>o con tu email</span></div>
+
+        <div class="modal-tabs" role="tablist">
+          <button type="button" id="tab-login" class="modal-tab activo" role="tab" data-modo="login">Iniciar sesión</button>
+          <button type="button" id="tab-registro" class="modal-tab" role="tab" data-modo="registro">Registrarme</button>
+        </div>
+
+        <form id="form-auth" novalidate>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-email">Email</label>
+            <input type="email" id="auth-email" required autocomplete="email">
+          </div>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-password">Contraseña</label>
+            <div class="campo-password-wrap">
+              <input type="password" id="auth-password" required minlength="6" autocomplete="current-password">
+              <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg class="icono-ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="icono-ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.6 19.6 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.19 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="auth-error" class="modal-error" hidden></p>
+
+          <button type="submit" id="btn-auth-submit" class="boton-principal" style="width: 100%; justify-content: center;">Iniciar sesión</button>
+        </form>
+
+        <p class="modal-nota">Al registrarte creás una cuenta con email y contraseña. No compartimos tus datos.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ==========================================================================
      LÓGICA JAVASCRIPT & INTERSECTION OBSERVER (Ubicado al final del body)
      ========================================================================== -->
@@ -1505,6 +1788,196 @@
         // Cerrar con la tecla Escape
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Escape') cerrarMenu();
+        });
+      })();
+
+      /* ----------------------------------------------------------------------
+         SUPABASE: autenticación (login / registro / cerrar sesión)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var SUPABASE_URL = 'https://bprvlyzdnsykwjamumhw.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_KkrHOVTWjZfFbX7Yz_SwMQ_O8xLbFlx';
+
+        if (typeof supabase === 'undefined') {
+          console.warn('No se pudo cargar el cliente de Supabase (revisá la conexión a internet).');
+          return;
+        }
+        var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        var btnAuth = document.getElementById('btn-auth');
+        var modal = document.getElementById('modal-auth');
+        var btnCerrarModal = document.getElementById('btn-cerrar-modal');
+        var vistaAuth = document.getElementById('vista-auth');
+        var vistaCuenta = document.getElementById('vista-cuenta');
+        var cuentaEmail = document.getElementById('cuenta-email');
+        var btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+        var tabLogin = document.getElementById('tab-login');
+        var tabRegistro = document.getElementById('tab-registro');
+        var formAuth = document.getElementById('form-auth');
+        var inputEmail = document.getElementById('auth-email');
+        var inputPassword = document.getElementById('auth-password');
+        var btnTogglePassword = document.getElementById('btn-toggle-password');
+        var btnGoogle = document.getElementById('btn-google');
+        var authError = document.getElementById('auth-error');
+        var btnSubmit = document.getElementById('btn-auth-submit');
+        if (!btnAuth || !modal || !formAuth) return;
+
+        var modoActual = 'login';
+        var sesionActual = null;
+
+        function mostrarError(mensaje) {
+          authError.textContent = mensaje;
+          authError.hidden = false;
+        }
+        function ocultarError() {
+          authError.hidden = true;
+        }
+
+        function cambiarModo(modo) {
+          modoActual = modo;
+          ocultarError();
+          var esLogin = modo === 'login';
+          tabLogin.classList.toggle('activo', esLogin);
+          tabRegistro.classList.toggle('activo', !esLogin);
+          btnSubmit.textContent = esLogin ? 'Iniciar sesión' : 'Crear cuenta';
+          inputPassword.setAttribute('autocomplete', esLogin ? 'current-password' : 'new-password');
+        }
+        tabLogin.addEventListener('click', function () { cambiarModo('login'); });
+        tabRegistro.addEventListener('click', function () { cambiarModo('registro'); });
+
+        if (btnTogglePassword) {
+          btnTogglePassword.addEventListener('click', function () {
+            var oculta = inputPassword.type === 'password';
+            inputPassword.type = oculta ? 'text' : 'password';
+            btnTogglePassword.setAttribute('aria-pressed', oculta ? 'true' : 'false');
+            btnTogglePassword.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = oculta;
+            btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = !oculta;
+          });
+        }
+
+        if (btnGoogle) {
+          btnGoogle.addEventListener('click', function () {
+            ocultarError();
+            btnGoogle.disabled = true;
+
+            supabaseClient.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: 'https://purotexto.com' }
+            }).then(function (resultado) {
+              // Si signInWithOAuth funciona, el navegador redirige a Google y
+              // esta línea no llega a ejecutarse. Si llega, es porque falló.
+              if (resultado.error) {
+                mostrarError(resultado.error.message || 'No pudimos conectar con Google. Probá de nuevo.');
+                btnGoogle.disabled = false;
+              }
+            }).catch(function () {
+              mostrarError('No pudimos conectar con Google. Probá de nuevo.');
+              btnGoogle.disabled = false;
+            });
+          });
+        }
+
+        function actualizarBotonAuth() {
+          btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+        }
+
+        function abrirModal() {
+          ocultarError();
+          if (sesionActual) {
+            vistaAuth.hidden = true;
+            vistaCuenta.hidden = false;
+            cuentaEmail.textContent = sesionActual.user.email;
+          } else {
+            vistaCuenta.hidden = true;
+            vistaAuth.hidden = false;
+            formAuth.reset();
+            cambiarModo('login');
+            if (btnTogglePassword) {
+              inputPassword.type = 'password';
+              btnTogglePassword.setAttribute('aria-pressed', 'false');
+              btnTogglePassword.setAttribute('aria-label', 'Mostrar contraseña');
+              btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = false;
+              btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = true;
+            }
+          }
+          modal.hidden = false;
+          document.body.style.overflow = 'hidden';
+        }
+        function cerrarModal() {
+          modal.hidden = true;
+          document.body.style.overflow = '';
+        }
+
+        btnAuth.addEventListener('click', abrirModal);
+        btnCerrarModal.addEventListener('click', cerrarModal);
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) cerrarModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !modal.hidden) cerrarModal();
+        });
+
+        formAuth.addEventListener('submit', function (e) {
+          e.preventDefault();
+          ocultarError();
+
+          var email = inputEmail.value.trim();
+          var password = inputPassword.value;
+          if (!email || !password) {
+            mostrarError('Completá tu email y tu contraseña.');
+            return;
+          }
+          if (password.length < 6) {
+            mostrarError('La contraseña tiene que tener al menos 6 caracteres.');
+            return;
+          }
+
+          btnSubmit.disabled = true;
+          var textoOriginal = btnSubmit.textContent;
+          btnSubmit.textContent = 'Un momento...';
+
+          var promesa = modoActual === 'login'
+            ? supabaseClient.auth.signInWithPassword({ email: email, password: password })
+            : supabaseClient.auth.signUp({ email: email, password: password });
+
+          promesa.then(function (resultado) {
+            if (resultado.error) {
+              mostrarError(resultado.error.message || 'No pudimos completar la operación.');
+              return;
+            }
+            if (modoActual === 'registro' && !resultado.data.session) {
+              // El proyecto tiene activada la confirmación por email: no queda logueado al toque.
+              // Para que el registro loguee de inmediato, hay que desactivar "Confirm email"
+              // en el panel de Supabase (Authentication → Providers → Email).
+              mostrarError('Te registramos. Revisá tu email para confirmar la cuenta antes de poder iniciar sesión.');
+              return;
+            }
+            cerrarModal();
+          }).catch(function () {
+            mostrarError('No pudimos conectar con el servidor. Probá de nuevo en un momento.');
+          }).finally(function () {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = textoOriginal;
+          });
+        });
+
+        if (btnCerrarSesion) {
+          btnCerrarSesion.addEventListener('click', function () {
+            supabaseClient.auth.signOut().then(function () {
+              cerrarModal();
+            });
+          });
+        }
+
+        // Mantiene el botón sincronizado con el estado real de la sesión
+        supabaseClient.auth.onAuthStateChange(function (_evento, session) {
+          sesionActual = session;
+          actualizarBotonAuth();
+        });
+        supabaseClient.auth.getSession().then(function (resultado) {
+          sesionActual = resultado.data.session;
+          actualizarBotonAuth();
         });
       })();
 
