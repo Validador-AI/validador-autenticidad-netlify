@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://purotexto.com/sitemap.xml
