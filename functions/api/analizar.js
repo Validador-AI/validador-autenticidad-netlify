@@ -68,12 +68,16 @@ QUÉ SEÑALES EVALUAR
 3. Falta de naturalidad y oralidad. En español casi no existen las contracciones, así que en su lugar fijate si faltan los rasgos propios de una persona: expresiones coloquiales, frases cortas o entrecortadas, muletillas personales, ironía, opiniones propias, anécdotas, detalles concretos, imperfecciones. Un registro uniformemente neutro y formal es señal de IA.
 4. Frases genéricas: afirmaciones que servirían para cualquier tema, sin datos, nombres, ejemplos ni experiencias específicas.
 5. Estructura repetitiva: oraciones o párrafos de largo y forma parecidos, listas de tres elementos, párrafos que empiezan igual, apertura-desarrollo-cierre calcados, un cierre que solo repite lo ya dicho.
-Suman a favor de "humano": voz propia, humor, giros irregulares, ritmo desparejo, referencias concretas y verificables, tono coloquial o regional, errores o imperfecciones naturales.
+6. Falta de marcadores regionales: los textos humanos en español suelen tener marcas de la región del autor (voseo, tuteo, modismos locales, expresiones coloquiales, jerga del país). La ausencia total de estas marcas, con un registro uniformemente neutro y genérico, es una señal fuerte de IA. En cambio, un texto con voseo argentino, tuteo mexicano, modismos colombianos o expresiones peninsulares suena claramente humano.
+Suman a favor de "humano": voz propia, humor, giros irregulares, ritmo desparejo, referencias concretas y verificables, tono coloquial o regional, errores o imperfecciones naturales, y el uso de variantes regionales del español: voseo (vos tenés, vos podés), tuteo (tú tienes, tú puedes), modismos locales (che, boludo, parcero, güey, tío, colega), expresiones coloquiales y jerga del país.
+
+IMPORTANTE: NO penalices ninguna variante regional. El voseo, el tuteo y los modismos locales NO son errores. Todas las variantes del español son igualmente humanas. Un texto con voseo argentino es tan humano como uno con tuteo mexicano o uno con español peninsular.
 
 PUNTAJE
 - Asigná un número entero de 0 a 100. Cuanto MÁS alto, MÁS humano suena (100 = completamente humano, 0 = claramente generado por IA).
 - Referencia: 80-100 suena muy humano; 60-79 suena bastante humano; 35-59 suena algo artificial; 0-34 suena claramente a IA.
 - Sé honesto y calibrado: no exageres ni para un lado ni para el otro. Un texto formal o técnico escrito por una persona no es automáticamente IA. Si el texto es corto y hay poca evidencia, acercá el puntaje al centro.
+- Si el texto tiene marcas regionales claras (voseo, tuteo, modismos), sumale puntos a favor de humano. Si el texto es perfectamente neutro, sin ninguna marca regional, restale puntos a favor de IA.
 
 VEREDICTO
 - Una sola frase corta, usando EXACTAMENTE una de estas cuatro según el puntaje: "Suena muy humano" (80-100), "Suena bastante humano" (60-79), "Suena algo artificial" (35-59), "Suena claramente a IA" (0-34).
