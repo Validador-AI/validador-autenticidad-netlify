@@ -1,4 +1,4 @@
-# Validador de Autenticidad de Texto (versión Netlify, con subida de archivos)
+# Validador de Autenticidad de Texto (versión Cloudflare, con subida de archivos)
 
 Pegás un texto, o subís un PDF o un Word (.docx), y te dice si suena humano o a IA, con las frases que lo delatan y cómo reescribirlas.
 
