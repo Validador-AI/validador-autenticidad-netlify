@@ -361,7 +361,7 @@
       font-size: 0.82rem;
       font-weight: 500;
     }
-    .demo-seccion { margin-bottom: 40px; }
+    .demo-seccion { margin-bottom: 56px; }
     .demo-seccion .frases { margin-top: 14px; }
     .demo-nota { margin: 16px 0 0; font-size: 0.8rem; color: var(--texto-suave); text-align: center; }
 
@@ -441,7 +441,29 @@
       position: absolute;
       bottom: 12px;
       right: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       pointer-events: none;
+    }
+
+    .btn-limpiar {
+      pointer-events: auto;
+      border: 1px solid var(--linea-fuerte);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--texto-suave);
+      font-family: var(--fuente);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 2px 9px;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    .btn-limpiar:hover {
+      color: var(--peligro);
+      border-color: var(--peligro);
+      background: var(--peligro-suave);
     }
 
     .contador-box {
@@ -1458,6 +1480,7 @@
             placeholder="Pegá acá tu texto (un email, un post, un ensayo...). Por ejemplo: «En el mundo actual, la tecnología desempeña un papel fundamental en nuestras vidas. Además, es importante destacar que...»"></textarea>
           
           <div class="textarea-pie">
+            <button type="button" id="btn-limpiar-texto" class="btn-limpiar" hidden>Limpiar</button>
             <div id="info-texto" class="contador-box">
               <span id="contador">0 palabras | 0 caracteres</span>
             </div>
@@ -2138,6 +2161,7 @@
       var archivoNombre = $('archivo-nombre');
       var archivoDetalle = $('archivo-detalle');
       var botonQuitar = $('btn-quitar');
+      var botonLimpiarTexto = $('btn-limpiar-texto');
       var radiosModo = document.querySelectorAll('input[name="modo"]');
 
       var modo = 'texto';
@@ -2150,8 +2174,22 @@
 
         contador.textContent = pal + ' palabras | ' + car + ' caracteres';
         contador.classList.toggle('excedido', car > LARGO_MAXIMO);
+        botonLimpiarTexto.hidden = car === 0;
       }
       campo.addEventListener('input', actualizarContador);
+
+      function limpiarResultados() {
+        resultados.hidden = true;
+        listaFrases.innerHTML = '';
+        ocultarError();
+      }
+
+      botonLimpiarTexto.addEventListener('click', function () {
+        campo.value = '';
+        actualizarContador();
+        limpiarResultados();
+        campo.focus();
+      });
 
       botonEjemplo.addEventListener('click', function () {
         campo.value = TEXTO_EJEMPLO;
@@ -2263,7 +2301,7 @@
         entradaArchivo.value = '';
         cajaArchivo.hidden = true;
         zona.hidden = false;
-        ocultarError();
+        limpiarResultados();
         entradaArchivo.focus();
       }
 
