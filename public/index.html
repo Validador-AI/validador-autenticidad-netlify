@@ -153,13 +153,13 @@
     .nav-derecha {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 10px;
     }
 
     .nav-enlaces {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 10px;
     }
 
     /* Botón hamburguesa: oculto en desktop, se muestra solo en mobile (ver media query) */
@@ -186,7 +186,8 @@
       text-decoration: none;
       font-family: var(--fuente);
       font-weight: 500;
-      font-size: 0.95rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
       transition: color 0.3s ease;
     }
 
@@ -202,7 +203,8 @@
       color: var(--texto-suave);
       font-family: var(--fuente);
       font-weight: 500;
-      font-size: 0.95rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
       transition: color 0.3s ease;
     }
     #btn-auth:hover { color: var(--terracota); }
@@ -211,13 +213,14 @@
     .boton-nav-acento {
       display: inline-flex;
       align-items: center;
-      padding: 8px 18px;
+      padding: 8px 12px;
       border-radius: 10px;
       background: var(--terracota);
       color: #FFF !important;
       font-family: var(--fuente);
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.78rem;
+      white-space: nowrap;
       box-shadow: 0 4px 12px rgba(184, 78, 46, 0.2);
       transition: all 0.3s ease !important;
     }
@@ -403,7 +406,7 @@
     }
 
     .entrada {
-      margin-top: 80px;
+      margin-top: 40px;
       padding: 24px;
     }
 
@@ -1191,6 +1194,40 @@
 
     .seccion-intro { margin: 0 0 24px; color: var(--texto-suave); }
 
+    .cp-tarjeta { padding: 24px; }
+
+    .cp-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+    @media (max-width: 640px) {
+      .cp-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .cp-stat {
+      padding: 16px 10px;
+      border-radius: 12px;
+      background: var(--arena);
+      text-align: center;
+    }
+    .cp-stat-valor {
+      display: block;
+      font-family: var(--fuente-titulos);
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: var(--terracota);
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+    .cp-stat-label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--petroleo-oscuro);
+    }
+
     .pasos { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 0; padding: 0; list-style: none; }
     
     .paso {
@@ -1275,12 +1312,8 @@
     .pie-marca strong { font-weight: 600; }
     .pie-detalle { margin-top: 10px !important; font-size: 0.88rem; color: var(--arena); }
 
-    /* Responsivo Celular */
-    @media (max-width: 600px) {
-      .logo-texto { font-size: 1.3rem; }
-      .badge-beta { font-size: 0.65rem; padding: 2px 7px; }
-      .boton-nav-acento { padding: 7px 13px; font-size: 0.84rem; }
-
+    /* Menú de navegación: pasa a hamburguesa por debajo de 900px */
+    @media (max-width: 900px) {
       .btn-menu-movil { display: inline-flex; }
 
       /* El grupo de links pasa a ser un panel desplegable debajo de la barra */
@@ -1305,6 +1338,7 @@
         padding: 13px 14px;
         border-radius: 9px;
         font-size: 1rem;
+        white-space: normal;
       }
       .nav-enlaces a:hover { background: rgba(38, 75, 74, 0.06); }
 
@@ -1317,6 +1351,11 @@
         font-size: 1rem;
       }
       #btn-auth:hover { background: rgba(38, 75, 74, 0.06); }
+    }
+
+    @media (max-width: 600px) {
+      .logo-texto { font-size: 1.3rem; }
+      .badge-beta { font-size: 0.65rem; padding: 2px 7px; }
 
       .contenedor { padding-top: 20px; }
       .entrada { padding: 18px; }
@@ -1351,6 +1390,7 @@
         <div class="nav-enlaces" id="menu-movil">
           <a href="#como-funciona">Tutoriales</a>
           <a href="#beneficios">Recursos</a>
+          <a href="#contador-palabras">Contador de palabras</a>
           <a href="#faq">Preguntas frecuentes</a>
           <!-- 1. Botón de autenticación (cambia según haya sesión activa o no) -->
           <button type="button" id="btn-auth">Iniciar sesión</button>
@@ -1588,6 +1628,48 @@
       <h2 class="titulo-seccion">Frases para revisar</h2>
       <p class="titulo-seccion-detalle">Detalle de las expresiones detectadas con menor naturalidad y sugerencias de mejora.</p>
       <ul id="lista-frases" class="frases"></ul>
+    </section>
+
+    <!-- ===== CONTADOR DE PALABRAS AVANZADO ===== -->
+    <section id="contador-palabras" class="seccion fade-in">
+      <h2 class="seccion-titulo">Contador de palabras avanzado</h2>
+      <p class="seccion-intro">Pegá tu texto y mirá las estadísticas en tiempo real: palabras, caracteres, oraciones, párrafos y tiempo de lectura.</p>
+
+      <div class="tarjeta cp-tarjeta">
+        <div class="caja-escritura">
+          <textarea id="cp-texto" rows="8" placeholder="Pegá o escribí tu texto acá..."></textarea>
+          <div class="textarea-pie">
+            <button type="button" id="cp-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
+          </div>
+        </div>
+
+        <div class="cp-stats-grid">
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-palabras">0</span>
+            <span class="cp-stat-label">Palabras</span>
+          </div>
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-caracteres">0</span>
+            <span class="cp-stat-label">Caracteres (con espacios)</span>
+          </div>
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-caracteres-sin">0</span>
+            <span class="cp-stat-label">Caracteres (sin espacios)</span>
+          </div>
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-oraciones">0</span>
+            <span class="cp-stat-label">Oraciones</span>
+          </div>
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-parrafos">0</span>
+            <span class="cp-stat-label">Párrafos</span>
+          </div>
+          <div class="cp-stat">
+            <span class="cp-stat-valor" id="cp-lectura">0 min</span>
+            <span class="cp-stat-label">Tiempo de lectura</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ===== 2. & 5. SECCIÓN BENEFICIOS (Con Elevación -8px + Sombra + Fade-in Scroll) ===== -->
@@ -2191,6 +2273,62 @@
         limpiarResultados();
         campo.focus();
       });
+
+      /* ----------------------------------------------------------------------
+         CONTADOR DE PALABRAS AVANZADO (herramienta independiente del análisis de IA)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var cpTexto = document.getElementById('cp-texto');
+        var cpBtnLimpiar = document.getElementById('cp-btn-limpiar');
+        var cpPalabras = document.getElementById('cp-palabras');
+        var cpCaracteres = document.getElementById('cp-caracteres');
+        var cpCaracteresSin = document.getElementById('cp-caracteres-sin');
+        var cpOraciones = document.getElementById('cp-oraciones');
+        var cpParrafos = document.getElementById('cp-parrafos');
+        var cpLectura = document.getElementById('cp-lectura');
+        if (!cpTexto) return;
+
+        function contarOraciones(texto) {
+          var t = texto.trim();
+          if (!t) return 0;
+          var coincidencias = t.match(/[^.!?]+[.!?]+/g);
+          if (coincidencias) return coincidencias.length;
+          return 1; // hay texto pero sin puntuación final: se cuenta como una oración
+        }
+
+        function contarParrafos(texto) {
+          var partes = texto.split(/\n\s*\n+/)
+            .map(function (p) { return p.trim(); })
+            .filter(function (p) { return p.length > 0; });
+          return partes.length;
+        }
+
+        function actualizarContadorPalabras() {
+          var texto = cpTexto.value;
+          var conEspacios = texto.length;
+          var sinEspacios = texto.replace(/\s/g, '').length;
+          var palabras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
+          var minutos = palabras === 0 ? 0 : Math.max(1, Math.ceil(palabras / 200));
+
+          cpPalabras.textContent = palabras;
+          cpCaracteres.textContent = conEspacios;
+          cpCaracteresSin.textContent = sinEspacios;
+          cpOraciones.textContent = contarOraciones(texto);
+          cpParrafos.textContent = contarParrafos(texto);
+          cpLectura.textContent = minutos + ' min';
+
+          cpBtnLimpiar.hidden = conEspacios === 0;
+        }
+
+        cpTexto.addEventListener('input', actualizarContadorPalabras);
+        cpBtnLimpiar.addEventListener('click', function () {
+          cpTexto.value = '';
+          actualizarContadorPalabras();
+          cpTexto.focus();
+        });
+
+        actualizarContadorPalabras();
+      })();
 
       botonEjemplo.addEventListener('click', function () {
         campo.value = TEXTO_EJEMPLO;
