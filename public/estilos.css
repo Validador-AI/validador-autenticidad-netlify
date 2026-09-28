@@ -1220,6 +1220,46 @@
       box-shadow: 0 12px 24px rgba(38, 75, 74, 0.1);
     }
 
+    /* Tarjeta genérica para herramientas nuevas (Parafraseador, y las que se sumen después) */
+    .herramienta-tarjeta {
+      padding: 24px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .herramienta-tarjeta:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(38, 75, 74, 0.1);
+    }
+
+    /* Comparador "antes y después" (Parafraseador) */
+    .comparacion-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    @media (min-width: 720px) {
+      .comparacion-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .comparacion-panel { padding: 20px; }
+    .comparacion-panel--humanizado {
+      background: var(--arena);
+      border-color: rgba(38, 75, 74, 0.25);
+    }
+    .comparacion-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .comparacion-texto {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.65;
+      color: var(--texto);
+      font-size: 0.98rem;
+    }
+
     .cp-stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
