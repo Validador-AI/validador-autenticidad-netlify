@@ -382,8 +382,7 @@
     .modo:hover span {
       background: rgba(38, 75, 74, 0.08);
       color: var(--petroleo);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 4px 10px rgba(38, 75, 74, 0.12);
     }
     .modo input:checked:hover + span {
       background: var(--superficie);
@@ -448,22 +447,28 @@
       background: var(--superficie);
       border: 1.5px solid var(--linea);
       border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(38, 75, 74, 0.06);
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .caja-escritura:hover {
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 4px 14px rgba(38, 75, 74, 0.1);
     }
 
     .caja-escritura:focus-within {
       border-color: var(--terracota);
-      box-shadow: 0 0 0 6px rgba(184, 78, 46, 0.14);
+      box-shadow: 0 0 0 6px rgba(184, 78, 46, 0.16);
     }
 
     .entrada {
       margin-top: 40px;
       padding: 24px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .entrada:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(38, 75, 74, 0.1);
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 12px 24px rgba(38, 75, 74, 0.1);
     }
 
     textarea {
@@ -513,8 +518,7 @@
       color: var(--peligro);
       border-color: var(--peligro);
       background: var(--peligro-suave);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.08), 0 4px 12px rgba(38, 75, 74, 0.15);
     }
 
     .contador-box {
@@ -579,8 +583,7 @@
     .chip:hover {
       background: var(--arena);
       border-color: var(--petroleo);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.08), 0 4px 12px rgba(38, 75, 74, 0.15);
     }
 
     /* Chips oscuros: los 3 ejemplos (IA / humano / dudoso) */
@@ -592,10 +595,9 @@
 
     .chip-oscuro:hover {
       background: rgba(38, 75, 74, 0.15);
-      border-color: rgba(38, 75, 74, 0.2);
+      border-color: var(--petroleo);
       color: var(--petroleo);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(38, 75, 74, 0.12);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.08), 0 6px 14px rgba(38, 75, 74, 0.12);
     }
 
     /* Subida de archivos */
@@ -619,7 +621,7 @@
     .zona:hover, .zona.arrastrando {
       border-color: var(--terracota);
       background: var(--superficie-suave);
-      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(38, 75, 74, 0.08);
     }
 
     .zona input {
@@ -754,8 +756,7 @@
     .boton-google:hover:not(:disabled) {
       border-color: var(--petroleo);
       background: var(--superficie-suave);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(38, 75, 74, 0.12);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 6px 14px rgba(38, 75, 74, 0.12);
     }
     .boton-google:active:not(:disabled) { transform: translateY(0); }
     .boton-google:disabled { opacity: 0.7; cursor: progress; }
@@ -805,8 +806,7 @@
     .modal-tab:not(.activo):hover {
       background: rgba(38, 75, 74, 0.08);
       color: var(--petroleo);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(38, 75, 74, 0.12);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 4px 10px rgba(38, 75, 74, 0.1);
     }
 
     .campo-password-wrap { position: relative; }
@@ -901,8 +901,7 @@
 
     .boton-principal:hover:not(:disabled) {
       background: var(--terracota-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(184, 78, 46, 0.3);
+      box-shadow: 0 2px 6px rgba(184, 78, 46, 0.2), 0 8px 18px rgba(184, 78, 46, 0.3);
     }
 
     .boton-principal:active:not(:disabled) { transform: translateY(0); }
@@ -1141,8 +1140,7 @@
       background: var(--terracota);
       border-color: var(--terracota);
       color: #FFF;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(184, 78, 46, 0.2);
+      box-shadow: 0 2px 4px rgba(184, 78, 46, 0.15), 0 4px 10px rgba(184, 78, 46, 0.25);
     }
 
     .sin-frases { padding: 20px; color: var(--texto-suave); }
@@ -1243,21 +1241,21 @@
 
     .cp-tarjeta {
       padding: 24px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .cp-tarjeta:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(38, 75, 74, 0.1);
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 12px 24px rgba(38, 75, 74, 0.1);
     }
 
     /* Tarjeta genérica para herramientas nuevas (Parafraseador, y las que se sumen después) */
     .herramienta-tarjeta {
       padding: 24px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .herramienta-tarjeta:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(38, 75, 74, 0.1);
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 12px 24px rgba(38, 75, 74, 0.1);
     }
 
     /* Comparador "antes y después" (Parafraseador) */
