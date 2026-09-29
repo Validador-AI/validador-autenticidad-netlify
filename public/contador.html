@@ -20,26 +20,58 @@
 
 <body>
 
-  <div class="franja-superior" aria-hidden="true"></div>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
 
-  <!-- ===== 4. BARRA SUPERIOR CON GLASSMORPHISM (#FDFAF5 0.85 + blur 12px) ===== -->
-  <header class="encabezado-fijo">
-    <nav class="nav-contenedor" aria-label="Navegación principal">
-      <a href="index.html" class="logo-marca">
-        <span class="logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
-        <span class="badge-beta">v1.0 Beta</span>
+  <div class="app-layout">
+    <aside class="sidebar" id="menu-movil" aria-label="Navegación principal">
+      <a href="index.html" class="sidebar-top">
+        <img src="/logo-icono.png" alt="" width="40" height="40" class="sidebar-logo-icono">
+        <span class="sidebar-logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
       </a>
-      <div class="nav-derecha">
-        <div class="nav-enlaces" id="menu-movil">
-          <a href="index.html#como-funciona">Tutoriales</a>
-          <a href="index.html#beneficios">Recursos</a>
-          <a href="contador.html" class="activo" aria-current="page">Contador de palabras</a>
-          <a href="parafraseador.html">Parafraseador</a>
-          <a href="index.html#faq">Preguntas frecuentes</a>
-          <!-- 1. Botón de autenticación (cambia según haya sesión activa o no) -->
-          <button type="button" id="btn-auth">Iniciar sesión</button>
-        </div>
+      <span class="badge-beta">v1.0 Beta</span>
 
+      <nav class="sidebar-nav">
+        <p class="sidebar-grupo-titulo">Herramientas</p>
+          <a href="index.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Detector de IA</span>
+          </a>
+          <a href="contador.html" class="sidebar-item activo" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
+            <span>Contador de palabras</span>
+          </a>
+          <a href="parafraseador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Parafraseador</span>
+          </a>
+
+        <p class="sidebar-grupo-titulo">Recursos</p>
+          <a href="index.html#como-funciona" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M10 8l6 4-6 4V8z"></path></svg>
+            <span>Tutoriales</span>
+          </a>
+          <a href="index.html#beneficios" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+            <span>Recursos</span>
+          </a>
+          <a href="index.html#faq" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Preguntas frecuentes</span>
+          </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <!-- Botón de autenticación (cambia según haya sesión activa o no) -->
+        <button type="button" id="btn-auth" class="sidebar-item sidebar-auth">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Iniciar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="contenido-principal">
+
+      <div class="topbar-movil">
         <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
           <svg class="icono-hamburguesa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -51,11 +83,11 @@
             <line x1="6" y1="18" x2="18" y2="6"></line>
           </svg>
         </button>
-
-        <a href="index.html#editor" class="boton-nav-acento">Analizar texto</a>
+        <a href="index.html" class="topbar-logo">
+          <img src="/logo-icono.png" alt="PuroTexto" width="28" height="28">
+          <span>PuroTexto</span>
+        </a>
       </div>
-    </nav>
-  </header>
 
   <main class="contenedor">
 
@@ -107,6 +139,9 @@
     <p class="pie-marca"><strong>PuroTexto</strong> — Análisis de autenticidad para hispanohablantes</p>
     <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
   </footer>
+
+    </div><!-- /.contenido-principal -->
+  </div><!-- /.app-layout -->
 
   <div class="modal-overlay" id="modal-auth" hidden>
     <div class="tarjeta modal-tarjeta" role="dialog" aria-modal="true" aria-label="Cuenta de PuroTexto">

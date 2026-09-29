@@ -74,167 +74,186 @@
     }
 
     /* ==========================================================================
-       4. BARRA SUPERIOR CON GLASSMORPHISM
+       4. SIDEBAR (navegación lateral fija en desktop, panel deslizante en mobile)
        ========================================================================== */
-    .franja-superior {
-      height: 4px;
-      background: var(--petroleo);
+
+    /* Layout general: sidebar + columna de contenido */
+    .app-layout {
+      display: flex;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .contenido-principal {
+      flex: 1 1 auto;
+      min-width: 0; /* evita que el contenido empuje el ancho del layout */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
-    .encabezado-fijo {
+    .sidebar-backdrop {
+      display: none;
+    }
+
+    .sidebar {
+      flex: 0 0 210px;
+      width: 210px;
+      display: flex;
+      flex-direction: column;
       position: sticky;
       top: 0;
-      z-index: 100;
-      background: rgba(253, 250, 245, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(38, 75, 74, 0.08);
+      height: 100vh;
+      background: var(--superficie);
+      border-right: 1px solid var(--linea);
+      padding: 22px 14px;
+      overflow-y: auto;
     }
 
-    .nav-contenedor {
-      position: relative;
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo-marca {
+    .sidebar-top {
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 0 8px;
+      margin-bottom: 6px;
       text-decoration: none;
-      color: var(--petroleo);
     }
-
-    .logo-texto {
+    .sidebar-logo-icono {
+      width: 40px;
+      height: 40px;
+      flex: none;
+      object-fit: contain;
+      display: block;
+    }
+    .sidebar-logo-texto {
       font-family: var(--fuente-titulos);
-      font-size: 1.65rem;
+      font-size: 1.28rem;
       font-weight: 600;
       letter-spacing: -0.02em;
       color: var(--petroleo);
+      line-height: 1.1;
     }
-
     .logo-texto-acento { color: var(--terracota); }
 
     .badge-beta {
       display: inline-block;
+      margin: 2px 0 14px 8px;
       padding: 3px 9px;
       border-radius: 999px;
       background: var(--arena);
       color: var(--petroleo-oscuro);
       font-family: var(--fuente);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 500;
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
 
-    .nav-derecha {
+    .sidebar-nav {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1 1 auto;
     }
 
-    .nav-enlaces {
+    .sidebar-grupo-titulo {
+      margin: 18px 0 6px;
+      padding: 0 10px;
+      font-family: var(--fuente);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--texto-suave);
+    }
+    .sidebar-nav > .sidebar-grupo-titulo:first-child { margin-top: 6px; }
+
+    .sidebar-item {
       display: flex;
       align-items: center;
-      gap: 22px;
+      gap: 11px;
+      width: 100%;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: 10px;
+      background: none;
+      color: var(--texto-suave);
+      text-decoration: none;
+      font-family: var(--fuente);
+      font-weight: 500;
+      font-size: 0.9rem;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-item svg {
+      width: 19px;
+      height: 19px;
+      flex: none;
+      stroke-width: 1.8;
+    }
+    .sidebar-item:hover {
+      background: rgba(38, 75, 74, 0.08);
+      color: var(--petroleo);
+    }
+    /* Marca en qué herramienta/página está el usuario */
+    .sidebar-item.activo {
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-weight: 600;
+      cursor: default;
     }
 
-    /* Botón hamburguesa: oculto en desktop, se muestra solo en mobile (ver media query) */
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--linea);
+    }
+
+    /* Botón hamburguesa (solo visible en mobile, ver media query) */
     .btn-menu-movil {
       display: none;
       align-items: center;
       justify-content: center;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
+      flex: none;
       padding: 0;
       border: 0;
       background: none;
       color: var(--petroleo);
       cursor: pointer;
     }
-    .btn-menu-movil svg { width: 24px; height: 24px; }
+    .btn-menu-movil svg { width: 22px; height: 22px; }
     .btn-menu-movil .icono-cerrar { display: none; }
     .btn-menu-movil[aria-expanded="true"] .icono-hamburguesa { display: none; }
     .btn-menu-movil[aria-expanded="true"] .icono-cerrar { display: block; }
 
-    /* 1. Botón "Iniciar sesión" y enlaces */
-    .nav-enlaces a {
-      display: inline-flex;
+    /* Barra superior chica, solo visible en mobile (ver media query) */
+    .topbar-movil {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       align-items: center;
-      color: #1E3A3A;
+      gap: 12px;
+      padding: 12px 20px;
+      background: rgba(253, 250, 245, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(38, 75, 74, 0.08);
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       text-decoration: none;
-      font-family: var(--fuente);
-      font-weight: 500;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      padding: 8px 18px;
-      border-radius: 8px;
-      background: rgba(38, 75, 74, 0.12);
-      border: 1px solid rgba(38, 75, 74, 0.25);
-      transition: all 0.3s ease;
     }
-
-    .nav-enlaces a:hover {
-      background: rgba(38, 75, 74, 0.22);
-      color: var(--hueso);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
-    }
-
-    /* Indica en qué página está el usuario (ej: "Contador de palabras" en contador.html) */
-    .nav-enlaces a.activo {
-      background: rgba(38, 75, 74, 0.28);
-      color: var(--hueso);
-      border-color: rgba(38, 75, 74, 0.4);
+    .topbar-logo img { width: 28px; height: 28px; flex: none; object-fit: contain; }
+    .topbar-logo span {
+      font-family: var(--fuente-titulos);
+      font-size: 1.1rem;
       font-weight: 600;
-      cursor: default;
-    }
-
-    #btn-auth {
-      cursor: pointer;
-      color: #1E3A3A;
-      font-family: var(--fuente);
-      font-weight: 500;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      padding: 8px 18px;
-      border-radius: 8px;
-      background: rgba(38, 75, 74, 0.12);
-      border: 1px solid rgba(38, 75, 74, 0.25);
-      transition: all 0.3s ease;
-    }
-    #btn-auth:hover {
-      background: rgba(38, 75, 74, 0.22);
-      color: var(--hueso);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
-    }
-
-    /* 3. Botón con elevación en Barra Superior */
-    .boton-nav-acento {
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: var(--terracota);
-      color: #FFF !important;
-      font-family: var(--fuente);
-      font-weight: 500;
-      font-size: 0.78rem;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(184, 78, 46, 0.2);
-      transition: all 0.3s ease !important;
-    }
-
-    .boton-nav-acento:hover {
-      background: var(--terracota-hover) !important;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(184, 78, 46, 0.3) !important;
+      color: var(--petroleo);
     }
 
     /* ==========================================================================
@@ -1376,52 +1395,51 @@
     .pie-marca strong { font-weight: 600; }
     .pie-detalle { margin-top: 10px !important; font-size: 0.88rem; color: var(--arena); }
 
-    /* Menú de navegación: pasa a hamburguesa por debajo de 1180px (los botones del menú necesitan más ancho) */
-    @media (max-width: 1180px) {
-      .btn-menu-movil { display: inline-flex; }
+    /* Sidebar: pasa a panel deslizante por debajo de 900px */
+    @media (max-width: 900px) {
+      .app-layout { display: block; }
 
-      /* El grupo de links pasa a ser un panel desplegable debajo de la barra */
-      .nav-enlaces {
-        display: none;
-        position: absolute;
-        top: calc(100% + 10px);
-        left: 16px;
-        right: 16px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-        background: var(--hueso);
-        border: 1px solid var(--linea);
-        border-radius: 14px;
-        box-shadow: 0 16px 32px rgba(38, 75, 74, 0.14);
-        padding: 8px;
-        z-index: 90;
-      }
-      .nav-enlaces.abierto { display: flex; }
-      .nav-enlaces a {
-        padding: 13px 14px;
-        border-radius: 9px;
-        font-size: 1rem;
-        white-space: normal;
-      }
-      .nav-enlaces a:hover { background: rgba(38, 75, 74, 0.06); }
-      .nav-enlaces a.activo { background: rgba(38, 75, 74, 0.12); }
+      .topbar-movil { display: flex; }
 
-      #btn-auth {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 200;
+        width: 260px;
+        flex: none;
+        height: 100vh;
+        border-right: 1px solid var(--linea);
+        box-shadow: 0 0 40px rgba(34, 30, 24, 0.18);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.abierto { transform: translateX(0); }
+      .sidebar .sidebar-top { display: none; } /* ya está en la topbar-movil */
+
+      .sidebar-backdrop {
         display: block;
-        width: 100%;
-        text-align: left;
-        padding: 13px 14px;
-        border-radius: 9px;
-        font-size: 1rem;
+        position: fixed;
+        inset: 0;
+        z-index: 190;
+        background: rgba(34, 30, 24, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
       }
-      #btn-auth:hover { background: rgba(38, 75, 74, 0.06); }
+      body:has(#menu-movil.abierto) .sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar-item {
+        padding: 12px 12px;
+        font-size: 0.95rem;
+      }
     }
 
     @media (max-width: 600px) {
-      .logo-texto { font-size: 1.3rem; }
-      .badge-beta { font-size: 0.65rem; padding: 2px 7px; }
-
       .contenedor { padding-top: 20px; }
       .entrada { padding: 18px; }
       #texto { min-height: 350px; }
@@ -1434,7 +1452,8 @@
     @media (prefers-reduced-motion: reduce) {
       .fade-in { transition: none !important; opacity: 1 !important; transform: none !important; }
       .tarjeta-beneficio:hover { transform: none !important; box-shadow: none !important; }
-      .boton-principal, .boton-nav-acento, .chip { transition: none !important; transform: none !important; }
+      .boton-principal, .chip { transition: none !important; transform: none !important; }
+      .sidebar, .sidebar-backdrop { transition: none !important; }
       .medidor-marca { transition: none !important; }
       h1.titulo-principal { animation: none !important; opacity: 1 !important; transform: none !important; }
     }
