@@ -91,81 +91,6 @@
 
   <main class="contenedor">
 
-    <!-- ===== 6. HERO Y TÍTULO CON ANIMACIÓN DE ENTRADA ===== -->
-    <section class="hero-seccion">
-      <p class="hero-marca">Puro<span class="hero-marca-acento">Texto</span></p>
-      <h1 class="titulo-principal">¿Tu texto suena realmente a vos?</h1>
-      <p class="subtitulo">Analizá la naturalidad de tu texto en segundos. Especializado en español latinoamericano: entiende voseo, tuteo y modismos regionales.</p>
-    </section>
-
-    <!-- ===== DEMO ILUSTRATIVA: muestra cómo se ve un resultado, sin backend real ===== -->
-    <div class="demo-seccion fade-in" id="demo">
-      <div class="demo-etiqueta">
-        <span class="demo-badge">👀 Mirá cómo funciona PuroTexto</span>
-      </div>
-
-      <div class="tarjeta demo-mini-editor">
-        <span class="campo-titulo">Texto de ejemplo</span>
-        <p class="demo-texto-simulado"><span id="demo-texto-escrito"></span><span id="demo-cursor" class="demo-cursor" aria-hidden="true"></span></p>
-
-        <button type="button" id="btn-demo-play" class="boton-principal demo-play-btn">▶ Ver cómo funciona</button>
-
-        <div id="demo-cargando" class="demo-cargando" hidden>
-          <span class="spinner" aria-hidden="true"></span>
-          <span>Analizando el texto...</span>
-        </div>
-      </div>
-
-      <div id="demo-resultado-wrap" hidden>
-        <div class="tarjeta puntaje-tarjeta" data-nivel="bajo">
-          <div class="resultado-grid">
-            <div class="col-puntaje">
-              <p class="puntaje-etiqueta">Naturalidad del texto</p>
-              <div class="puntaje-fila">
-                <span id="demo-puntaje" class="puntaje">0</span>
-                <span class="puntaje-max">%</span>
-              </div>
-            </div>
-
-            <div class="col-explicacion">
-              <p class="puntaje-etiqueta" style="margin-bottom: 8px;">Explicación visual</p>
-              <h2 class="veredicto">Suena claramente a IA</h2>
-
-              <div class="medidor" aria-hidden="true">
-                <div class="medidor-pista"></div>
-                <div id="demo-marca" class="medidor-marca"></div>
-              </div>
-              <div class="medidor-escala" aria-hidden="true">
-                <span>Suena a IA</span>
-                <span>Suena humano</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ul class="frases">
-          <li class="tarjeta frase">
-            <blockquote class="cita">“Es fundamental destacar que la tecnología desempeña un papel clave en nuestra sociedad actual.”</blockquote>
-            <div class="campo">
-              <span class="campo-titulo">Por qué suena a IA</span>
-              <p style="margin:0;">Frase genérica y sin voz propia, típica de textos generados automáticamente.</p>
-            </div>
-            <div class="reescritura">
-              <div>
-                <span class="campo-titulo">Cómo reescribirla</span>
-                <p>“La tecnología ya es parte de todo lo que hacemos, para bien y para mal.”</p>
-              </div>
-            </div>
-          </li>
-        </ul>
-
-        <button type="button" id="btn-demo-reiniciar" class="chip demo-reiniciar">🔁 Ver de nuevo</button>
-      </div>
-
-      <p class="demo-nota">Ejemplo ilustrativo. Probá con tu propio texto acá abajo 👇</p>
-    </div>
-
-
     <!-- ===== CUADRO DE ENTRADA Y FORMULARIO ===== -->
     <section id="editor" class="tarjeta entrada">
 
@@ -269,6 +194,81 @@
       <strong>No pudimos completar el análisis</strong>
       <span id="error-mensaje"></span>
     </div>
+
+    <!-- ===== 6. HERO Y TÍTULO CON ANIMACIÓN DE ENTRADA ===== -->
+    <section class="hero-seccion">
+      <p class="hero-marca">Puro<span class="hero-marca-acento">Texto</span></p>
+      <h1 class="titulo-principal">¿Tu texto suena realmente a vos?</h1>
+      <p class="subtitulo">Analizá la naturalidad de tu texto en segundos. Especializado en español latinoamericano: entiende voseo, tuteo y modismos regionales.</p>
+    </section>
+
+    <!-- ===== DEMO ILUSTRATIVA: muestra cómo se ve un resultado, sin backend real ===== -->
+    <div class="demo-seccion fade-in" id="demo">
+      <div class="demo-etiqueta">
+        <span class="demo-badge">👀 Mirá cómo funciona PuroTexto</span>
+      </div>
+
+      <div class="tarjeta demo-mini-editor">
+        <span class="campo-titulo">Texto de ejemplo</span>
+        <p class="demo-texto-simulado"><span id="demo-texto-escrito"></span><span id="demo-cursor" class="demo-cursor" aria-hidden="true"></span></p>
+
+        <button type="button" id="btn-demo-play" class="boton-principal demo-play-btn">▶ Ver cómo funciona</button>
+
+        <div id="demo-cargando" class="demo-cargando" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Analizando el texto...</span>
+        </div>
+      </div>
+
+      <div id="demo-resultado-wrap" hidden>
+        <div class="tarjeta puntaje-tarjeta" data-nivel="bajo">
+          <div class="resultado-grid">
+            <div class="col-puntaje">
+              <p class="puntaje-etiqueta">Naturalidad del texto</p>
+              <div class="puntaje-fila">
+                <span id="demo-puntaje" class="puntaje">0</span>
+                <span class="puntaje-max">%</span>
+              </div>
+            </div>
+
+            <div class="col-explicacion">
+              <p class="puntaje-etiqueta" style="margin-bottom: 8px;">Explicación visual</p>
+              <h2 class="veredicto">Suena claramente a IA</h2>
+
+              <div class="medidor" aria-hidden="true">
+                <div class="medidor-pista"></div>
+                <div id="demo-marca" class="medidor-marca"></div>
+              </div>
+              <div class="medidor-escala" aria-hidden="true">
+                <span>Suena a IA</span>
+                <span>Suena humano</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ul class="frases">
+          <li class="tarjeta frase">
+            <blockquote class="cita">“Es fundamental destacar que la tecnología desempeña un papel clave en nuestra sociedad actual.”</blockquote>
+            <div class="campo">
+              <span class="campo-titulo">Por qué suena a IA</span>
+              <p style="margin:0;">Frase genérica y sin voz propia, típica de textos generados automáticamente.</p>
+            </div>
+            <div class="reescritura">
+              <div>
+                <span class="campo-titulo">Cómo reescribirla</span>
+                <p>“La tecnología ya es parte de todo lo que hacemos, para bien y para mal.”</p>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <button type="button" id="btn-demo-reiniciar" class="chip demo-reiniciar">🔁 Ver de nuevo</button>
+      </div>
+
+      <p class="demo-nota">Ejemplo ilustrativo. Probá con tu propio texto acá abajo 👇</p>
+    </div>
+
 
     <!-- TARJETA DE RESULTADOS -->
     <section id="resultados" tabindex="-1" hidden>

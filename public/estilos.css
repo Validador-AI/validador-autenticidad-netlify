@@ -172,36 +172,47 @@
       align-items: center;
       gap: 11px;
       width: 100%;
-      padding: 9px 10px;
+      padding: 9px 13px;
       border: 0;
+      border-left: 3px solid transparent;
       border-radius: 10px;
       background: none;
       color: var(--texto-suave);
       text-decoration: none;
       font-family: var(--fuente);
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: left;
       cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     .sidebar-item svg {
       width: 19px;
       height: 19px;
       flex: none;
       stroke-width: 1.8;
+      transition: color 0.3s ease;
     }
     .sidebar-item:hover {
-      background: rgba(38, 75, 74, 0.08);
-      color: var(--petroleo);
+      background: rgba(38, 75, 74, 0.14);
+      color: var(--terracota);
     }
-    /* Marca en qué herramienta/página está el usuario */
+    .sidebar-item:hover svg { color: var(--terracota); }
+
+    /* Marca en qué herramienta/página está el usuario, con acento terracota */
     .sidebar-item.activo {
       background: var(--arena);
+      border-left-color: var(--terracota);
       color: var(--petroleo-oscuro);
       font-weight: 600;
       cursor: default;
     }
+    .sidebar-item.activo svg { color: var(--terracota); }
+    .sidebar-item.activo:hover {
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+    }
+    .sidebar-item.activo:hover svg { color: var(--terracota); }
 
     .sidebar-bottom {
       margin-top: auto;
@@ -1399,6 +1410,7 @@
     @media (max-width: 900px) {
       .app-layout { display: block; }
 
+      .btn-menu-movil { display: inline-flex; }
       .topbar-movil { display: flex; }
 
       .sidebar {
@@ -1434,8 +1446,8 @@
       }
 
       .sidebar-item {
-        padding: 12px 12px;
-        font-size: 0.95rem;
+        padding: 12px 15px;
+        font-size: 0.85rem;
       }
     }
 
