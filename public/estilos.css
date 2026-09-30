@@ -135,9 +135,10 @@
     .logo-texto-acento { color: var(--terracota); }
 
     .badge-beta {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       margin: 2px 0 14px 8px;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 999px;
       background: var(--arena);
       color: var(--petroleo-oscuro);
