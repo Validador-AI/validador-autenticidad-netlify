@@ -137,7 +137,6 @@
     .badge-beta {
       display: inline-flex;
       align-items: center;
-      margin: 2px 0 14px 8px;
       padding: 4px 10px;
       border-radius: 999px;
       background: var(--arena);
