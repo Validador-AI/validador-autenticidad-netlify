@@ -146,6 +146,7 @@
     .badge-beta {
       display: inline-flex;
       align-items: center;
+      align-self: center; 
       padding: 4px 10px;
       border-radius: 999px;
       background: var(--arena);
@@ -155,6 +156,7 @@
       font-weight: 500;
       letter-spacing: 0.02em;
       text-transform: uppercase;
+      margin: 0;  
     }
 
     .sidebar-nav {
