@@ -117,15 +117,6 @@
       margin-bottom: 6px;
       text-decoration: none;
     }
-
-    .sidebar-top {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 8px;
-      margin-bottom: 10px;
-      text-decoration: none;
-}
     .sidebar-logo-icono {
       width: 40px;
       height: 40px;
@@ -144,10 +135,9 @@
     .logo-texto-acento { color: var(--terracota); }
 
     .badge-beta {
-      display: inline-flex;
-      align-items: center;
-      align-self: center; 
-      padding: 4px 10px;
+      display: inline-block;
+      margin: 2px 0 14px 8px;
+      padding: 3px 9px;
       border-radius: 999px;
       background: var(--arena);
       color: var(--petroleo-oscuro);
@@ -156,7 +146,6 @@
       font-weight: 500;
       letter-spacing: 0.02em;
       text-transform: uppercase;
-      margin: 0;  
     }
 
     .sidebar-nav {
@@ -1281,6 +1270,13 @@
     }
     .comparacion-panel { padding: 20px; }
     .comparacion-panel--humanizado {
+      background: var(--arena);
+      border-color: rgba(38, 75, 74, 0.25);
+    }
+
+    /* Alias genérico para el panel de resultado de herramientas de una sola salida (Resumen, etc.) */
+    .panel-resultado {
+      padding: 20px;
       background: var(--arena);
       border-color: rgba(38, 75, 74, 0.25);
     }
