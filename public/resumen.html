@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resumen IA — PuroTexto</title>
+  <meta name="description" content="Generá un resumen conciso de tu texto en segundos. Elegí el largo (corto, medio o detallado) en español latinoamericano.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Cliente de Supabase (autenticación) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="menu-movil" aria-label="Navegación principal">
+      <a href="index.html" class="sidebar-top">
+        <img src="/logo-icono.png" alt="" width="40" height="40" class="sidebar-logo-icono">
+        <span class="sidebar-logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
+      </a>
+      <span class="badge-beta">v1.0 Beta</span>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-grupo-titulo">Herramientas</p>
+          <a href="index.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Detector de IA</span>
+          </a>
+          <a href="contador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
+            <span>Contador de palabras</span>
+          </a>
+          <a href="parafraseador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Parafraseador</span>
+          </a>
+          <a href="resumen.html" class="sidebar-item activo" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
+            <span>Resumen IA</span>
+          </a>
+
+        <p class="sidebar-grupo-titulo">Recursos</p>
+          <a href="index.html#como-funciona" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M10 8l6 4-6 4V8z"></path></svg>
+            <span>Tutoriales</span>
+          </a>
+          <a href="index.html#beneficios" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+            <span>Recursos</span>
+          </a>
+          <a href="index.html#faq" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Preguntas frecuentes</span>
+          </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <!-- Botón de autenticación (cambia según haya sesión activa o no) -->
+        <button type="button" id="btn-auth" class="sidebar-item sidebar-auth">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Iniciar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="contenido-principal">
+
+      <div class="topbar-movil">
+        <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
+          <svg class="icono-hamburguesa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="6" y1="18" x2="18" y2="6"></line>
+          </svg>
+        </button>
+        <a href="index.html" class="topbar-logo">
+          <img src="/logo-icono.png" alt="PuroTexto" width="28" height="28">
+          <span>PuroTexto</span>
+        </a>
+      </div>
+  <main class="contenedor">
+
+    <!-- ===== RESUMEN IA ===== -->
+    <section id="resumen" class="seccion fade-in" style="margin-top: 0;">
+      <h1 class="seccion-titulo">Resumen IA</h1>
+      <p class="seccion-intro">Pegá un texto largo y PuroTexto te devuelve un resumen conciso, conservando las ideas centrales.</p>
+
+      <div class="tarjeta herramienta-tarjeta">
+        <div class="caja-escritura">
+          <textarea id="resumen-texto" rows="8" placeholder="Pegá acá el texto que querés resumir..."></textarea>
+          <div class="textarea-pie">
+            <button type="button" id="resumen-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
+            <div class="contador-box"><span id="resumen-contador">0 / 8000</span></div>
+          </div>
+        </div>
+
+        <div class="modos" role="radiogroup" aria-label="Largo del resumen" style="margin-top: 16px;">
+          <label class="modo">
+            <input type="radio" name="largo-resumen" value="corto">
+            <span>Corto</span>
+          </label>
+          <label class="modo">
+            <input type="radio" name="largo-resumen" value="medio" checked>
+            <span>Medio</span>
+          </label>
+          <label class="modo">
+            <input type="radio" name="largo-resumen" value="detallado">
+            <span>Detallado</span>
+          </label>
+        </div>
+
+        <div class="privacidad-caja" role="note" style="margin-top: 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          <div>
+            <strong>Tus textos no se guardan. No subas información confidencial.</strong>
+            <span>El texto se envía a Google (Gemini) para resumirlo, únicamente durante la consulta.</span>
+          </div>
+        </div>
+
+        <div class="accion-contenedor">
+          <button type="button" id="resumen-btn-generar" class="boton-principal">Generar resumen</button>
+        </div>
+      </div>
+
+      <!-- ===== Cargando ===== -->
+      <div id="resumen-estado" class="estado" role="status" aria-live="polite" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Generando el resumen...</span>
+      </div>
+
+      <!-- ===== Error ===== -->
+      <div id="resumen-error" class="error" role="alert" hidden>
+        <strong>No pudimos generar el resumen</strong>
+        <span id="resumen-error-mensaje"></span>
+      </div>
+
+      <!-- ===== Resultado ===== -->
+      <section id="resumen-resultados" tabindex="-1" hidden>
+        <h2 class="titulo-seccion">Resumen</h2>
+        <p class="titulo-seccion-detalle">Esto es lo esencial de tu texto.</p>
+
+        <div class="tarjeta panel-resultado">
+          <div class="comparacion-panel-header">
+            <span class="campo-titulo">Texto resumido</span>
+            <button type="button" id="resumen-btn-copiar" class="copiar">Copiar</button>
+          </div>
+          <p id="resumen-salida" class="comparacion-texto"></p>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <footer class="pie fade-in">
+    <p class="pie-marca"><strong>PuroTexto</strong> — Análisis de autenticidad para hispanohablantes</p>
+    <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
+  </footer>
+    </div><!-- /.contenido-principal -->
+  </div><!-- /.app-layout -->
+
+  <div class="modal-overlay" id="modal-auth" hidden>
+    <div class="tarjeta modal-tarjeta" role="dialog" aria-modal="true" aria-label="Cuenta de PuroTexto">
+      <button type="button" id="btn-cerrar-modal" class="modal-cerrar" aria-label="Cerrar">✕</button>
+
+      <!-- Vista: hay una sesión activa -->
+      <div id="vista-cuenta" hidden>
+        <h2 class="modal-titulo">Mi cuenta</h2>
+        <p class="modal-cuenta-email" id="cuenta-email"></p>
+        <button type="button" id="btn-cerrar-sesion" class="boton-principal" style="width: 100%; justify-content: center;">Cerrar sesión</button>
+      </div>
+
+      <!-- Vista: login / registro -->
+      <div id="vista-auth">
+        <button type="button" id="btn-google" class="boton-google">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+          </svg>
+          Continuar con Google
+        </button>
+
+        <div class="modal-separador"><span>o con tu email</span></div>
+
+        <div class="modal-tabs" role="tablist">
+          <button type="button" id="tab-login" class="modal-tab activo" role="tab" data-modo="login">Iniciar sesión</button>
+          <button type="button" id="tab-registro" class="modal-tab" role="tab" data-modo="registro">Registrarme</button>
+        </div>
+
+        <form id="form-auth" novalidate>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-email">Email</label>
+            <input type="email" id="auth-email" required autocomplete="email">
+          </div>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-password">Contraseña</label>
+            <div class="campo-password-wrap">
+              <input type="password" id="auth-password" required minlength="6" autocomplete="current-password">
+              <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg class="icono-ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="icono-ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.6 19.6 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.19 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="auth-error" class="modal-error" hidden></p>
+
+          <button type="submit" id="btn-auth-submit" class="boton-principal" style="width: 100%; justify-content: center;">Iniciar sesión</button>
+        </form>
+
+        <p class="modal-nota">Al registrarte creás una cuenta con email y contraseña. No compartimos tus datos.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+     LÓGICA JAVASCRIPT (Ubicado al final del body)
+     ========================================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         VARIABLE GLOBAL: si el usuario prefiere reducir el movimiento
+         ---------------------------------------------------------------------- */
+      var reducirMovimiento = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      /* ----------------------------------------------------------------------
+         MENÚ HAMBURGUESA (mobile, < 600px)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var btnMenu = document.getElementById('btn-menu-movil');
+        var menu = document.getElementById('menu-movil');
+        if (!btnMenu || !menu) return;
+
+        function abrirMenu() {
+          menu.classList.add('abierto');
+          btnMenu.setAttribute('aria-expanded', 'true');
+          btnMenu.setAttribute('aria-label', 'Cerrar menú');
+        }
+        function cerrarMenu() {
+          menu.classList.remove('abierto');
+          btnMenu.setAttribute('aria-expanded', 'false');
+          btnMenu.setAttribute('aria-label', 'Abrir menú');
+        }
+
+        btnMenu.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (menu.classList.contains('abierto')) cerrarMenu(); else abrirMenu();
+        });
+
+        // Cerrar al hacer clic en cualquier enlace del menú
+        Array.prototype.forEach.call(menu.querySelectorAll('a'), function (enlace) {
+          enlace.addEventListener('click', cerrarMenu);
+        });
+
+        // Cerrar al hacer clic afuera del menú y del botón
+        document.addEventListener('click', function (e) {
+          if (!menu.classList.contains('abierto')) return;
+          if (menu.contains(e.target) || btnMenu.contains(e.target)) return;
+          cerrarMenu();
+        });
+
+        // Cerrar con la tecla Escape
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') cerrarMenu();
+        });
+      })();
+      /* ----------------------------------------------------------------------
+         SUPABASE: autenticación (login / registro / cerrar sesión)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var SUPABASE_URL = 'https://bprvlyzdnsykwjamumhw.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_KkrHOVTWjZfFbX7Yz_SwMQ_O8xLbFlx';
+
+        if (typeof supabase === 'undefined') {
+          console.warn('No se pudo cargar el cliente de Supabase (revisá la conexión a internet).');
+          return;
+        }
+        var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        var btnAuth = document.getElementById('btn-auth');
+        var modal = document.getElementById('modal-auth');
+        var btnCerrarModal = document.getElementById('btn-cerrar-modal');
+        var vistaAuth = document.getElementById('vista-auth');
+        var vistaCuenta = document.getElementById('vista-cuenta');
+        var cuentaEmail = document.getElementById('cuenta-email');
+        var btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+        var tabLogin = document.getElementById('tab-login');
+        var tabRegistro = document.getElementById('tab-registro');
+        var formAuth = document.getElementById('form-auth');
+        var inputEmail = document.getElementById('auth-email');
+        var inputPassword = document.getElementById('auth-password');
+        var btnTogglePassword = document.getElementById('btn-toggle-password');
+        var btnGoogle = document.getElementById('btn-google');
+        var authError = document.getElementById('auth-error');
+        var btnSubmit = document.getElementById('btn-auth-submit');
+        if (!btnAuth || !modal || !formAuth) return;
+
+        var modoActual = 'login';
+        var sesionActual = null;
+
+        function mostrarError(mensaje) {
+          authError.textContent = mensaje;
+          authError.hidden = false;
+        }
+        function ocultarError() {
+          authError.hidden = true;
+        }
+
+        function cambiarModo(modo) {
+          modoActual = modo;
+          ocultarError();
+          var esLogin = modo === 'login';
+          tabLogin.classList.toggle('activo', esLogin);
+          tabRegistro.classList.toggle('activo', !esLogin);
+          btnSubmit.textContent = esLogin ? 'Iniciar sesión' : 'Crear cuenta';
+          inputPassword.setAttribute('autocomplete', esLogin ? 'current-password' : 'new-password');
+        }
+        tabLogin.addEventListener('click', function () { cambiarModo('login'); });
+        tabRegistro.addEventListener('click', function () { cambiarModo('registro'); });
+
+        if (btnTogglePassword) {
+          btnTogglePassword.addEventListener('click', function () {
+            var oculta = inputPassword.type === 'password';
+            inputPassword.type = oculta ? 'text' : 'password';
+            btnTogglePassword.setAttribute('aria-pressed', oculta ? 'true' : 'false');
+            btnTogglePassword.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = oculta;
+            btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = !oculta;
+          });
+        }
+
+        if (btnGoogle) {
+          btnGoogle.addEventListener('click', function () {
+            ocultarError();
+            btnGoogle.disabled = true;
+
+            supabaseClient.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: 'https://purotexto.com' }
+            }).then(function (resultado) {
+              // Si signInWithOAuth funciona, el navegador redirige a Google y
+              // esta línea no llega a ejecutarse. Si llega, es porque falló.
+              if (resultado.error) {
+                mostrarError(resultado.error.message || 'No pudimos conectar con Google. Probá de nuevo.');
+                btnGoogle.disabled = false;
+              }
+            }).catch(function () {
+              mostrarError('No pudimos conectar con Google. Probá de nuevo.');
+              btnGoogle.disabled = false;
+            });
+          });
+        }
+
+        function actualizarBotonAuth() {
+          btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+        }
+
+        function abrirModal() {
+          ocultarError();
+          if (sesionActual) {
+            vistaAuth.hidden = true;
+            vistaCuenta.hidden = false;
+            cuentaEmail.textContent = sesionActual.user.email;
+          } else {
+            vistaCuenta.hidden = true;
+            vistaAuth.hidden = false;
+            formAuth.reset();
+            cambiarModo('login');
+            if (btnTogglePassword) {
+              inputPassword.type = 'password';
+              btnTogglePassword.setAttribute('aria-pressed', 'false');
+              btnTogglePassword.setAttribute('aria-label', 'Mostrar contraseña');
+              btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = false;
+              btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = true;
+            }
+          }
+          modal.hidden = false;
+          document.body.style.overflow = 'hidden';
+        }
+        function cerrarModal() {
+          modal.hidden = true;
+          document.body.style.overflow = '';
+        }
+
+        btnAuth.addEventListener('click', abrirModal);
+        btnCerrarModal.addEventListener('click', cerrarModal);
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) cerrarModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !modal.hidden) cerrarModal();
+        });
+
+        formAuth.addEventListener('submit', function (e) {
+          e.preventDefault();
+          ocultarError();
+
+          var email = inputEmail.value.trim();
+          var password = inputPassword.value;
+          if (!email || !password) {
+            mostrarError('Completá tu email y tu contraseña.');
+            return;
+          }
+          if (password.length < 6) {
+            mostrarError('La contraseña tiene que tener al menos 6 caracteres.');
+            return;
+          }
+
+          btnSubmit.disabled = true;
+          var textoOriginal = btnSubmit.textContent;
+          btnSubmit.textContent = 'Un momento...';
+
+          var promesa = modoActual === 'login'
+            ? supabaseClient.auth.signInWithPassword({ email: email, password: password })
+            : supabaseClient.auth.signUp({ email: email, password: password });
+
+          promesa.then(function (resultado) {
+            if (resultado.error) {
+              mostrarError(resultado.error.message || 'No pudimos completar la operación.');
+              return;
+            }
+            if (modoActual === 'registro' && !resultado.data.session) {
+              // El proyecto tiene activada la confirmación por email: no queda logueado al toque.
+              // Para que el registro loguee de inmediato, hay que desactivar "Confirm email"
+              // en el panel de Supabase (Authentication → Providers → Email).
+              mostrarError('Te registramos. Revisá tu email para confirmar la cuenta antes de poder iniciar sesión.');
+              return;
+            }
+            cerrarModal();
+          }).catch(function () {
+            mostrarError('No pudimos conectar con el servidor. Probá de nuevo en un momento.');
+          }).finally(function () {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = textoOriginal;
+          });
+        });
+
+        if (btnCerrarSesion) {
+          btnCerrarSesion.addEventListener('click', function () {
+            supabaseClient.auth.signOut().then(function () {
+              cerrarModal();
+            });
+          });
+        }
+
+        // Mantiene el botón sincronizado con el estado real de la sesión
+        supabaseClient.auth.onAuthStateChange(function (_evento, session) {
+          sesionActual = session;
+          actualizarBotonAuth();
+        });
+        supabaseClient.auth.getSession().then(function (resultado) {
+          sesionActual = resultado.data.session;
+          actualizarBotonAuth();
+        });
+      })();
+      /* ----------------------------------------------------------------------
+         5. INTERSECTION OBSERVER PARA FADE-IN EN SCROLL
+         ---------------------------------------------------------------------- */
+      if (!reducirMovimiento && 'IntersectionObserver' in window) {
+        var opcionesObserver = {
+          root: null,
+          rootMargin: '0px 0px -50px 0px',
+          threshold: 0.15
+        };
+
+        var observadorScroll = new IntersectionObserver(function (entradas, observer) {
+          entradas.forEach(function (entrada) {
+            if (entrada.isIntersecting) {
+              entrada.target.classList.add('visible');
+              observer.unobserve(entrada.target); // Dejar de observar una vez visible
+            }
+          });
+        }, opcionesObserver);
+
+        // Se observan explícitamente todas las secciones con la clase .fade-in
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          observadorScroll.observe(elemento);
+        });
+      } else {
+        // En caso de reducción de movimiento o falta de soporte, hacer visibles de inmediato
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          elemento.classList.add('visible');
+        });
+      }
+      /* ----------------------------------------------------------------------
+         RESUMEN IA
+         ---------------------------------------------------------------------- */
+      (function () {
+        var LARGO_MINIMO = 50;
+        var LARGO_MAXIMO = 8000;
+
+        var resTexto = document.getElementById('resumen-texto');
+        var resContador = document.getElementById('resumen-contador');
+        var resBtnLimpiar = document.getElementById('resumen-btn-limpiar');
+        var resBtnGenerar = document.getElementById('resumen-btn-generar');
+        var resEstado = document.getElementById('resumen-estado');
+        var resError = document.getElementById('resumen-error');
+        var resErrorMensaje = document.getElementById('resumen-error-mensaje');
+        var resResultados = document.getElementById('resumen-resultados');
+        var resSalida = document.getElementById('resumen-salida');
+        var resBtnCopiar = document.getElementById('resumen-btn-copiar');
+        var radiosLargo = document.querySelectorAll('input[name="largo-resumen"]');
+        if (!resTexto) return;
+
+        function largoElegido() {
+          var marcado = document.querySelector('input[name="largo-resumen"]:checked');
+          return marcado ? marcado.value : 'medio';
+        }
+
+        function actualizarContador() {
+          var n = resTexto.value.length;
+          resContador.textContent = n + ' / ' + LARGO_MAXIMO;
+          resContador.classList.toggle('excedido', n > LARGO_MAXIMO);
+          resBtnLimpiar.hidden = n === 0;
+        }
+        resTexto.addEventListener('input', actualizarContador);
+
+        function ocultarError() { resError.hidden = true; }
+        function mostrarError(mensaje) {
+          resErrorMensaje.textContent = mensaje;
+          resError.hidden = false;
+        }
+
+        resBtnLimpiar.addEventListener('click', function () {
+          resTexto.value = '';
+          actualizarContador();
+          resResultados.hidden = true;
+          ocultarError();
+          resTexto.focus();
+        });
+
+        function fijarCargando(cargando) {
+          resBtnGenerar.disabled = cargando;
+          resBtnGenerar.textContent = cargando ? 'Generando...' : 'Generar resumen';
+          resEstado.hidden = !cargando;
+        }
+
+        // Copiar el resumen al portapapeles (mismo patrón que el resto del sitio)
+        function copiar(texto, boton) {
+          function avisar() {
+            var original = boton.textContent;
+            boton.textContent = 'Copiado';
+            setTimeout(function () { boton.textContent = original; }, 1600);
+          }
+          function respaldo() {
+            var aux = document.createElement('textarea');
+            aux.value = texto;
+            aux.style.position = 'fixed';
+            aux.style.opacity = '0';
+            document.body.appendChild(aux);
+            aux.select();
+            try { document.execCommand('copy'); } catch (e) { /* sin permiso: no hacemos nada */ }
+            document.body.removeChild(aux);
+            avisar();
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(avisar, respaldo);
+          } else {
+            respaldo();
+          }
+        }
+
+        async function generarResumen() {
+          ocultarError();
+          var texto = resTexto.value.trim();
+
+          if (texto.length < LARGO_MINIMO) {
+            mostrarError('El texto es muy corto. Pegá al menos ' + LARGO_MINIMO + ' caracteres para poder resumirlo.');
+            return;
+          }
+          if (texto.length > LARGO_MAXIMO) {
+            mostrarError('El texto es muy largo (' + texto.length + ' caracteres). El máximo es ' + LARGO_MAXIMO + '.');
+            return;
+          }
+          if (location.protocol === 'file:') {
+            mostrarError('Esta página necesita estar publicada en el servidor para funcionar. Abrirla directo desde tu computadora no alcanza.');
+            return;
+          }
+
+          resResultados.hidden = true;
+          fijarCargando(true);
+
+          try {
+            var respuesta = await fetch('/api/resumir', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ texto: texto, largo: largoElegido() })
+            });
+
+            var datos = null;
+            try { datos = await respuesta.json(); } catch (e) { /* la respuesta no era JSON */ }
+
+            if (!respuesta.ok || !datos) {
+              var mensaje = datos && datos.error;
+              throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Probá de nuevo en unos minutos.');
+            }
+            if (!datos.resumen) {
+              throw new Error('La respuesta no incluyó el resumen.');
+            }
+
+            resSalida.textContent = datos.resumen;
+            resResultados.hidden = false;
+            resResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
+            resResultados.focus({ preventScroll: true });
+          } catch (err) {
+            if (err instanceof TypeError) {
+              mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet y probá de nuevo.');
+            } else {
+              mostrarError(err.message || 'Ocurrió un error inesperado. Probá de nuevo.');
+            }
+          } finally {
+            fijarCargando(false);
+          }
+        }
+
+        resBtnGenerar.addEventListener('click', generarResumen);
+        resBtnCopiar.addEventListener('click', function () {
+          copiar(resSalida.textContent, resBtnCopiar);
+        });
+
+        // Ctrl + Enter (o Cmd + Enter en Mac) también genera el resumen
+        resTexto.addEventListener('keydown', function (e) {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generarResumen();
+        });
+
+        actualizarContador();
+      })();
+
+
+      var anio = document.getElementById('anio');
+      if (anio) anio.textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
