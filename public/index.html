@@ -1173,6 +1173,20 @@
         resultados.focus({ preventScroll: true });
       }
 
+      // Si el servidor devuelve un error transitorio (502/503), reintenta UNA
+      // sola vez después de una breve espera, antes de darse por vencido.
+      function esperar(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+      async function fetchConReintento(url, opciones) {
+        var respuesta = await fetch(url, opciones);
+        if (respuesta.status === 502 || respuesta.status === 503) {
+          await esperar(1000);
+          respuesta = await fetch(url, opciones);
+        }
+        return respuesta;
+      }
+
       async function analizar() {
         ocultarError();
 
@@ -1211,7 +1225,7 @@
         fijarCargando(true);
 
         try {
-          var respuesta = await fetch('/api/analizar', pedido);
+          var respuesta = await fetchConReintento('/api/analizar', pedido);
           var datos = null;
           try { datos = await respuesta.json(); } catch (e) {}
 
@@ -1220,7 +1234,7 @@
             if (!mensaje && respuesta.status === 413) {
               mensaje = 'El archivo es demasiado grande para subirlo. El máximo es 4 MB.';
             }
-            throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Probá de nuevo en unos minutos.');
+            throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
           }
           mostrarResultados(datos);
         } catch (err) {

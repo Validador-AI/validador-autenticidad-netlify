@@ -579,6 +579,20 @@
           }
         }
 
+        // Si el servidor devuelve un error transitorio (502/503), reintenta UNA
+        // sola vez después de una breve espera, antes de darse por vencido.
+        function esperar(ms) {
+          return new Promise(function (resolve) { setTimeout(resolve, ms); });
+        }
+        async function fetchConReintento(url, opciones) {
+          var respuesta = await fetch(url, opciones);
+          if (respuesta.status === 502 || respuesta.status === 503) {
+            await esperar(1000);
+            respuesta = await fetch(url, opciones);
+          }
+          return respuesta;
+        }
+
         async function humanizar() {
           ocultarError();
           var texto = paraTexto.value.trim();
@@ -600,7 +614,7 @@
           fijarCargando(true);
 
           try {
-            var respuesta = await fetch('/api/parafrasear', {
+            var respuesta = await fetchConReintento('/api/parafrasear', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ texto: texto })
@@ -611,7 +625,7 @@
 
             if (!respuesta.ok || !datos) {
               var mensaje = datos && datos.error;
-              throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Probá de nuevo en unos minutos.');
+              throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
             }
             if (!datos.reescrito) {
               throw new Error('La respuesta no incluyó el texto reescrito.');
