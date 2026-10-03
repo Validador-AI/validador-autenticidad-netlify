@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Parafraseador y Humanizador de texto IA — PuroTexto</title>
-  <meta name="description" content="Reescribí tu texto para que suene más natural y humano, manteniendo el significado. Antes y después, en español latinoamericano.">
+  <title>Traductor con contexto — PuroTexto</title>
+  <meta name="description" content="Traducí tu texto a otro idioma manteniendo el tono y los modismos, no palabra por palabra. Elegí idioma y tono.">
   <link rel="icon" type="image/png" href="/favicon.png">
 
   <!-- Tipografía Google Fonts -->
@@ -40,7 +40,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
             <span>Contador de palabras</span>
           </a>
-          <a href="parafraseador.html" class="sidebar-item activo" aria-current="page">
+          <a href="parafraseador.html" class="sidebar-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             <span>Parafraseador</span>
           </a>
@@ -48,7 +48,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
             <span>Resumen IA</span>
           </a>
-          <a href="traductor.html" class="sidebar-item">
+          <a href="traductor.html" class="sidebar-item activo" aria-current="page">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             <span>Traductor</span>
           </a>
@@ -98,17 +98,52 @@
       </div>
   <main class="contenedor">
 
-    <!-- ===== PARAFRASEADOR / HUMANIZADOR DE TEXTO IA ===== -->
-    <section id="parafraseador" class="seccion fade-in" style="margin-top: 0;">
-      <h1 class="seccion-titulo">Parafraseador y humanizador de texto</h1>
-      <p class="seccion-intro">Pegá tu texto y PuroTexto lo reescribe para que suene más natural y humano, manteniendo el significado original.</p>
+    <!-- ===== TRADUCTOR CON CONTEXTO ===== -->
+    <section id="traductor" class="seccion fade-in" style="margin-top: 0;">
+      <h1 class="seccion-titulo">Traductor con contexto</h1>
+      <p class="seccion-intro">Pegá tu texto, elegí el idioma destino y el tono, y PuroTexto lo traduce manteniendo el sentido y los modismos — no palabra por palabra.</p>
 
       <div class="tarjeta herramienta-tarjeta">
         <div class="caja-escritura">
-          <textarea id="para-texto" rows="8" placeholder="Pegá acá el texto que querés humanizar..."></textarea>
+          <textarea id="traductor-texto" rows="8" placeholder="Pegá acá el texto que querés traducir..."></textarea>
           <div class="textarea-pie">
-            <button type="button" id="para-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
-            <div class="contador-box"><span id="para-contador">0 / 8000</span></div>
+            <button type="button" id="traductor-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
+            <div class="contador-box"><span id="traductor-contador">0 / 8000</span></div>
+          </div>
+        </div>
+
+        <div class="campos-fila">
+          <div class="campo">
+            <label class="campo-titulo" for="traductor-idioma">Traducir a</label>
+            <select id="traductor-idioma" class="select-campo">
+              <option value="es">Español</option>
+              <option value="en" selected>Inglés</option>
+              <option value="pt">Portugués</option>
+              <option value="it">Italiano</option>
+              <option value="fr">Francés</option>
+              <option value="de">Alemán</option>
+              <option value="zh">Chino (mandarín)</option>
+              <option value="ja">Japonés</option>
+              <option value="ru">Ruso</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <span class="campo-titulo">Tono</span>
+            <div class="modos" role="radiogroup" aria-label="Tono de la traducción">
+              <label class="modo">
+                <input type="radio" name="tono-traductor" value="formal">
+                <span>Formal</span>
+              </label>
+              <label class="modo">
+                <input type="radio" name="tono-traductor" value="casual" checked>
+                <span>Casual</span>
+              </label>
+              <label class="modo">
+                <input type="radio" name="tono-traductor" value="profesional">
+                <span>Profesional</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -116,45 +151,45 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
           <div>
             <strong>Tus textos no se guardan. No subas información confidencial.</strong>
-            <span>El texto se envía a Google (Gemini) para reescribirlo, únicamente durante la consulta.</span>
+            <span>El texto se envía a Google (Gemini) para traducirlo, únicamente durante la consulta.</span>
           </div>
         </div>
 
         <div class="accion-contenedor">
-          <button type="button" id="para-btn-humanizar" class="boton-principal">Humanizar texto</button>
+          <button type="button" id="traductor-btn-traducir" class="boton-principal">Traducir</button>
         </div>
       </div>
 
       <!-- ===== Cargando ===== -->
-      <div id="para-estado" class="estado" role="status" aria-live="polite" hidden>
+      <div id="traductor-estado" class="estado" role="status" aria-live="polite" hidden>
         <span class="spinner" aria-hidden="true"></span>
-        <span>Reescribiendo tu texto...</span>
+        <span>Traduciendo...</span>
       </div>
 
       <!-- ===== Error ===== -->
-      <div id="para-error" class="error" role="alert" hidden>
-        <strong>No pudimos completar la reescritura</strong>
-        <span id="para-error-mensaje"></span>
+      <div id="traductor-error" class="error" role="alert" hidden>
+        <strong>No pudimos traducir el texto</strong>
+        <span id="traductor-error-mensaje"></span>
       </div>
 
-      <!-- ===== Resultado: antes y después ===== -->
-      <section id="para-resultados" tabindex="-1" hidden>
-        <h2 class="titulo-seccion">Antes y después</h2>
-        <p class="titulo-seccion-detalle">Comparación entre tu texto original y la versión humanizada.</p>
+      <!-- ===== Resultado ===== -->
+      <section id="traductor-resultados" tabindex="-1" hidden>
+        <h2 class="titulo-seccion">Traducción</h2>
+        <p class="titulo-seccion-detalle">Revisala y, si querés, mandala directo al detector de IA.</p>
 
-        <div class="comparacion-grid">
-          <div class="tarjeta comparacion-panel">
-            <span class="campo-titulo">Texto original</span>
-            <p id="para-original" class="comparacion-texto"></p>
+        <div class="tarjeta panel-resultado">
+          <div class="comparacion-panel-header">
+            <span class="campo-titulo">Texto traducido</span>
+            <button type="button" id="traductor-btn-copiar" class="copiar">Copiar</button>
           </div>
+          <p id="traductor-salida" class="comparacion-texto"></p>
+        </div>
 
-          <div class="tarjeta comparacion-panel comparacion-panel--humanizado">
-            <div class="comparacion-panel-header">
-              <span class="campo-titulo">Texto humanizado</span>
-              <button type="button" id="para-btn-copiar" class="copiar">Copiar</button>
-            </div>
-            <p id="para-humanizado" class="comparacion-texto"></p>
-          </div>
+        <div class="accion-contenedor" style="justify-content: flex-start; margin-top: 16px;">
+          <button type="button" id="traductor-btn-analizar" class="boton-secundario">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Analizar con PuroTexto
+          </button>
         </div>
       </section>
     </section>
@@ -165,7 +200,6 @@
     <p class="pie-marca"><strong>PuroTexto</strong> — Análisis de autenticidad para hispanohablantes</p>
     <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
   </footer>
-
     </div><!-- /.contenido-principal -->
   </div><!-- /.app-layout -->
 
@@ -231,11 +265,6 @@
     </div>
   </div>
 
-  <!-- ==========================================================================
-
-  <!-- ==========================================================================
-     LÓGICA JAVASCRIPT (Ubicado al final del body)
-     ========================================================================== -->
 
   <!-- ==========================================================================
      LÓGICA JAVASCRIPT (Ubicado al final del body)
@@ -511,54 +540,61 @@
         });
       }
       /* ----------------------------------------------------------------------
-         PARAFRASEADOR / HUMANIZADOR DE TEXTO IA
+         TRADUCTOR CON CONTEXTO
          ---------------------------------------------------------------------- */
       (function () {
         var LARGO_MINIMO = 50;
         var LARGO_MAXIMO = 8000;
+        var CLAVE_TEXTO_PENDIENTE = 'purotexto_texto_pendiente';
 
-        var paraTexto = document.getElementById('para-texto');
-        var paraContador = document.getElementById('para-contador');
-        var paraBtnLimpiar = document.getElementById('para-btn-limpiar');
-        var paraBtnHumanizar = document.getElementById('para-btn-humanizar');
-        var paraEstado = document.getElementById('para-estado');
-        var paraError = document.getElementById('para-error');
-        var paraErrorMensaje = document.getElementById('para-error-mensaje');
-        var paraResultados = document.getElementById('para-resultados');
-        var paraOriginal = document.getElementById('para-original');
-        var paraHumanizado = document.getElementById('para-humanizado');
-        var paraBtnCopiar = document.getElementById('para-btn-copiar');
-        if (!paraTexto) return;
+        var tradTexto = document.getElementById('traductor-texto');
+        var tradContador = document.getElementById('traductor-contador');
+        var tradBtnLimpiar = document.getElementById('traductor-btn-limpiar');
+        var tradIdioma = document.getElementById('traductor-idioma');
+        var tradBtnTraducir = document.getElementById('traductor-btn-traducir');
+        var tradEstado = document.getElementById('traductor-estado');
+        var tradError = document.getElementById('traductor-error');
+        var tradErrorMensaje = document.getElementById('traductor-error-mensaje');
+        var tradResultados = document.getElementById('traductor-resultados');
+        var tradSalida = document.getElementById('traductor-salida');
+        var tradBtnCopiar = document.getElementById('traductor-btn-copiar');
+        var tradBtnAnalizar = document.getElementById('traductor-btn-analizar');
+        if (!tradTexto) return;
+
+        function tonoElegido() {
+          var marcado = document.querySelector('input[name="tono-traductor"]:checked');
+          return marcado ? marcado.value : 'casual';
+        }
 
         function actualizarContador() {
-          var n = paraTexto.value.length;
-          paraContador.textContent = n + ' / ' + LARGO_MAXIMO;
-          paraContador.classList.toggle('excedido', n > LARGO_MAXIMO);
-          paraBtnLimpiar.hidden = n === 0;
+          var n = tradTexto.value.length;
+          tradContador.textContent = n + ' / ' + LARGO_MAXIMO;
+          tradContador.classList.toggle('excedido', n > LARGO_MAXIMO);
+          tradBtnLimpiar.hidden = n === 0;
         }
-        paraTexto.addEventListener('input', actualizarContador);
+        tradTexto.addEventListener('input', actualizarContador);
 
-        function ocultarError() { paraError.hidden = true; }
+        function ocultarError() { tradError.hidden = true; }
         function mostrarError(mensaje) {
-          paraErrorMensaje.textContent = mensaje;
-          paraError.hidden = false;
+          tradErrorMensaje.textContent = mensaje;
+          tradError.hidden = false;
         }
 
-        paraBtnLimpiar.addEventListener('click', function () {
-          paraTexto.value = '';
+        tradBtnLimpiar.addEventListener('click', function () {
+          tradTexto.value = '';
           actualizarContador();
-          paraResultados.hidden = true;
+          tradResultados.hidden = true;
           ocultarError();
-          paraTexto.focus();
+          tradTexto.focus();
         });
 
         function fijarCargando(cargando) {
-          paraBtnHumanizar.disabled = cargando;
-          paraBtnHumanizar.textContent = cargando ? 'Humanizando...' : 'Humanizar texto';
-          paraEstado.hidden = !cargando;
+          tradBtnTraducir.disabled = cargando;
+          tradBtnTraducir.textContent = cargando ? 'Traduciendo...' : 'Traducir';
+          tradEstado.hidden = !cargando;
         }
 
-        // Copiar el texto humanizado al portapapeles (mismo patrón que el resto del sitio)
+        // Copiar la traducción al portapapeles (mismo patrón que el resto del sitio)
         function copiar(texto, boton) {
           function avisar() {
             var original = boton.textContent;
@@ -597,12 +633,12 @@
           return respuesta;
         }
 
-        async function humanizar() {
+        async function traducir() {
           ocultarError();
-          var texto = paraTexto.value.trim();
+          var texto = tradTexto.value.trim();
 
           if (texto.length < LARGO_MINIMO) {
-            mostrarError('El texto es muy corto. Pegá al menos ' + LARGO_MINIMO + ' caracteres para poder reescribirlo.');
+            mostrarError('El texto es muy corto. Pegá al menos ' + LARGO_MINIMO + ' caracteres para poder traducirlo.');
             return;
           }
           if (texto.length > LARGO_MAXIMO) {
@@ -614,14 +650,14 @@
             return;
           }
 
-          paraResultados.hidden = true;
+          tradResultados.hidden = true;
           fijarCargando(true);
 
           try {
-            var respuesta = await fetchConReintento('/api/parafrasear', {
+            var respuesta = await fetchConReintento('/api/traducir', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ texto: texto })
+              body: JSON.stringify({ texto: texto, idioma: tradIdioma.value, tono: tonoElegido() })
             });
 
             var datos = null;
@@ -631,15 +667,14 @@
               var mensaje = datos && datos.error;
               throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
             }
-            if (!datos.reescrito) {
-              throw new Error('La respuesta no incluyó el texto reescrito.');
+            if (!datos.traduccion) {
+              throw new Error('La respuesta no incluyó la traducción.');
             }
 
-            paraOriginal.textContent = texto;
-            paraHumanizado.textContent = datos.reescrito;
-            paraResultados.hidden = false;
-            paraResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
-            paraResultados.focus({ preventScroll: true });
+            tradSalida.textContent = datos.traduccion;
+            tradResultados.hidden = false;
+            tradResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
+            tradResultados.focus({ preventScroll: true });
           } catch (err) {
             if (err instanceof TypeError) {
               mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet y probá de nuevo.');
@@ -651,14 +686,26 @@
           }
         }
 
-        paraBtnHumanizar.addEventListener('click', humanizar);
-        paraBtnCopiar.addEventListener('click', function () {
-          copiar(paraHumanizado.textContent, paraBtnCopiar);
+        tradBtnTraducir.addEventListener('click', traducir);
+        tradBtnCopiar.addEventListener('click', function () {
+          copiar(tradSalida.textContent, tradBtnCopiar);
         });
 
-        // Ctrl + Enter (o Cmd + Enter en Mac) también humaniza
-        paraTexto.addEventListener('keydown', function (e) {
-          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') humanizar();
+        // "Analizar con PuroTexto": manda la traducción al detector de IA.
+        // Como son páginas distintas, se deja el texto guardado un instante en
+        // sessionStorage y el detector lo recoge al cargar (ver index.html).
+        if (tradBtnAnalizar) {
+          tradBtnAnalizar.addEventListener('click', function () {
+            try {
+              sessionStorage.setItem(CLAVE_TEXTO_PENDIENTE, tradSalida.textContent);
+            } catch (e) { /* almacenamiento no disponible: igual navegamos */ }
+            window.location.href = 'index.html#editor';
+          });
+        }
+
+        // Ctrl + Enter (o Cmd + Enter en Mac) también traduce
+        tradTexto.addEventListener('keydown', function (e) {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') traducir();
         });
 
         actualizarContador();

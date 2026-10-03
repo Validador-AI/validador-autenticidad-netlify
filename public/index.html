@@ -48,6 +48,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
             <span>Resumen IA</span>
           </a>
+          <a href="traductor.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Traductor</span>
+          </a>
 
         <p class="sidebar-grupo-titulo">Recursos</p>
           <a href="#como-funciona" class="sidebar-item">
@@ -1258,6 +1262,25 @@
       if (anio) anio.textContent = new Date().getFullYear();
 
       actualizarContador();
+
+      // Si venimos de otra herramienta (ej: "Analizar con PuroTexto" del
+      // Traductor) con un texto pendiente, lo cargamos acá y lo sacamos del
+      // almacenamiento para que no vuelva a aparecer en una próxima visita.
+      (function () {
+        var CLAVE_TEXTO_PENDIENTE = 'purotexto_texto_pendiente';
+        var textoPendiente;
+        try {
+          textoPendiente = sessionStorage.getItem(CLAVE_TEXTO_PENDIENTE);
+          sessionStorage.removeItem(CLAVE_TEXTO_PENDIENTE);
+        } catch (e) { /* almacenamiento no disponible */ }
+
+        if (textoPendiente) {
+          campo.value = textoPendiente;
+          actualizarContador();
+          campo.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
+          campo.focus();
+        }
+      })();
     });
   </script>
 </body>
