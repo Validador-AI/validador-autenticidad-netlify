@@ -14,6 +14,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -316,6 +317,13 @@
       <h2 class="titulo-seccion">Frases para revisar</h2>
       <p class="titulo-seccion-detalle">Detalle de las expresiones detectadas con menor naturalidad y sugerencias de mejora.</p>
       <ul id="lista-frases" class="frases"></ul>
+
+      <div class="accion-contenedor" style="justify-content: flex-start; margin-top: 20px;">
+        <button type="button" id="btn-exportar-pdf" class="boton-exportar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Exportar a PDF
+        </button>
+      </div>
     </section>
 
     <!-- ===== 2. & 5. SECCIÓN BENEFICIOS (Con Elevación -8px + Sombra + Fade-in Scroll) ===== -->
@@ -881,6 +889,7 @@
       var textoVeredicto = $('veredicto');
       var marca = $('marca');
       var listaFrases = $('lista-frases');
+      var botonExportarPdf = $('btn-exportar-pdf');
 
       var panelTexto = $('panel-texto');
       var panelArchivo = $('panel-archivo');
@@ -1134,12 +1143,17 @@
         return li;
       }
 
-      function mostrarResultados(datos) {
+      // Guarda una copia del último análisis mostrado, para poder exportarlo
+      // a PDF sin depender de que el textarea siga teniendo el mismo texto.
+      var ultimoAnalisis = null;
+
+      function mostrarResultados(datos, textoAnalizado) {
         var puntaje = Math.max(0, Math.min(100, Math.round(Number(datos.puntaje))));
         if (!isFinite(puntaje)) throw new Error('La respuesta no tiene un puntaje válido.');
 
         tarjetaPuntaje.setAttribute('data-nivel', nivelDe(puntaje));
-        textoVeredicto.textContent = datos.veredicto || veredictoDe(puntaje);
+        var veredictoTexto = datos.veredicto || veredictoDe(puntaje);
+        textoVeredicto.textContent = veredictoTexto;
 
         if (datos.aviso) {
           avisoResultado.textContent = datos.aviso;
@@ -1156,6 +1170,13 @@
           frases.forEach(function (f) { listaFrases.appendChild(tarjetaDeFrase(f)); });
         }
 
+        ultimoAnalisis = {
+          texto: textoAnalizado || '',
+          puntaje: puntaje,
+          veredicto: veredictoTexto,
+          frases: frases,
+          fecha: new Date()
+        };
         resultados.hidden = false;
 
         if (reducirMovimiento) {
@@ -1179,6 +1200,151 @@
 
         resultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
         resultados.focus({ preventScroll: true });
+      }
+
+      /* ----------------------------------------------------------------------
+         EXPORTAR A PDF (usa jsPDF, cargado por CDN en el <head>)
+         ---------------------------------------------------------------------- */
+      function exportarPDF() {
+        if (!ultimoAnalisis) return;
+        if (typeof window.jspdf === 'undefined') {
+          mostrarError('No pudimos cargar el generador de PDF. Revisá tu conexión y probá de nuevo.');
+          return;
+        }
+
+        var JsPdfCtor = window.jspdf.jsPDF;
+        var doc = new JsPdfCtor({ unit: 'pt', format: 'a4' });
+
+        // Tomamos los colores directamente del CSS, para no duplicarlos a mano.
+        var estiloRaiz = getComputedStyle(document.documentElement);
+        function colorVar(nombre, porDefecto) {
+          var valor = estiloRaiz.getPropertyValue(nombre).trim();
+          return valor || porDefecto;
+        }
+        function hexARgb(hex) {
+          hex = hex.replace('#', '');
+          return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+        }
+        function colorear(hex) {
+          var rgb = hexARgb(hex);
+          doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+        }
+
+        var petroleo = colorVar('--petroleo', '#264B4A');
+        var terracota = colorVar('--terracota', '#B84E2E');
+        var textoSuave = colorVar('--texto-suave', '#6B6358');
+        var textoColor = colorVar('--texto', '#221E18');
+
+        var anchoPagina = doc.internal.pageSize.getWidth();
+        var altoPagina = doc.internal.pageSize.getHeight();
+        var margen = 48;
+        var anchoUtil = anchoPagina - margen * 2;
+        var alturaLinea = 14;
+        var y;
+
+        function asegurarEspacio(lineasNecesarias) {
+          if (y + lineasNecesarias * alturaLinea > altoPagina - margen) {
+            doc.addPage();
+            y = margen;
+          }
+        }
+        function escribirParrafo(texto, opciones) {
+          opciones = opciones || {};
+          doc.setFont('helvetica', opciones.negrita ? 'bold' : 'normal');
+          doc.setFontSize(opciones.tamano || 10);
+          colorear(opciones.color || textoColor);
+          var lineas = doc.splitTextToSize(texto, anchoUtil);
+          lineas.forEach(function (linea) {
+            asegurarEspacio(1);
+            doc.text(linea, margen, y);
+            y += opciones.alturaLinea || alturaLinea;
+          });
+        }
+
+        // Encabezado con el bitono de PuroTexto
+        var rgbPetroleo = hexARgb(petroleo);
+        doc.setFillColor(rgbPetroleo[0], rgbPetroleo[1], rgbPetroleo[2]);
+        doc.rect(0, 0, anchoPagina, 86, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.text('PuroTexto', margen, 42);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.text('Análisis de autenticidad', margen, 62);
+
+        y = 118;
+
+        var fechaTexto = ultimoAnalisis.fecha.toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+        escribirParrafo('Generado el ' + fechaTexto, { color: textoSuave, tamano: 9 });
+        y += 14;
+
+        // Puntaje grande en terracota + veredicto al lado
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(34);
+        colorear(terracota);
+        doc.text(ultimoAnalisis.puntaje + '%', margen, y + 28);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        colorear(textoColor);
+        doc.text(ultimoAnalisis.veredicto, margen + 86, y + 24, { maxWidth: anchoUtil - 86 });
+        y += 54;
+
+        doc.setDrawColor(rgbPetroleo[0], rgbPetroleo[1], rgbPetroleo[2]);
+        doc.setLineWidth(0.75);
+        doc.line(margen, y, anchoPagina - margen, y);
+        y += 26;
+
+        // Texto analizado (recortado si es muy largo, para no armar un PDF enorme)
+        escribirParrafo('Texto analizado', { negrita: true, tamano: 12, color: petroleo });
+        y += 4;
+        var MAX_CARACTERES_PDF = 2000;
+        var textoParaPdf = ultimoAnalisis.texto || '(sin texto disponible)';
+        if (textoParaPdf.length > MAX_CARACTERES_PDF) {
+          textoParaPdf = textoParaPdf.slice(0, MAX_CARACTERES_PDF) + '…';
+        }
+        escribirParrafo(textoParaPdf, { color: textoColor });
+        y += 18;
+
+        // Frases para revisar
+        if (ultimoAnalisis.frases.length > 0) {
+          asegurarEspacio(2);
+          escribirParrafo('Frases para revisar', { negrita: true, tamano: 12, color: petroleo });
+          y += 2;
+
+          ultimoAnalisis.frases.forEach(function (frase) {
+            asegurarEspacio(3);
+            y += 8;
+            escribirParrafo('\u201C' + frase.texto + '\u201D', { negrita: true, color: textoColor });
+            if (frase.problema) {
+              escribirParrafo('Por qué: ' + frase.problema, { color: textoSuave, tamano: 9.5 });
+            }
+            if (frase.sugerencia) {
+              escribirParrafo('Sugerencia: ' + frase.sugerencia, { color: petroleo, tamano: 9.5 });
+            }
+          });
+        } else {
+          escribirParrafo('No se encontraron frases puntuales para señalar.', { color: textoSuave });
+        }
+
+        // Pie de página en cada hoja
+        var totalPaginas = doc.internal.getNumberOfPages();
+        for (var p = 1; p <= totalPaginas; p++) {
+          doc.setPage(p);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          colorear(textoSuave);
+          doc.text('PuroTexto — purotexto.com', margen, altoPagina - 24);
+          doc.text('Página ' + p + ' de ' + totalPaginas, anchoPagina - margen, altoPagina - 24, { align: 'right' });
+        }
+
+        var nombreArchivo = 'purotexto-analisis-' + ultimoAnalisis.fecha.toISOString().slice(0, 10) + '.pdf';
+        doc.save(nombreArchivo);
+      }
+
+      if (botonExportarPdf) {
+        botonExportarPdf.addEventListener('click', exportarPDF);
       }
 
       // Si el servidor devuelve un error transitorio (502/503), reintenta UNA
@@ -1244,7 +1410,7 @@
             }
             throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
           }
-          mostrarResultados(datos);
+          mostrarResultados(datos, modo === 'archivo' ? ('(Documento subido: ' + (archivoElegido && archivoElegido.name) + ')') : texto);
         } catch (err) {
           if (err instanceof TypeError) {
             mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet.');

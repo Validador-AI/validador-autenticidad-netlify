@@ -1199,6 +1199,31 @@
     }
     .boton-secundario svg { width: 16px; height: 16px; flex: none; }
 
+    /* Botón Exportar a PDF: mismo lenguaje visual que los ítems del sidebar (ícono + arena + borde petróleo) */
+    .boton-exportar {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border: 1px solid var(--petroleo);
+      border-radius: 10px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-family: var(--fuente);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .boton-exportar:hover {
+      background: var(--terracota);
+      border-color: var(--terracota);
+      color: #FFF;
+    }
+    .boton-exportar svg { width: 18px; height: 18px; flex: none; }
+    .boton-exportar:disabled { opacity: 0.7; cursor: progress; }
+
     /* ==========================================================================
        2. TARJETAS DE BENEFICIOS CON ELEVACIÓN Y SOMBRA CLARA Y FUNCIONAL
        ========================================================================== */
