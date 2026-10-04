@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Traductor con contexto — PuroTexto</title>
-  <meta name="description" content="Traducí tu texto a otro idioma manteniendo el tono y los modismos, no palabra por palabra. Elegí idioma y tono.">
+  <title>Verificador de Gramática — PuroTexto</title>
+  <meta name="description" content="Revisá ortografía, gramática, puntuación y redacción de tu texto, con correcciones sugeridas, en español latinoamericano.">
   <link rel="icon" type="image/png" href="/favicon.png">
 
   <!-- Tipografía Google Fonts -->
@@ -48,11 +48,11 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
             <span>Resumen IA</span>
           </a>
-          <a href="traductor.html" class="sidebar-item activo" aria-current="page">
+          <a href="traductor.html" class="sidebar-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             <span>Traductor</span>
           </a>
-          <a href="gramatica.html" class="sidebar-item">
+          <a href="gramatica.html" class="sidebar-item activo" aria-current="page">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
             <span>Verificador de Gramática</span>
           </a>
@@ -102,52 +102,17 @@
       </div>
   <main class="contenedor">
 
-    <!-- ===== TRADUCTOR CON CONTEXTO ===== -->
-    <section id="traductor" class="seccion fade-in" style="margin-top: 0;">
-      <h1 class="seccion-titulo">Traductor con contexto</h1>
-      <p class="seccion-intro">Pegá tu texto, elegí el idioma destino y el tono, y PuroTexto lo traduce manteniendo el sentido y los modismos — no palabra por palabra.</p>
+    <!-- ===== VERIFICADOR DE GRAMÁTICA ===== -->
+    <section id="gramatica" class="seccion fade-in" style="margin-top: 0;">
+      <h1 class="seccion-titulo">Verificador de Gramática</h1>
+      <p class="seccion-intro">Pegá tu texto y PuroTexto revisa ortografía, gramática, puntuación y redacción, con una corrección sugerida para cada error.</p>
 
       <div class="tarjeta herramienta-tarjeta">
         <div class="caja-escritura">
-          <textarea id="traductor-texto" rows="8" placeholder="Pegá acá el texto que querés traducir..."></textarea>
+          <textarea id="gramatica-texto" rows="8" placeholder="Pegá acá el texto que querés revisar..."></textarea>
           <div class="textarea-pie">
-            <button type="button" id="traductor-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
-            <div class="contador-box"><span id="traductor-contador">0 / 8000</span></div>
-          </div>
-        </div>
-
-        <div class="campos-fila">
-          <div class="campo">
-            <label class="campo-titulo" for="traductor-idioma">Traducir a</label>
-            <select id="traductor-idioma" class="select-campo">
-              <option value="es">Español</option>
-              <option value="en" selected>Inglés</option>
-              <option value="pt">Portugués</option>
-              <option value="it">Italiano</option>
-              <option value="fr">Francés</option>
-              <option value="de">Alemán</option>
-              <option value="zh">Chino (mandarín)</option>
-              <option value="ja">Japonés</option>
-              <option value="ru">Ruso</option>
-            </select>
-          </div>
-
-          <div class="campo">
-            <span class="campo-titulo">Tono</span>
-            <div class="modos" role="radiogroup" aria-label="Tono de la traducción">
-              <label class="modo">
-                <input type="radio" name="tono-traductor" value="formal">
-                <span>Formal</span>
-              </label>
-              <label class="modo">
-                <input type="radio" name="tono-traductor" value="casual" checked>
-                <span>Casual</span>
-              </label>
-              <label class="modo">
-                <input type="radio" name="tono-traductor" value="profesional">
-                <span>Profesional</span>
-              </label>
-            </div>
+            <button type="button" id="gramatica-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
+            <div class="contador-box"><span id="gramatica-contador">0 / 8000</span></div>
           </div>
         </div>
 
@@ -155,46 +120,43 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
           <div>
             <strong>Tus textos no se guardan. No subas información confidencial.</strong>
-            <span>El texto se envía a Google (Gemini) para traducirlo, únicamente durante la consulta.</span>
+            <span>El texto se envía a Google (Gemini) para revisarlo, únicamente durante la consulta.</span>
           </div>
         </div>
 
         <div class="accion-contenedor">
-          <button type="button" id="traductor-btn-traducir" class="boton-principal">Traducir</button>
+          <button type="button" id="gramatica-btn-revisar" class="boton-principal">Revisar texto</button>
         </div>
       </div>
 
       <!-- ===== Cargando ===== -->
-      <div id="traductor-estado" class="estado" role="status" aria-live="polite" hidden>
+      <div id="gramatica-estado" class="estado" role="status" aria-live="polite" hidden>
         <span class="spinner" aria-hidden="true"></span>
-        <span>Traduciendo...</span>
+        <span>Revisando el texto...</span>
       </div>
 
       <!-- ===== Error ===== -->
-      <div id="traductor-error" class="error" role="alert" hidden>
-        <strong>No pudimos traducir el texto</strong>
-        <span id="traductor-error-mensaje"></span>
+      <div id="gramatica-error" class="error" role="alert" hidden>
+        <strong>No pudimos revisar el texto</strong>
+        <span id="gramatica-error-mensaje"></span>
       </div>
 
       <!-- ===== Resultado ===== -->
-      <section id="traductor-resultados" tabindex="-1" hidden>
-        <h2 class="titulo-seccion">Traducción</h2>
-        <p class="titulo-seccion-detalle">Revisala y, si querés, mandala directo al detector de IA.</p>
+      <section id="gramatica-resultados" tabindex="-1" hidden>
+        <h2 class="titulo-seccion">Texto corregido</h2>
+        <p class="titulo-seccion-detalle">Con los errores de ortografía, gramática y puntuación ya corregidos.</p>
 
         <div class="tarjeta panel-resultado">
           <div class="comparacion-panel-header">
-            <span class="campo-titulo">Texto traducido</span>
-            <button type="button" id="traductor-btn-copiar" class="copiar">Copiar</button>
+            <span class="campo-titulo">Texto corregido</span>
+            <button type="button" id="gramatica-btn-copiar" class="copiar">Copiar</button>
           </div>
-          <p id="traductor-salida" class="comparacion-texto"></p>
+          <p id="gramatica-salida" class="comparacion-texto"></p>
         </div>
 
-        <div class="accion-contenedor" style="justify-content: flex-start; margin-top: 16px;">
-          <button type="button" id="traductor-btn-analizar" class="boton-secundario">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            Analizar con PuroTexto
-          </button>
-        </div>
+        <h2 class="titulo-seccion">Errores encontrados</h2>
+        <p class="titulo-seccion-detalle" id="gramatica-errores-detalle">Detalle de cada corrección, con el motivo y la sugerencia.</p>
+        <ul id="gramatica-lista-errores" class="frases"></ul>
       </section>
     </section>
 
@@ -544,61 +506,55 @@
         });
       }
       /* ----------------------------------------------------------------------
-         TRADUCTOR CON CONTEXTO
+         VERIFICADOR DE GRAMÁTICA
          ---------------------------------------------------------------------- */
       (function () {
         var LARGO_MINIMO = 50;
         var LARGO_MAXIMO = 8000;
-        var CLAVE_TEXTO_PENDIENTE = 'purotexto_texto_pendiente';
 
-        var tradTexto = document.getElementById('traductor-texto');
-        var tradContador = document.getElementById('traductor-contador');
-        var tradBtnLimpiar = document.getElementById('traductor-btn-limpiar');
-        var tradIdioma = document.getElementById('traductor-idioma');
-        var tradBtnTraducir = document.getElementById('traductor-btn-traducir');
-        var tradEstado = document.getElementById('traductor-estado');
-        var tradError = document.getElementById('traductor-error');
-        var tradErrorMensaje = document.getElementById('traductor-error-mensaje');
-        var tradResultados = document.getElementById('traductor-resultados');
-        var tradSalida = document.getElementById('traductor-salida');
-        var tradBtnCopiar = document.getElementById('traductor-btn-copiar');
-        var tradBtnAnalizar = document.getElementById('traductor-btn-analizar');
-        if (!tradTexto) return;
-
-        function tonoElegido() {
-          var marcado = document.querySelector('input[name="tono-traductor"]:checked');
-          return marcado ? marcado.value : 'casual';
-        }
+        var gramTexto = document.getElementById('gramatica-texto');
+        var gramContador = document.getElementById('gramatica-contador');
+        var gramBtnLimpiar = document.getElementById('gramatica-btn-limpiar');
+        var gramBtnRevisar = document.getElementById('gramatica-btn-revisar');
+        var gramEstado = document.getElementById('gramatica-estado');
+        var gramError = document.getElementById('gramatica-error');
+        var gramErrorMensaje = document.getElementById('gramatica-error-mensaje');
+        var gramResultados = document.getElementById('gramatica-resultados');
+        var gramSalida = document.getElementById('gramatica-salida');
+        var gramBtnCopiar = document.getElementById('gramatica-btn-copiar');
+        var gramListaErrores = document.getElementById('gramatica-lista-errores');
+        var gramErroresDetalle = document.getElementById('gramatica-errores-detalle');
+        if (!gramTexto) return;
 
         function actualizarContador() {
-          var n = tradTexto.value.length;
-          tradContador.textContent = n + ' / ' + LARGO_MAXIMO;
-          tradContador.classList.toggle('excedido', n > LARGO_MAXIMO);
-          tradBtnLimpiar.hidden = n === 0;
+          var n = gramTexto.value.length;
+          gramContador.textContent = n + ' / ' + LARGO_MAXIMO;
+          gramContador.classList.toggle('excedido', n > LARGO_MAXIMO);
+          gramBtnLimpiar.hidden = n === 0;
         }
-        tradTexto.addEventListener('input', actualizarContador);
+        gramTexto.addEventListener('input', actualizarContador);
 
-        function ocultarError() { tradError.hidden = true; }
+        function ocultarError() { gramError.hidden = true; }
         function mostrarError(mensaje) {
-          tradErrorMensaje.textContent = mensaje;
-          tradError.hidden = false;
+          gramErrorMensaje.textContent = mensaje;
+          gramError.hidden = false;
         }
 
-        tradBtnLimpiar.addEventListener('click', function () {
-          tradTexto.value = '';
+        gramBtnLimpiar.addEventListener('click', function () {
+          gramTexto.value = '';
           actualizarContador();
-          tradResultados.hidden = true;
+          gramResultados.hidden = true;
           ocultarError();
-          tradTexto.focus();
+          gramTexto.focus();
         });
 
         function fijarCargando(cargando) {
-          tradBtnTraducir.disabled = cargando;
-          tradBtnTraducir.textContent = cargando ? 'Traduciendo...' : 'Traducir';
-          tradEstado.hidden = !cargando;
+          gramBtnRevisar.disabled = cargando;
+          gramBtnRevisar.textContent = cargando ? 'Revisando...' : 'Revisar texto';
+          gramEstado.hidden = !cargando;
         }
 
-        // Copiar la traducción al portapapeles (mismo patrón que el resto del sitio)
+        // Copiar el texto corregido o una corrección puntual (mismo patrón que el resto del sitio)
         function copiar(texto, boton) {
           function avisar() {
             var original = boton.textContent;
@@ -637,12 +593,47 @@
           return respuesta;
         }
 
-        async function traducir() {
+        // Arma una tarjeta por cada error, con el mismo patrón que ya usa el
+        // detector de IA para sus "frases para revisar".
+        function crear(etiqueta, clase, texto) {
+          var el = document.createElement(etiqueta);
+          if (clase) el.className = clase;
+          if (texto !== undefined) el.textContent = texto;
+          return el;
+        }
+
+        function tarjetaDeError(error) {
+          var li = crear('li', 'tarjeta frase');
+
+          li.appendChild(crear('blockquote', 'cita', '\u201C' + error.original + '\u201D'));
+
+          var campoTipo = crear('div', 'campo');
+          campoTipo.appendChild(crear('span', 'campo-titulo', error.tipo || 'Corrección'));
+          li.appendChild(campoTipo);
+
+          if (error.correccion) {
+            var caja = crear('div', 'reescritura');
+            var interior = crear('div');
+            interior.appendChild(crear('span', 'campo-titulo', 'Corrección sugerida'));
+            interior.appendChild(crear('p', '', error.correccion));
+            caja.appendChild(interior);
+
+            var botonCopiar = crear('button', 'copiar', 'Copiar');
+            botonCopiar.type = 'button';
+            botonCopiar.addEventListener('click', function () { copiar(error.correccion, botonCopiar); });
+            caja.appendChild(botonCopiar);
+
+            li.appendChild(caja);
+          }
+          return li;
+        }
+
+        async function revisar() {
           ocultarError();
-          var texto = tradTexto.value.trim();
+          var texto = gramTexto.value.trim();
 
           if (texto.length < LARGO_MINIMO) {
-            mostrarError('El texto es muy corto. Pegá al menos ' + LARGO_MINIMO + ' caracteres para poder traducirlo.');
+            mostrarError('El texto es muy corto. Pegá al menos ' + LARGO_MINIMO + ' caracteres para poder revisarlo.');
             return;
           }
           if (texto.length > LARGO_MAXIMO) {
@@ -654,14 +645,14 @@
             return;
           }
 
-          tradResultados.hidden = true;
+          gramResultados.hidden = true;
           fijarCargando(true);
 
           try {
-            var respuesta = await fetchConReintento('/api/traducir', {
+            var respuesta = await fetchConReintento('/api/gramatica', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ texto: texto, idioma: tradIdioma.value, tono: tonoElegido() })
+              body: JSON.stringify({ texto: texto })
             });
 
             var datos = null;
@@ -671,14 +662,25 @@
               var mensaje = datos && datos.error;
               throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
             }
-            if (!datos.traduccion) {
-              throw new Error('La respuesta no incluyó la traducción.');
+            if (!datos.textoCorregido) {
+              throw new Error('La respuesta no incluyó el texto corregido.');
             }
 
-            tradSalida.textContent = datos.traduccion;
-            tradResultados.hidden = false;
-            tradResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
-            tradResultados.focus({ preventScroll: true });
+            gramSalida.textContent = datos.textoCorregido;
+
+            var errores = Array.isArray(datos.errores) ? datos.errores : [];
+            gramListaErrores.innerHTML = '';
+            if (errores.length === 0) {
+              gramErroresDetalle.textContent = 'No encontramos errores de ortografía, gramática ni puntuación en tu texto.';
+              gramListaErrores.appendChild(crear('li', 'tarjeta sin-frases', 'Tu texto ya está en buena forma. ¡Buen trabajo!'));
+            } else {
+              gramErroresDetalle.textContent = 'Detalle de cada corrección, con el motivo y la sugerencia.';
+              errores.forEach(function (error) { gramListaErrores.appendChild(tarjetaDeError(error)); });
+            }
+
+            gramResultados.hidden = false;
+            gramResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
+            gramResultados.focus({ preventScroll: true });
           } catch (err) {
             if (err instanceof TypeError) {
               mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet y probá de nuevo.');
@@ -690,26 +692,14 @@
           }
         }
 
-        tradBtnTraducir.addEventListener('click', traducir);
-        tradBtnCopiar.addEventListener('click', function () {
-          copiar(tradSalida.textContent, tradBtnCopiar);
+        gramBtnRevisar.addEventListener('click', revisar);
+        gramBtnCopiar.addEventListener('click', function () {
+          copiar(gramSalida.textContent, gramBtnCopiar);
         });
 
-        // "Analizar con PuroTexto": manda la traducción al detector de IA.
-        // Como son páginas distintas, se deja el texto guardado un instante en
-        // sessionStorage y el detector lo recoge al cargar (ver index.html).
-        if (tradBtnAnalizar) {
-          tradBtnAnalizar.addEventListener('click', function () {
-            try {
-              sessionStorage.setItem(CLAVE_TEXTO_PENDIENTE, tradSalida.textContent);
-            } catch (e) { /* almacenamiento no disponible: igual navegamos */ }
-            window.location.href = 'index.html#editor';
-          });
-        }
-
-        // Ctrl + Enter (o Cmd + Enter en Mac) también traduce
-        tradTexto.addEventListener('keydown', function (e) {
-          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') traducir();
+        // Ctrl + Enter (o Cmd + Enter en Mac) también revisa
+        gramTexto.addEventListener('keydown', function (e) {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') revisar();
         });
 
         actualizarContador();
