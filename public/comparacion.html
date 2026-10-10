@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contador de palabras — PuroTexto</title>
-  <meta name="description" content="Contador de palabras online en tiempo real: palabras, caracteres, oraciones, párrafos y tiempo estimado de lectura.">
+  <title>Comparación de Textos — PuroTexto</title>
+  <meta name="description" content="Compará dos textos y descubrí las diferencias de contenido, tono y naturalidad entre ellos, con sugerencias para mejorar el más artificial.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -36,7 +36,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <span>Detector de IA</span>
           </a>
-          <a href="contador.html" class="sidebar-item activo" aria-current="page">
+          <a href="contador.html" class="sidebar-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
             <span>Contador de palabras</span>
           </a>
@@ -56,7 +56,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
             <span>Verificador de Gramática</span>
           </a>
-          <a href="comparacion.html" class="sidebar-item">
+          <a href="comparacion.html" class="sidebar-item activo" aria-current="page">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="18" rx="1.5"></rect><rect x="13" y="3" width="8" height="18" rx="1.5"></rect><path d="M11 9l2 3-2 3"></path></svg>
             <span>Comparación de Textos</span>
           </a>
@@ -104,49 +104,80 @@
           <span>PuroTexto</span>
         </a>
       </div>
-
   <main class="contenedor">
 
-    <!-- ===== CONTADOR DE PALABRAS AVANZADO ===== -->
-    <section id="contador-palabras" class="seccion fade-in" style="margin-top: 0;">
-      <h1 class="seccion-titulo">Contador de palabras avanzado</h1>
-      <p class="seccion-intro">Pegá tu texto y mirá las estadísticas en tiempo real: palabras, caracteres, oraciones, párrafos y tiempo de lectura.</p>
+    <!-- ===== COMPARACIÓN DE TEXTOS ===== -->
+    <section id="comparacion" class="seccion fade-in" style="margin-top: 0;">
+      <h1 class="seccion-titulo">Comparación de Textos</h1>
+      <p class="seccion-intro">Pegá dos textos y PuroTexto compara contenido, tono y estructura, te dice cuál suena más humano y sugiere cómo mejorar el otro.</p>
 
-      <div class="tarjeta cp-tarjeta">
-        <div class="caja-escritura">
-          <textarea id="cp-texto" rows="8" placeholder="Pegá o escribí tu texto acá..."></textarea>
-          <div class="textarea-pie">
-            <button type="button" id="cp-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
+      <div class="tarjeta herramienta-tarjeta">
+        <div class="campos-fila" style="margin-top: 0;">
+          <div>
+            <span class="campo-titulo">Texto A</span>
+            <div class="caja-escritura" style="margin-top: 6px;">
+              <textarea id="comparar-texto-a" rows="7" placeholder="Pegá acá el primer texto..."></textarea>
+              <div class="textarea-pie">
+                <button type="button" id="comparar-btn-limpiar-a" class="btn-limpiar" hidden>Limpiar</button>
+                <div class="contador-box"><span id="comparar-contador-a">0 / 8000</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span class="campo-titulo">Texto B</span>
+            <div class="caja-escritura" style="margin-top: 6px;">
+              <textarea id="comparar-texto-b" rows="7" placeholder="Pegá acá el segundo texto..."></textarea>
+              <div class="textarea-pie">
+                <button type="button" id="comparar-btn-limpiar-b" class="btn-limpiar" hidden>Limpiar</button>
+                <div class="contador-box"><span id="comparar-contador-b">0 / 8000</span></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="cp-stats-grid">
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-palabras">0</span>
-            <span class="cp-stat-label">Palabras</span>
+        <div class="privacidad-caja" role="note" style="margin-top: 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          <div>
+            <strong>Tus textos no se guardan. No subas información confidencial.</strong>
+            <span>Los textos se envían a Google (Gemini) para compararlos, únicamente durante la consulta.</span>
           </div>
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-caracteres">0</span>
-            <span class="cp-stat-label">Caracteres (con espacios)</span>
-          </div>
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-caracteres-sin">0</span>
-            <span class="cp-stat-label">Caracteres (sin espacios)</span>
-          </div>
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-oraciones">0</span>
-            <span class="cp-stat-label">Oraciones</span>
-          </div>
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-parrafos">0</span>
-            <span class="cp-stat-label">Párrafos</span>
-          </div>
-          <div class="cp-stat">
-            <span class="cp-stat-valor" id="cp-lectura">0 min</span>
-            <span class="cp-stat-label">Tiempo de lectura</span>
-          </div>
+        </div>
+
+        <div class="accion-contenedor">
+          <button type="button" id="comparar-btn-comparar" class="boton-principal">Comparar textos</button>
         </div>
       </div>
+
+      <!-- ===== Cargando ===== -->
+      <div id="comparar-estado" class="estado" role="status" aria-live="polite" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Comparando los textos...</span>
+      </div>
+
+      <!-- ===== Error ===== -->
+      <div id="comparar-error" class="error" role="alert" hidden>
+        <strong>No pudimos comparar los textos</strong>
+        <span id="comparar-error-mensaje"></span>
+      </div>
+
+      <!-- ===== Resultado ===== -->
+      <section id="comparar-resultados" tabindex="-1" hidden>
+        <h2 class="titulo-seccion">¿Cuál suena más humano?</h2>
+        <div class="tarjeta panel-resultado">
+          <span class="campo-titulo">Resultado</span>
+          <p id="comparar-ganador" class="comparacion-texto" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 8px;"></p>
+          <p id="comparar-porque" class="comparacion-texto"></p>
+        </div>
+
+        <h2 class="titulo-seccion">Diferencias principales</h2>
+        <p class="titulo-seccion-detalle">En contenido, tono y estructura.</p>
+        <ul id="comparar-lista-diferencias" class="frases"></ul>
+
+        <h2 class="titulo-seccion">Sugerencias</h2>
+        <p class="titulo-seccion-detalle" id="comparar-sugerencias-detalle">Para que el texto más artificial suene más natural.</p>
+        <ul id="comparar-lista-sugerencias" class="frases"></ul>
+      </section>
     </section>
 
   </main>
@@ -155,7 +186,6 @@
     <p class="pie-marca"><strong>PuroTexto</strong> — Análisis de autenticidad para hispanohablantes</p>
     <p class="pie-detalle">© <span id="anio">2026</span> PuroTexto · Tus textos no se guardan en nuestros servidores.</p>
   </footer>
-
     </div><!-- /.contenido-principal -->
   </div><!-- /.app-layout -->
 
@@ -221,7 +251,6 @@
     </div>
   </div>
 
-  <!-- ==========================================================================
 
   <!-- ==========================================================================
      LÓGICA JAVASCRIPT (Ubicado al final del body)
@@ -497,60 +526,187 @@
         });
       }
       /* ----------------------------------------------------------------------
-         CONTADOR DE PALABRAS AVANZADO (herramienta independiente del análisis de IA)
+         COMPARACIÓN DE TEXTOS
          ---------------------------------------------------------------------- */
       (function () {
-        var cpTexto = document.getElementById('cp-texto');
-        var cpBtnLimpiar = document.getElementById('cp-btn-limpiar');
-        var cpPalabras = document.getElementById('cp-palabras');
-        var cpCaracteres = document.getElementById('cp-caracteres');
-        var cpCaracteresSin = document.getElementById('cp-caracteres-sin');
-        var cpOraciones = document.getElementById('cp-oraciones');
-        var cpParrafos = document.getElementById('cp-parrafos');
-        var cpLectura = document.getElementById('cp-lectura');
-        if (!cpTexto) return;
+        var LARGO_MINIMO = 50;
+        var LARGO_MAXIMO = 8000;
 
-        function contarOraciones(texto) {
-          var t = texto.trim();
-          if (!t) return 0;
-          var coincidencias = t.match(/[^.!?]+[.!?]+/g);
-          if (coincidencias) return coincidencias.length;
-          return 1; // hay texto pero sin puntuación final: se cuenta como una oración
+        var textoA = document.getElementById('comparar-texto-a');
+        var contadorA = document.getElementById('comparar-contador-a');
+        var btnLimpiarA = document.getElementById('comparar-btn-limpiar-a');
+        var textoB = document.getElementById('comparar-texto-b');
+        var contadorB = document.getElementById('comparar-contador-b');
+        var btnLimpiarB = document.getElementById('comparar-btn-limpiar-b');
+        var btnComparar = document.getElementById('comparar-btn-comparar');
+        var estado = document.getElementById('comparar-estado');
+        var cajaError = document.getElementById('comparar-error');
+        var errorMensaje = document.getElementById('comparar-error-mensaje');
+        var resultados = document.getElementById('comparar-resultados');
+        var elGanador = document.getElementById('comparar-ganador');
+        var elPorque = document.getElementById('comparar-porque');
+        var listaDiferencias = document.getElementById('comparar-lista-diferencias');
+        var listaSugerencias = document.getElementById('comparar-lista-sugerencias');
+        var sugerenciasDetalle = document.getElementById('comparar-sugerencias-detalle');
+        if (!textoA) return;
+
+        function actualizarContador(campo, contadorEl, btnEl) {
+          var n = campo.value.length;
+          contadorEl.textContent = n + ' / ' + LARGO_MAXIMO;
+          contadorEl.classList.toggle('excedido', n > LARGO_MAXIMO);
+          btnEl.hidden = n === 0;
+        }
+        textoA.addEventListener('input', function () { actualizarContador(textoA, contadorA, btnLimpiarA); });
+        textoB.addEventListener('input', function () { actualizarContador(textoB, contadorB, btnLimpiarB); });
+
+        function ocultarError() { cajaError.hidden = true; }
+        function mostrarError(mensaje) {
+          errorMensaje.textContent = mensaje;
+          cajaError.hidden = false;
         }
 
-        function contarParrafos(texto) {
-          var partes = texto.split(/\n\s*\n+/)
-            .map(function (p) { return p.trim(); })
-            .filter(function (p) { return p.length > 0; });
-          return partes.length;
-        }
-
-        function actualizarContadorPalabras() {
-          var texto = cpTexto.value;
-          var conEspacios = texto.length;
-          var sinEspacios = texto.replace(/\s/g, '').length;
-          var palabras = texto.trim() ? texto.trim().split(/\s+/).length : 0;
-          var minutos = palabras === 0 ? 0 : Math.max(1, Math.ceil(palabras / 200));
-
-          cpPalabras.textContent = palabras;
-          cpCaracteres.textContent = conEspacios;
-          cpCaracteresSin.textContent = sinEspacios;
-          cpOraciones.textContent = contarOraciones(texto);
-          cpParrafos.textContent = contarParrafos(texto);
-          cpLectura.textContent = minutos + ' min';
-
-          cpBtnLimpiar.hidden = conEspacios === 0;
-        }
-
-        cpTexto.addEventListener('input', actualizarContadorPalabras);
-        cpBtnLimpiar.addEventListener('click', function () {
-          cpTexto.value = '';
-          actualizarContadorPalabras();
-          cpTexto.focus();
+        btnLimpiarA.addEventListener('click', function () {
+          textoA.value = '';
+          actualizarContador(textoA, contadorA, btnLimpiarA);
+          resultados.hidden = true;
+          ocultarError();
+          textoA.focus();
+        });
+        btnLimpiarB.addEventListener('click', function () {
+          textoB.value = '';
+          actualizarContador(textoB, contadorB, btnLimpiarB);
+          resultados.hidden = true;
+          ocultarError();
+          textoB.focus();
         });
 
-        actualizarContadorPalabras();
+        function fijarCargando(cargando) {
+          btnComparar.disabled = cargando;
+          btnComparar.textContent = cargando ? 'Comparando...' : 'Comparar textos';
+          estado.hidden = !cargando;
+        }
+
+        function crear(etiqueta, clase, texto) {
+          var el = document.createElement(etiqueta);
+          if (clase) el.className = clase;
+          if (texto !== undefined) el.textContent = texto;
+          return el;
+        }
+
+        function tarjetaDeDiferencia(dif) {
+          var li = crear('li', 'tarjeta frase');
+          var campo = crear('div', 'campo');
+          campo.appendChild(crear('span', 'campo-titulo', dif.aspecto || 'Diferencia'));
+          campo.appendChild(crear('p', '', dif.descripcion || ''));
+          campo.lastChild.style.margin = '0';
+          li.appendChild(campo);
+          return li;
+        }
+
+        function tarjetaDeSugerencia(texto) {
+          var li = crear('li', 'tarjeta frase');
+          var campo = crear('div', 'campo');
+          campo.appendChild(crear('p', '', texto));
+          campo.lastChild.style.margin = '0';
+          li.appendChild(campo);
+          return li;
+        }
+
+        // Si el servidor devuelve un error transitorio (502/503), reintenta UNA
+        // sola vez después de una breve espera, antes de darse por vencido.
+        function esperar(ms) {
+          return new Promise(function (resolve) { setTimeout(resolve, ms); });
+        }
+        async function fetchConReintento(url, opciones) {
+          var respuesta = await fetch(url, opciones);
+          if (respuesta.status === 502 || respuesta.status === 503) {
+            await esperar(1000);
+            respuesta = await fetch(url, opciones);
+          }
+          return respuesta;
+        }
+
+        async function comparar() {
+          ocultarError();
+          var valorA = textoA.value.trim();
+          var valorB = textoB.value.trim();
+
+          if (valorA.length < LARGO_MINIMO || valorB.length < LARGO_MINIMO) {
+            mostrarError('Los dos textos necesitan al menos ' + LARGO_MINIMO + ' caracteres para poder compararlos.');
+            return;
+          }
+          if (valorA.length > LARGO_MAXIMO || valorB.length > LARGO_MAXIMO) {
+            mostrarError('Alguno de los textos es muy largo. El máximo es ' + LARGO_MAXIMO + ' caracteres por texto.');
+            return;
+          }
+          if (location.protocol === 'file:') {
+            mostrarError('Esta página necesita estar publicada en el servidor para funcionar. Abrirla directo desde tu computadora no alcanza.');
+            return;
+          }
+
+          resultados.hidden = true;
+          fijarCargando(true);
+
+          try {
+            var respuesta = await fetchConReintento('/api/comparar', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ textoA: valorA, textoB: valorB })
+            });
+
+            var datos = null;
+            try { datos = await respuesta.json(); } catch (e) { /* la respuesta no era JSON */ }
+
+            if (!respuesta.ok || !datos) {
+              var mensaje = datos && datos.error;
+              throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
+            }
+            if (datos.masHumano !== 'A' && datos.masHumano !== 'B') {
+              throw new Error('La respuesta no indicó con claridad cuál texto suena más humano.');
+            }
+
+            var letraGanadora = datos.masHumano;
+            elGanador.textContent = 'Texto ' + letraGanadora + ' suena más humano';
+            elPorque.textContent = datos.porQue || '';
+
+            var diferencias = Array.isArray(datos.diferencias) ? datos.diferencias : [];
+            listaDiferencias.innerHTML = '';
+            if (diferencias.length === 0) {
+              listaDiferencias.appendChild(crear('li', 'tarjeta sin-frases', 'No encontramos diferencias relevantes entre los dos textos.'));
+            } else {
+              diferencias.forEach(function (d) { listaDiferencias.appendChild(tarjetaDeDiferencia(d)); });
+            }
+
+            var letraArtificial = letraGanadora === 'A' ? 'B' : 'A';
+            sugerenciasDetalle.textContent = 'Para que el Texto ' + letraArtificial + ' suene más natural.';
+            var sugerencias = Array.isArray(datos.sugerencias) ? datos.sugerencias : [];
+            listaSugerencias.innerHTML = '';
+            if (sugerencias.length === 0) {
+              listaSugerencias.appendChild(crear('li', 'tarjeta sin-frases', 'No encontramos sugerencias puntuales para sumar.'));
+            } else {
+              sugerencias.forEach(function (s) { listaSugerencias.appendChild(tarjetaDeSugerencia(s)); });
+            }
+
+            resultados.hidden = false;
+            resultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
+            resultados.focus({ preventScroll: true });
+          } catch (err) {
+            if (err instanceof TypeError) {
+              mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet y probá de nuevo.');
+            } else {
+              mostrarError(err.message || 'Ocurrió un error inesperado. Probá de nuevo.');
+            }
+          } finally {
+            fijarCargando(false);
+          }
+        }
+
+        btnComparar.addEventListener('click', comparar);
+
+        actualizarContador(textoA, contadorA, btnLimpiarA);
+        actualizarContador(textoB, contadorB, btnLimpiarB);
       })();
+
 
       var anio = document.getElementById('anio');
       if (anio) anio.textContent = new Date().getFullYear();

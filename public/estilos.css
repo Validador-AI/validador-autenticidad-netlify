@@ -1201,9 +1201,12 @@
 
     /* Botón Exportar a PDF: mismo lenguaje visual que los ítems del sidebar (ícono + arena + borde petróleo) */
     .boton-exportar {
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      width: auto;
+      max-width: max-content;
       padding: 10px 18px;
       border: 1px solid var(--petroleo);
       border-radius: 10px;
@@ -1211,17 +1214,26 @@
       color: var(--petroleo-oscuro);
       font-family: var(--fuente);
       font-size: 0.9rem;
+      line-height: normal;
       font-weight: 500;
+      white-space: nowrap;
+      vertical-align: middle;
       cursor: pointer;
       text-decoration: none;
-      transition: all 0.3s ease;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
     .boton-exportar:hover {
-      background: var(--terracota);
-      border-color: var(--terracota);
-      color: #FFF;
+      background: #C3B29E; /* --arena (#D9C6AF) un poco más oscuro, mismo color */
+      border-color: var(--petroleo);
+      color: var(--petroleo-oscuro);
     }
-    .boton-exportar svg { width: 18px; height: 18px; flex: none; }
+    .boton-exportar svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+      flex: none;
+      color: var(--petroleo);
+    }
     .boton-exportar:disabled { opacity: 0.7; cursor: progress; }
 
     /* ==========================================================================
