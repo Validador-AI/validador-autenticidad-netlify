@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acerca de — PuroTexto</title>
+  <meta name="description" content="PuroTexto es una herramienta de análisis de texto pensada para hispanohablantes, hecha en Argentina. Conocé qué podés hacer y para quién es.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Cliente de Supabase (autenticación) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="menu-movil" aria-label="Navegación principal">
+      <a href="index.html" class="sidebar-top">
+        <img src="/logo-icono.png" alt="" width="40" height="40" class="sidebar-logo-icono">
+        <span class="sidebar-logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
+      </a>
+      <span class="badge-beta">v1.0 Beta</span>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-grupo-titulo">Herramientas</p>
+          <a href="index.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Detector de IA</span>
+          </a>
+          <a href="contador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
+            <span>Contador de palabras</span>
+          </a>
+          <a href="parafraseador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Parafraseador</span>
+          </a>
+          <a href="resumen.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
+            <span>Resumen IA</span>
+          </a>
+          <a href="traductor.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Traductor</span>
+          </a>
+          <a href="gramatica.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>Verificador de Gramática</span>
+          </a>
+          <a href="comparacion.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="18" rx="1.5"></rect><rect x="13" y="3" width="8" height="18" rx="1.5"></rect><path d="M11 9l2 3-2 3"></path></svg>
+            <span>Comparación de Textos</span>
+          </a>
+
+        <p class="sidebar-grupo-titulo">Recursos</p>
+          <a href="index.html#como-funciona" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M10 8l6 4-6 4V8z"></path></svg>
+            <span>Tutoriales</span>
+          </a>
+          <a href="index.html#beneficios" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+            <span>Recursos</span>
+          </a>
+          <a href="index.html#faq" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Preguntas frecuentes</span>
+          </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <!-- Botón de autenticación (cambia según haya sesión activa o no) -->
+        <button type="button" id="btn-auth" class="sidebar-item sidebar-auth">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Iniciar sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="contenido-principal">
+
+      <div class="topbar-movil">
+        <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
+          <svg class="icono-hamburguesa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="6" y1="18" x2="18" y2="6"></line>
+          </svg>
+        </button>
+        <a href="index.html" class="topbar-logo">
+          <img src="/logo-icono.png" alt="PuroTexto" width="28" height="28">
+          <span>PuroTexto</span>
+        </a>
+      </div>
+  <main class="contenedor">
+
+    <!-- ===== ACERCA DE ===== -->
+    <section id="acerca" class="seccion fade-in" style="margin-top: 0;">
+      <h1 class="seccion-titulo">Acerca de PuroTexto</h1>
+
+      <div class="prosa">
+        <p>PuroTexto nació de una necesidad concreta: los detectores de IA que existían no entendían el español.</p>
+
+        <p>La mayoría de las herramientas de detección están entrenadas en inglés. Cuando les pegás un texto en español, o no funcionan bien, o te dan resultados que no tienen nada que ver. No reconocen el voseo, ni el tuteo, ni los modismos locales. No distinguen un email de trabajo formal (escrito por una persona) de un texto generado por IA.</p>
+
+        <p>Y eso es un problema, sobre todo para quienes escribimos en español.</p>
+
+        <p>PuroTexto es una herramienta pensada para hispanohablantes. No es una traducción de un detector en inglés. Es una herramienta diseñada desde cero para entender cómo escribimos en español latinoamericano: con voseo, con modismos, con las particularidades de cada país.</p>
+
+        <h2>¿Qué podés hacer con PuroTexto?</h2>
+        <ul>
+          <li><strong>Detectar si un texto suena humano o generado por IA.</strong> Con un puntaje, un veredicto, y las frases específicas que lo delatan.</li>
+          <li><strong>Parafrasear textos</strong> para que suenen más naturales, manteniendo el significado original.</li>
+          <li><strong>Resumir textos largos</strong> en versiones cortas, medianas o detalladas.</li>
+          <li><strong>Traducir con contexto</strong>, manteniendo el tono y los modismos (y después analizar la traducción con el detector).</li>
+          <li><strong>Verificar la gramática</strong> y la ortografía, con sugerencias concretas.</li>
+          <li><strong>Contar palabras, caracteres, oraciones y párrafos</strong> en tiempo real.</li>
+          <li><strong>Exportar el análisis a PDF</strong> para guardarlo o compartirlo.</li>
+        </ul>
+
+        <h2>¿Para quién es PuroTexto?</h2>
+        <p>Para estudiantes que quieren asegurarse de que sus ensayos suenen propios.<br>
+        Para profesionales que escriben emails y quieren que suenen humanos.<br>
+        Para creadores de contenido que no quieren que sus textos parezcan generados por IA.<br>
+        Para traductores que necesitan verificar que sus traducciones suenan naturales.<br>
+        Para cualquiera que escriba en español y quiera que su texto suene a vos.</p>
+
+        <h2>¿Qué nos hace diferentes?</h2>
+        <ul>
+          <li><strong>Estamos enfocados en español latinoamericano.</strong> Entendemos el voseo, el tuteo, y los modismos regionales.</li>
+          <li><strong>No solo te decimos el puntaje: te decimos qué frases revisar y cómo reescribirlas.</strong></li>
+          <li><strong>El flujo Traductor → Detector es único.</strong> Podés traducir un texto y, con un clic, analizar si la traducción suena natural.</li>
+          <li><strong>Tus textos no se guardan.</strong> Se procesan durante la consulta y se descartan.</li>
+        </ul>
+
+        <h2>¿Es gratis?</h2>
+        <p>Sí. PuroTexto tiene un plan gratuito con límites de uso. Si necesitás más análisis, podés pasar al plan pago.</p>
+
+        <h2>¿Quiénes somos?</h2>
+        <p>PuroTexto es un proyecto independiente, hecho en Argentina. Nació de la necesidad de tener una herramienta de análisis de texto que entendiera nuestro idioma. Y sigue creciendo, con nuevas herramientas que se van sumando.</p>
+
+        <p>Si tenés alguna consulta, sugerencia, o querés contarnos cómo te fue con la herramienta, escribinos a <a href="mailto:hola@purotexto.com">hola@purotexto.com</a>.</p>
+
+        <hr>
+
+        <p class="prosa-cierre">PuroTexto — Análisis de autenticidad para hispanohablantes.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="pie fade-in">
+    <div class="pie-contenido">
+      <div class="pie-columnas">
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Herramientas</h3>
+          <ul>
+            <li><a href="index.html">Detector de IA</a></li>
+            <li><a href="contador.html">Contador de palabras</a></li>
+            <li><a href="parafraseador.html">Parafraseador</a></li>
+            <li><a href="resumen.html">Resumen IA</a></li>
+            <li><a href="traductor.html">Traductor</a></li>
+            <li><a href="gramatica.html">Verificador de Gramática</a></li>
+            <li><a href="comparacion.html">Comparación de Textos</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">PuroTexto</h3>
+          <ul>
+            <li><a href="acerca.html">Acerca de</a></li>
+            <li><a href="#">Artículos</a></li>
+            <li><a href="mailto:hola@purotexto.com">Contacto</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Legal</h3>
+          <ul>
+            <li><a href="privacidad.html">Política de Privacidad</a></li>
+            <li><a href="terminos.html">Términos de Uso</a></li>
+            <li><a href="privacidad.html#cookies">Aviso de Cookies</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Seguinos</h3>
+          <div class="pie-redes">
+            <a href="#" class="pie-red" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"></circle></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4v9.5a3.5 3.5 0 1 1-3.5-3.5"></path><path d="M16 4c0 2.5 2 4.5 4.5 4.5"></path></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="X (Twitter)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3"></rect><line x1="7" y1="10" x2="7" y2="17"></line><circle cx="7" cy="6.5" r="1" fill="currentColor" stroke="none"></circle><path d="M11 17v-4.5a2.5 2.5 0 0 1 5 0V17"></path><line x1="11" y1="10" x2="11" y2="17"></line></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pie-inferior">
+        <p>© <span id="anio">2026</span> PuroTexto. Todos los derechos reservados.</p>
+        <p>Hecho con 💚 en Argentina</p>
+      </div>
+    </div>
+  </footer>
+    </div><!-- /.contenido-principal -->
+  </div><!-- /.app-layout -->
+
+  <div class="modal-overlay" id="modal-auth" hidden>
+    <div class="tarjeta modal-tarjeta" role="dialog" aria-modal="true" aria-label="Cuenta de PuroTexto">
+      <button type="button" id="btn-cerrar-modal" class="modal-cerrar" aria-label="Cerrar">✕</button>
+
+      <!-- Vista: hay una sesión activa -->
+      <div id="vista-cuenta" hidden>
+        <h2 class="modal-titulo">Mi cuenta</h2>
+        <p class="modal-cuenta-email" id="cuenta-email"></p>
+        <button type="button" id="btn-cerrar-sesion" class="boton-principal" style="width: 100%; justify-content: center;">Cerrar sesión</button>
+      </div>
+
+      <!-- Vista: login / registro -->
+      <div id="vista-auth">
+        <button type="button" id="btn-google" class="boton-google">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+          </svg>
+          Continuar con Google
+        </button>
+
+        <div class="modal-separador"><span>o con tu email</span></div>
+
+        <div class="modal-tabs" role="tablist">
+          <button type="button" id="tab-login" class="modal-tab activo" role="tab" data-modo="login">Iniciar sesión</button>
+          <button type="button" id="tab-registro" class="modal-tab" role="tab" data-modo="registro">Registrarme</button>
+        </div>
+
+        <form id="form-auth" novalidate>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-email">Email</label>
+            <input type="email" id="auth-email" required autocomplete="email">
+          </div>
+          <div class="campo">
+            <label class="campo-titulo" for="auth-password">Contraseña</label>
+            <div class="campo-password-wrap">
+              <input type="password" id="auth-password" required minlength="6" autocomplete="current-password">
+              <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg class="icono-ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="icono-ojo-cerrado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.6 19.6 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.19 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="auth-error" class="modal-error" hidden></p>
+
+          <button type="submit" id="btn-auth-submit" class="boton-principal" style="width: 100%; justify-content: center;">Iniciar sesión</button>
+        </form>
+
+        <p class="modal-nota">Al registrarte creás una cuenta con email y contraseña. No compartimos tus datos.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+     LÓGICA JAVASCRIPT (Ubicado al final del body)
+     ========================================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         VARIABLE GLOBAL: si el usuario prefiere reducir el movimiento
+         ---------------------------------------------------------------------- */
+      var reducirMovimiento = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      /* ----------------------------------------------------------------------
+         MENÚ HAMBURGUESA (mobile, < 600px)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var btnMenu = document.getElementById('btn-menu-movil');
+        var menu = document.getElementById('menu-movil');
+        if (!btnMenu || !menu) return;
+
+        function abrirMenu() {
+          menu.classList.add('abierto');
+          btnMenu.setAttribute('aria-expanded', 'true');
+          btnMenu.setAttribute('aria-label', 'Cerrar menú');
+        }
+        function cerrarMenu() {
+          menu.classList.remove('abierto');
+          btnMenu.setAttribute('aria-expanded', 'false');
+          btnMenu.setAttribute('aria-label', 'Abrir menú');
+        }
+
+        btnMenu.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (menu.classList.contains('abierto')) cerrarMenu(); else abrirMenu();
+        });
+
+        // Cerrar al hacer clic en cualquier enlace del menú
+        Array.prototype.forEach.call(menu.querySelectorAll('a'), function (enlace) {
+          enlace.addEventListener('click', cerrarMenu);
+        });
+
+        // Cerrar al hacer clic afuera del menú y del botón
+        document.addEventListener('click', function (e) {
+          if (!menu.classList.contains('abierto')) return;
+          if (menu.contains(e.target) || btnMenu.contains(e.target)) return;
+          cerrarMenu();
+        });
+
+        // Cerrar con la tecla Escape
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') cerrarMenu();
+        });
+      })();
+      /* ----------------------------------------------------------------------
+         SUPABASE: autenticación (login / registro / cerrar sesión)
+         ---------------------------------------------------------------------- */
+      (function () {
+        var SUPABASE_URL = 'https://bprvlyzdnsykwjamumhw.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_KkrHOVTWjZfFbX7Yz_SwMQ_O8xLbFlx';
+
+        if (typeof supabase === 'undefined') {
+          console.warn('No se pudo cargar el cliente de Supabase (revisá la conexión a internet).');
+          return;
+        }
+        var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        var btnAuth = document.getElementById('btn-auth');
+        var modal = document.getElementById('modal-auth');
+        var btnCerrarModal = document.getElementById('btn-cerrar-modal');
+        var vistaAuth = document.getElementById('vista-auth');
+        var vistaCuenta = document.getElementById('vista-cuenta');
+        var cuentaEmail = document.getElementById('cuenta-email');
+        var btnCerrarSesion = document.getElementById('btn-cerrar-sesion');
+        var tabLogin = document.getElementById('tab-login');
+        var tabRegistro = document.getElementById('tab-registro');
+        var formAuth = document.getElementById('form-auth');
+        var inputEmail = document.getElementById('auth-email');
+        var inputPassword = document.getElementById('auth-password');
+        var btnTogglePassword = document.getElementById('btn-toggle-password');
+        var btnGoogle = document.getElementById('btn-google');
+        var authError = document.getElementById('auth-error');
+        var btnSubmit = document.getElementById('btn-auth-submit');
+        if (!btnAuth || !modal || !formAuth) return;
+
+        var modoActual = 'login';
+        var sesionActual = null;
+
+        function mostrarError(mensaje) {
+          authError.textContent = mensaje;
+          authError.hidden = false;
+        }
+        function ocultarError() {
+          authError.hidden = true;
+        }
+
+        function cambiarModo(modo) {
+          modoActual = modo;
+          ocultarError();
+          var esLogin = modo === 'login';
+          tabLogin.classList.toggle('activo', esLogin);
+          tabRegistro.classList.toggle('activo', !esLogin);
+          btnSubmit.textContent = esLogin ? 'Iniciar sesión' : 'Crear cuenta';
+          inputPassword.setAttribute('autocomplete', esLogin ? 'current-password' : 'new-password');
+        }
+        tabLogin.addEventListener('click', function () { cambiarModo('login'); });
+        tabRegistro.addEventListener('click', function () { cambiarModo('registro'); });
+
+        if (btnTogglePassword) {
+          btnTogglePassword.addEventListener('click', function () {
+            var oculta = inputPassword.type === 'password';
+            inputPassword.type = oculta ? 'text' : 'password';
+            btnTogglePassword.setAttribute('aria-pressed', oculta ? 'true' : 'false');
+            btnTogglePassword.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+            btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = oculta;
+            btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = !oculta;
+          });
+        }
+
+        if (btnGoogle) {
+          btnGoogle.addEventListener('click', function () {
+            ocultarError();
+            btnGoogle.disabled = true;
+
+            supabaseClient.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: 'https://purotexto.com' }
+            }).then(function (resultado) {
+              // Si signInWithOAuth funciona, el navegador redirige a Google y
+              // esta línea no llega a ejecutarse. Si llega, es porque falló.
+              if (resultado.error) {
+                mostrarError(resultado.error.message || 'No pudimos conectar con Google. Probá de nuevo.');
+                btnGoogle.disabled = false;
+              }
+            }).catch(function () {
+              mostrarError('No pudimos conectar con Google. Probá de nuevo.');
+              btnGoogle.disabled = false;
+            });
+          });
+        }
+
+        function actualizarBotonAuth() {
+          btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+        }
+
+        function abrirModal() {
+          ocultarError();
+          if (sesionActual) {
+            vistaAuth.hidden = true;
+            vistaCuenta.hidden = false;
+            cuentaEmail.textContent = sesionActual.user.email;
+          } else {
+            vistaCuenta.hidden = true;
+            vistaAuth.hidden = false;
+            formAuth.reset();
+            cambiarModo('login');
+            if (btnTogglePassword) {
+              inputPassword.type = 'password';
+              btnTogglePassword.setAttribute('aria-pressed', 'false');
+              btnTogglePassword.setAttribute('aria-label', 'Mostrar contraseña');
+              btnTogglePassword.querySelector('.icono-ojo-abierto').hidden = false;
+              btnTogglePassword.querySelector('.icono-ojo-cerrado').hidden = true;
+            }
+          }
+          modal.hidden = false;
+          document.body.style.overflow = 'hidden';
+        }
+        function cerrarModal() {
+          modal.hidden = true;
+          document.body.style.overflow = '';
+        }
+
+        btnAuth.addEventListener('click', abrirModal);
+        btnCerrarModal.addEventListener('click', cerrarModal);
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) cerrarModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !modal.hidden) cerrarModal();
+        });
+
+        formAuth.addEventListener('submit', function (e) {
+          e.preventDefault();
+          ocultarError();
+
+          var email = inputEmail.value.trim();
+          var password = inputPassword.value;
+          if (!email || !password) {
+            mostrarError('Completá tu email y tu contraseña.');
+            return;
+          }
+          if (password.length < 6) {
+            mostrarError('La contraseña tiene que tener al menos 6 caracteres.');
+            return;
+          }
+
+          btnSubmit.disabled = true;
+          var textoOriginal = btnSubmit.textContent;
+          btnSubmit.textContent = 'Un momento...';
+
+          var promesa = modoActual === 'login'
+            ? supabaseClient.auth.signInWithPassword({ email: email, password: password })
+            : supabaseClient.auth.signUp({ email: email, password: password });
+
+          promesa.then(function (resultado) {
+            if (resultado.error) {
+              mostrarError(resultado.error.message || 'No pudimos completar la operación.');
+              return;
+            }
+            if (modoActual === 'registro' && !resultado.data.session) {
+              // El proyecto tiene activada la confirmación por email: no queda logueado al toque.
+              // Para que el registro loguee de inmediato, hay que desactivar "Confirm email"
+              // en el panel de Supabase (Authentication → Providers → Email).
+              mostrarError('Te registramos. Revisá tu email para confirmar la cuenta antes de poder iniciar sesión.');
+              return;
+            }
+            cerrarModal();
+          }).catch(function () {
+            mostrarError('No pudimos conectar con el servidor. Probá de nuevo en un momento.');
+          }).finally(function () {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = textoOriginal;
+          });
+        });
+
+        if (btnCerrarSesion) {
+          btnCerrarSesion.addEventListener('click', function () {
+            supabaseClient.auth.signOut().then(function () {
+              cerrarModal();
+            });
+          });
+        }
+
+        // Mantiene el botón sincronizado con el estado real de la sesión
+        supabaseClient.auth.onAuthStateChange(function (_evento, session) {
+          sesionActual = session;
+          actualizarBotonAuth();
+        });
+        supabaseClient.auth.getSession().then(function (resultado) {
+          sesionActual = resultado.data.session;
+          actualizarBotonAuth();
+        });
+      })();
+      /* ----------------------------------------------------------------------
+         5. INTERSECTION OBSERVER PARA FADE-IN EN SCROLL
+         ---------------------------------------------------------------------- */
+      if (!reducirMovimiento && 'IntersectionObserver' in window) {
+        var opcionesObserver = {
+          root: null,
+          rootMargin: '0px 0px -50px 0px',
+          threshold: 0.15
+        };
+
+        var observadorScroll = new IntersectionObserver(function (entradas, observer) {
+          entradas.forEach(function (entrada) {
+            if (entrada.isIntersecting) {
+              entrada.target.classList.add('visible');
+              observer.unobserve(entrada.target); // Dejar de observar una vez visible
+            }
+          });
+        }, opcionesObserver);
+
+        // Se observan explícitamente todas las secciones con la clase .fade-in
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          observadorScroll.observe(elemento);
+        });
+      } else {
+        // En caso de reducción de movimiento o falta de soporte, hacer visibles de inmediato
+        var elementosFade = document.querySelectorAll('.fade-in');
+        elementosFade.forEach(function (elemento) {
+          elemento.classList.add('visible');
+        });
+      }
+
+      var anio = document.getElementById('anio');
+      if (anio) anio.textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
