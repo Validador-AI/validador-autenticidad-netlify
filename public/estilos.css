@@ -1659,3 +1659,24 @@
       .medidor-marca { transition: none !important; }
       h1.titulo-principal { animation: none !important; opacity: 1 !important; transform: none !important; }
     }
+
+/* Arreglo para que los botones con etiqueta <a> se vean como botones reales */
+a.boton-principal {
+  display: inline-block;
+  background-color: var(--terracota);
+  color: #FFFFFF !important;
+  padding: 14px 36px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-family: var(--fuente);
+  font-size: 1.05rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(196, 95, 69, 0.25);
+  transition: all 0.3s ease;
+}
+
+a.boton-principal:hover {
+  background-color: var(--terracota-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3);
+}
