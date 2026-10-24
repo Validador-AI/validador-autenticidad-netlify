@@ -6,7 +6,6 @@
   <title>Traductor con contexto en español — PuroTexto</title>
   <meta name="description" content="Traducí tu texto a otro idioma manteniendo el tono y los modismos, no palabra por palabra. Elegí idioma y tono.">
   <link rel="canonical" href="https://purotexto.com/traductor" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -16,6 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/limites.js?v=2" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -396,6 +396,7 @@
           return;
         }
         var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // lo usa limites.js
 
         var btnAuth = document.getElementById('btn-auth');
         var modal = document.getElementById('modal-auth');
@@ -626,6 +627,11 @@
         var tradBtnAnalizar = document.getElementById('traductor-btn-analizar');
         if (!tradTexto) return;
 
+        // Límites de uso: cartel "Te quedan X análisis hoy" y aviso de límite alcanzado
+        if (window.PuroTextoLimites) {
+          PuroTextoLimites.init({ campo: tradTexto, boton: tradBtnTraducir });
+        }
+
         function tonoElegido() {
           var marcado = document.querySelector('input[name="tono-traductor"]:checked');
           return marcado ? marcado.value : 'casual';
@@ -715,10 +721,16 @@
             return;
           }
 
-          tradResultados.hidden = true;
           fijarCargando(true);
 
           try {
+            // Límite diario: si no le queda cupo, limites.js muestra el aviso y cortamos acá.
+            if (window.PuroTextoLimites) {
+              var cupo = await PuroTextoLimites.puedeAnalizar();
+              if (!cupo.permitido) return;
+            }
+            tradResultados.hidden = true;
+
             var respuesta = await fetchConReintento('/api/traducir', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -735,6 +747,7 @@
             if (!datos.traduccion) {
               throw new Error('La respuesta no incluyó la traducción.');
             }
+            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
 
             tradSalida.textContent = datos.traduccion;
             tradResultados.hidden = false;
