@@ -14,10 +14,17 @@
      4. Antes de analizar:  await PuroTextoLimites.puedeAnalizar()
         Después de un análisis exitoso:  PuroTextoLimites.registrarAnalisis()
 
-   IMPORTANTE: este control corre en el navegador, así que sirve para la
-   experiencia de usuario pero NO frena a alguien que llame directo a /api/*.
-   Para proteger de verdad la cuota de Gemini hay que validar también en el
-   servidor (las funciones de /api).
+   VALIDACIÓN EN EL SERVIDOR
+   Este módulo es la parte de "experiencia de usuario" (cartel, aviso, chequeo
+   rápido). La protección real está en el servidor: las funciones de /api que
+   ya fueron migradas (hoy: parafrasear.js) descuentan el cupo en Supabase y
+   devuelven 429 si no queda. Para esas herramientas la página tiene que:
+     · mandar el token:   headers = Object.assign({...}, await PuroTextoLimites.cabeceras())
+     · si responde 429 con codigo "limite_diario":  PuroTextoLimites.limiteAlcanzado(datos.uso)
+     · al terminar bien:  PuroTextoLimites.registrarAnalisis(datos)
+       (el servidor ya descontó el análisis; acá solo se actualiza el cartel)
+   Las herramientas que todavía no fueron migradas siguen funcionando como antes:
+   registrarAnalisis() sin argumentos descuenta desde el navegador.
    ========================================================================== */
 (function () {
   'use strict';
@@ -234,6 +241,62 @@
   }
 
   /* ------------------------------------------------------------------------
+     Integración con el servidor (herramientas ya migradas)
+     ------------------------------------------------------------------------ */
+
+  // Encabezado con el token de sesión, para que el servidor sepa quién es.
+  // Si no hay sesión devuelve {} y el servidor lo cuenta como anónimo (por IP).
+  async function cabeceras() {
+    var sb = cliente();
+    if (!sb) return {};
+    try {
+      var resultado = await sb.auth.getSession();
+      var sesion = resultado && resultado.data && resultado.data.session;
+      if (sesion && sesion.access_token) {
+        return { Authorization: 'Bearer ' + sesion.access_token };
+      }
+    } catch (e) { /* sin sesión */ }
+    return {};
+  }
+
+  // Toma el conteo que informa el servidor (campo "uso" de su respuesta).
+  function aplicarUsoServidor(uso) {
+    estado.error = false;
+    estado.listo = true;
+    if (uso.premium) {
+      estado.premium = true;
+    } else {
+      estado.premium = false;
+      estado.limite = uso.limite || estado.limite;
+      estado.usados = uso.usados || 0;
+      if (!estado.sesion) {
+        // Anónimo: el servidor cuenta por IP y el navegador por su cuenta; nos quedamos con el mayor.
+        var datos = leerAnonimo();
+        datos.n = Math.max(datos.n + 1, uso.usados || 0);
+        guardarAnonimo(datos);
+        estado.usados = datos.n;
+      }
+    }
+    pintarBanner();
+  }
+
+  // El servidor dijo "no hay más cupo hoy" (429 con codigo "limite_diario").
+  function limiteAlcanzado(uso) {
+    estado.error = false;
+    estado.listo = true;
+    estado.premium = false;
+    if (uso && uso.limite) estado.limite = uso.limite;
+    estado.usados = estado.limite;
+    if (!estado.sesion) {
+      var datos = leerAnonimo();
+      datos.n = Math.max(datos.n, estado.limite);
+      guardarAnonimo(datos);
+    }
+    pintarBanner();
+    mostrarLimite();
+  }
+
+  /* ------------------------------------------------------------------------
      API pública
      ------------------------------------------------------------------------ */
 
@@ -269,8 +332,16 @@
     return { permitido: false };
   }
 
-  // Después de un análisis exitoso: descuenta uno.
-  async function registrarAnalisis() {
+  // Después de un análisis exitoso.
+  //  · Con la respuesta del servidor ("datos" trae "uso"): el servidor ya descontó,
+  //    solo actualizamos el cartel.
+  //  · Sin argumentos (herramientas todavía no migradas): descuenta desde el navegador.
+  async function registrarAnalisis(datos) {
+    if (datos && datos.uso) {
+      aplicarUsoServidor(datos.uso);
+      return;
+    }
+
     if (estado.sesion && !estado.error) {
       var sb = cliente();
       try {
@@ -301,6 +372,8 @@
   window.PuroTextoLimites = {
     init: init,
     puedeAnalizar: puedeAnalizar,
-    registrarAnalisis: registrarAnalisis
+    registrarAnalisis: registrarAnalisis,
+    cabeceras: cabeceras,
+    limiteAlcanzado: limiteAlcanzado
   };
 })();

@@ -15,7 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/limites.js?v=2" defer></script>
+  <script src="/limites.js?v=3" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <link rel="stylesheet" href="estilos.css">
@@ -1471,9 +1471,22 @@
           }
           resultados.hidden = true;
 
+          // Si hay sesión, mandamos el token para que el servidor sepa quién es y cuente su cupo.
+          // (En el envío de archivo NO se pone Content-Type: el navegador lo arma solo.)
+          if (window.PuroTextoLimites) {
+            var sesionCab = await PuroTextoLimites.cabeceras();
+            pedido.headers = Object.assign({}, pedido.headers || {}, sesionCab);
+          }
+
           var respuesta = await fetchConReintento('/api/analizar', pedido);
           var datos = null;
           try { datos = await respuesta.json(); } catch (e) {}
+
+          // El servidor dijo que no queda cupo hoy: mostramos el aviso con los botones.
+          if (respuesta.status === 429 && datos && datos.codigo === 'limite_diario' && window.PuroTextoLimites) {
+            PuroTextoLimites.limiteAlcanzado(datos.uso);
+            return;
+          }
 
           if (!respuesta.ok || !datos) {
             var mensaje = datos && datos.error;
@@ -1483,7 +1496,7 @@
             throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
           }
           mostrarResultados(datos, modo === 'archivo' ? ('(Documento subido: ' + (archivoElegido && archivoElegido.name) + ')') : texto);
-          if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
+          if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis(datos); // el servidor ya descontó: solo actualiza el cartel
         } catch (err) {
           if (err instanceof TypeError) {
             mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet.');
