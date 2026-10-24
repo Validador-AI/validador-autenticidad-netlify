@@ -21,6 +21,31 @@
 //      En ese caso el servidor extrae el texto del archivo y sigue igual que en (1).
 // El archivo se lee en memoria y NO se guarda en ningún lado.
 //
+// LÍMITES DE USO (Freemium) — se validan ACÁ, en el servidor
+// ----------------------------------------------------------
+// Antes de llamar a Gemini, esta función descuenta un análisis del cupo diario:
+//   · Anónimo (sin sesión) ..... 3 por día, contados por IP        (tabla uso_anonimo)
+//   · Registrado (gratis) ...... 10 por día, contados por usuario  (tabla user_usage)
+//   · Premium .................. ilimitado (profiles.is_premium = true)
+// Como la cuenta se hace en el servidor, no se puede saltear desde el navegador
+// (borrando localStorage, llamando directo a /api/analizar, etc.).
+// Los números reales viven en la base de datos (limites.sql y limites_servidor.sql).
+//
+// ORDEN IMPORTANTE con los archivos: el cupo se descuenta ANTES de abrir el
+// archivo. Si no queda cupo, se responde 429 sin leer ni descomprimir nada (ni
+// siquiera se llama a formData()), así no se gastan recursos en pedidos que de
+// todas formas se iban a rechazar. Si después el archivo resulta inválido, o
+// Gemini falla, el análisis se le devuelve al cupo: nadie pierde uno por un error.
+//
+// Para que funcione hace falta, en Cloudflare (Settings → Variables and Secrets):
+//   · SUPABASE_SERVICE_ROLE_KEY  (tipo "Secret": la clave secreta de Supabase)
+//   · SUPABASE_URL               (opcional; si falta se usa SUPABASE_URL_POR_DEFECTO)
+//
+// En ambos casos la página puede mandar, si la persona tiene sesión, el
+// encabezado  Authorization: Bearer <token>. Respuestas:
+//   200 { puntaje, veredicto, frases, uso: {...}, aviso? }
+//   429 { codigo: "limite_diario", error, uso }  |  4xx/5xx { error }
+//
 // IMPORTANTE: este archivo usa Buffer (de Node.js) para identificar el tipo de
 // archivo (mirando sus primeros bytes). Cloudflare solo lo entiende si el proyecto
 // tiene activada la "compatibilidad con Node.js" (nodejs_compat). Ver wrangler.toml
@@ -50,11 +75,25 @@ const LARGO_MAXIMO = 8000;
 const TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024;
 const PAGINAS_A_LEER = 60;
 
+// Un pedido con archivo trae, además del archivo, un poco de "envoltorio"
+// (nombres de campos, separadores). Este margen se suma al máximo de arriba para
+// rechazar enseguida, mirando solo el encabezado Content-Length, los pedidos
+// que claramente son más grandes de lo permitido.
+const MARGEN_ENVOLTORIO_BYTES = 512 * 1024;
+
 // Freno simple contra abusos: máximo de análisis por minuto desde una misma IP.
+// (Es un freno de ráfagas; el límite DIARIO lo controla Supabase, más abajo.)
 const MAX_POR_MINUTO = 8;
 
 // Tiempo máximo de espera a Gemini (milisegundos).
 const ESPERA_MAXIMA_MS = 25000;
+
+// Dirección de tu proyecto de Supabase (es la misma que ya está en el HTML, no
+// es secreta). Si algún día cambia, podés poner SUPABASE_URL como variable de entorno.
+const SUPABASE_URL_POR_DEFECTO = 'https://bprvlyzdnsykwjamumhw.supabase.co';
+
+// Tiempo máximo de espera a Supabase (milisegundos).
+const ESPERA_SUPABASE_MS = 8000;
 
 // ----- El prompt (las instrucciones para Gemini) ------------------------------
 // Está escrito en español y le pide a Gemini que responda SOLO con un JSON.
@@ -185,6 +224,123 @@ function mensajeParaError(status, detalle) {
     return 'Gemini tiene problemas en este momento. Probá de nuevo en unos minutos.';
   }
   return 'No se pudo completar el análisis. Probá de nuevo en unos minutos.';
+}
+
+// Saca las marcas del prompt por si alguien las escribe adentro del texto (o del
+// archivo), para que no puedan confundir a Gemini.
+function sinMarcasDelPrompt(texto) {
+  return String(texto || '').replace(/<\/?texto_a_analizar>/gi, '').trim();
+}
+
+// Revisa el largo del texto. Devuelve el mensaje de error, o null si está bien.
+function errorDeLargo(texto) {
+  if (texto.length < LARGO_MINIMO) {
+    return `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.`;
+  }
+  if (texto.length > LARGO_MAXIMO) {
+    return `El texto es muy largo. El máximo es de ${LARGO_MAXIMO} caracteres.`;
+  }
+  return null;
+}
+
+// ----- Límites de uso: hablar con Supabase ------------------------------------
+
+// Dirección de Supabase sin barra final.
+function urlSupabase(env) {
+  return String(env.SUPABASE_URL || SUPABASE_URL_POR_DEFECTO).replace(/\/+$/, '');
+}
+
+// Hace un pedido a Supabase con tiempo máximo de espera.
+async function pedirSupabase(url, opciones) {
+  const control = new AbortController();
+  const temporizador = setTimeout(() => control.abort(), ESPERA_SUPABASE_MS);
+  try {
+    return await fetch(url, Object.assign({ signal: control.signal }, opciones));
+  } finally {
+    clearTimeout(temporizador);
+  }
+}
+
+// Encabezados para llamar a Supabase con la clave secreta (service role).
+// Las claves nuevas ("sb_secret_...") viajan solo en "apikey"; las viejas
+// (formato JWT, empiezan con "eyJ") además van en "Authorization".
+function encabezadosServicio(env) {
+  const clave = env.SUPABASE_SERVICE_ROLE_KEY;
+  const encabezados = { apikey: clave, 'Content-Type': 'application/json' };
+  if (clave.startsWith('eyJ')) encabezados.Authorization = 'Bearer ' + clave;
+  return encabezados;
+}
+
+// Saca el token de sesión del encabezado "Authorization: Bearer ...".
+function tokenDelPedido(request) {
+  const cabecera = request.headers.get('authorization') || '';
+  const m = /^Bearer\s+(.+)$/i.exec(cabecera);
+  return m ? m[1].trim() : '';
+}
+
+// Le pregunta a Supabase de quién es el token. Devuelve el id del usuario,
+// o null si el token es inválido o está vencido.
+async function usuarioDelToken(env, token) {
+  const respuesta = await pedirSupabase(urlSupabase(env) + '/auth/v1/user', {
+    method: 'GET',
+    headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + token },
+  });
+  if (respuesta.status === 401 || respuesta.status === 403) return null;
+  if (!respuesta.ok) throw new Error('Supabase auth respondió ' + respuesta.status);
+  const usuario = await respuesta.json();
+  return usuario && usuario.id ? usuario.id : null;
+}
+
+// Llama a una función de la base de datos (RPC) con la clave secreta.
+async function llamarFuncion(env, nombre, argumentos) {
+  const respuesta = await pedirSupabase(urlSupabase(env) + '/rest/v1/rpc/' + nombre, {
+    method: 'POST',
+    headers: encabezadosServicio(env),
+    body: JSON.stringify(argumentos),
+  });
+  const texto = await respuesta.text().catch(() => '');
+  if (!respuesta.ok) {
+    throw new Error('rpc ' + nombre + ' respondió ' + respuesta.status + ' ' + texto.slice(0, 200));
+  }
+  return texto ? JSON.parse(texto) : null;
+}
+
+// Para IPv6 usamos solo los primeros 64 bits (el "barrio" de la conexión): una
+// misma persona puede cambiar los últimos 64 bits a voluntad y así esquivar el límite.
+function normalizarIp(ip) {
+  const limpia = String(ip || '').trim().toLowerCase();
+  if (!limpia.includes(':')) return limpia || 'desconocida';
+  let grupos;
+  if (limpia.includes('::')) {
+    const [izquierda, derecha] = limpia.split('::');
+    const g1 = izquierda ? izquierda.split(':') : [];
+    const g2 = derecha ? derecha.split(':') : [];
+    grupos = g1.concat(new Array(Math.max(8 - g1.length - g2.length, 0)).fill('0'), g2);
+  } else {
+    grupos = limpia.split(':');
+  }
+  return grupos.slice(0, 4).map((g) => g.padStart(4, '0')).join(':') + '::/64';
+}
+
+// Convierte la IP en un código irreversible (SHA-256). En la base de datos nunca
+// se guarda la IP real. Se mezcla con la clave secreta para que nadie pueda
+// "adivinar" qué IP corresponde a cada código.
+async function hashearIp(ip, secreto) {
+  const datos = new TextEncoder().encode(ip + '|' + secreto);
+  const resumen = await crypto.subtle.digest('SHA-256', datos);
+  return Array.from(new Uint8Array(resumen))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Lo que la página necesita saber del cupo (para el cartel "Te quedan X análisis").
+function resumenDeUso(cupo) {
+  return {
+    premium: !!cupo.premium,
+    usados: cupo.usados == null ? null : cupo.usados,
+    limite: cupo.limite == null ? null : cupo.limite,
+    restantes: cupo.restantes == null ? null : cupo.restantes,
+  };
 }
 
 // ----- Lectura de archivos (PDF y DOCX) ---------------------------------------
@@ -480,6 +636,31 @@ export async function onRequest(context) {
     return responder(405, { error: 'Método no permitido. Esta dirección solo acepta POST.' }, { Allow: 'POST' });
   }
 
+  // Datos del análisis que descontamos del cupo (si llegamos a descontar uno).
+  // Si algo falla después, se lo devolvemos a la persona: no pierde un análisis por un error nuestro.
+  let cupo = null;
+  let identidad = null;
+
+  async function devolverCupo() {
+    if (!cupo || !cupo.permitido || cupo.premium || !identidad) return;
+    try {
+      await llamarFuncion(env, 'servidor_devolver', {
+        p_user: identidad.userId,
+        p_ip_hash: identidad.ipHash,
+        p_dia: cupo.dia,
+      });
+    } catch (e) {
+      console.error('No se pudo devolver el análisis al cupo:', e.message);
+    }
+    cupo = null;
+  }
+
+  // Responde con un error devolviendo antes el análisis descontado.
+  async function fallar(estado, objeto) {
+    await devolverCupo();
+    return responder(estado, objeto);
+  }
+
   try {
     // 1) La clave: se lee de la variable de entorno, nunca del código.
     const apiKey = env.GEMINI_API_KEY;
@@ -497,41 +678,100 @@ export async function onRequest(context) {
       String(request.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
       'desconocida';
     if (superaLimite(ip)) {
-      return responder(429, { error: 'Hiciste muchos análisis seguidos. Esperá un minuto y probá de nuevo.' });
+      return responder(429, {
+        codigo: 'muchas_seguidas',
+        error: 'Hiciste muchos análisis seguidos. Esperá un minuto y probá de nuevo.',
+      });
     }
 
-    // 3) Obtener el texto: pegado (JSON) o extraído de un archivo (multipart).
+    // 3) Revisiones baratas, ANTES de descontar el cupo.
     const tipoContenido = String(request.headers.get('content-type') || '').toLowerCase();
+    const esArchivo = tipoContenido.startsWith('multipart/form-data');
     let texto = '';
     let aviso = null;
 
-    if (tipoContenido.startsWith('multipart/form-data')) {
-      const lectura = await textoDesdeArchivo(request);
-      if (lectura.error) return responder(lectura.estado, { error: lectura.error });
-      texto = lectura.texto;
-      aviso = lectura.aviso;
+    if (esArchivo) {
+      // Todavía NO abrimos el archivo: solo miramos el tamaño que declara el pedido.
+      const largoDeclarado = Number(request.headers.get('content-length'));
+      if (largoDeclarado > TAMANO_MAXIMO_ARCHIVO + MARGEN_ENVOLTORIO_BYTES) {
+        return responder(413, {
+          error: `El archivo es muy grande. El máximo es de ${Math.round(TAMANO_MAXIMO_ARCHIVO / 1048576)} MB.`,
+        });
+      }
     } else {
+      // Texto pegado (JSON): validarlo es barato, así que un texto inválido no gasta cupo.
       let cuerpo = {};
       try {
         cuerpo = await request.json();
       } catch (e) {
         cuerpo = {};
       }
-      texto = cuerpo && typeof cuerpo.texto === 'string' ? cuerpo.texto : '';
+      texto = sinMarcasDelPrompt(cuerpo && typeof cuerpo.texto === 'string' ? cuerpo.texto : '');
+      const problemaDeLargo = errorDeLargo(texto);
+      if (problemaDeLargo) return responder(400, { error: problemaDeLargo });
     }
 
-    // Sacamos las marcas del prompt por si alguien las escribe adentro del texto
-    // (o del archivo), para que no puedan confundir a Gemini.
-    texto = texto.replace(/<\/?texto_a_analizar>/gi, '').trim();
-
-    if (texto.length < LARGO_MINIMO) {
-      return responder(400, { error: `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.` });
-    }
-    if (texto.length > LARGO_MAXIMO) {
-      return responder(400, { error: `El texto es muy largo. El máximo es de ${LARGO_MAXIMO} caracteres.` });
+    // 4) Límite diario de uso (se valida en el servidor, con Supabase).
+    if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY');
+      return responder(500, {
+        error: 'El servidor todavía no tiene configurada la clave de Supabase (SUPABASE_SERVICE_ROLE_KEY).',
+      });
     }
 
-    // 4) Llamar a Gemini.
+    try {
+      // ¿Es una persona con sesión? Si manda un token, Supabase nos dice quién es.
+      const token = tokenDelPedido(request);
+      let userId = null;
+      if (token) {
+        userId = await usuarioDelToken(env, token);
+        if (!userId) {
+          return responder(401, {
+            codigo: 'sesion_invalida',
+            error: 'Tu sesión venció. Volvé a iniciar sesión e intentá de nuevo.',
+          });
+        }
+      }
+
+      const ipHash = await hashearIp(normalizarIp(ip), env.SUPABASE_SERVICE_ROLE_KEY);
+      identidad = { userId, ipHash };
+
+      // Descuenta 1 análisis de forma atómica y dice si estaba permitido.
+      cupo = await llamarFuncion(env, 'servidor_consumir', { p_user: userId, p_ip_hash: ipHash });
+      if (!cupo || typeof cupo.permitido !== 'boolean') throw new Error('Respuesta inesperada de servidor_consumir');
+    } catch (e) {
+      console.error('No se pudo verificar el cupo de uso:', e.message);
+      cupo = null;
+      return responder(503, {
+        error: 'No pudimos verificar tu cupo de uso. Probá de nuevo en unos segundos.',
+      });
+    }
+
+    if (!cupo.permitido) {
+      const usoActual = resumenDeUso(cupo);
+      cupo = null; // no se descontó nada, no hay nada que devolver
+      return responder(429, {
+        codigo: 'limite_diario',
+        error: identidad.userId
+          ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para uso ilimitado.'
+          : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para uso ilimitado.',
+        uso: usoActual,
+      });
+    }
+
+    // 5) Recién ahora, con el cupo confirmado, se procesa el archivo (si había uno).
+    // Si el archivo no sirve, fallar() le devuelve el análisis al cupo.
+    if (esArchivo) {
+      const lectura = await textoDesdeArchivo(request);
+      if (lectura.error) return await fallar(lectura.estado, { error: lectura.error });
+      texto = sinMarcasDelPrompt(lectura.texto);
+      aviso = lectura.aviso;
+
+      const problemaDeLargo = errorDeLargo(texto);
+      if (problemaDeLargo) return await fallar(400, { error: problemaDeLargo });
+    }
+
+    // 6) Llamar a Gemini.
     const modelo = env.GEMINI_MODEL || MODELO_POR_DEFECTO;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
 
@@ -561,7 +801,7 @@ export async function onRequest(context) {
       });
     } catch (e) {
       if (e && e.name === 'AbortError') {
-        return responder(504, { error: 'Gemini tardó demasiado en responder. Probá de nuevo.' });
+        return await fallar(504, { error: 'Gemini tardó demasiado en responder. Probá de nuevo.' });
       }
       throw e;
     } finally {
@@ -574,12 +814,12 @@ export async function onRequest(context) {
       const detalle = datos && datos.error && datos.error.message;
       // Esto queda en los registros ("Logs") de Cloudflare para que puedas investigar. No incluye tu clave ni el texto.
       console.error('Error de Gemini', respuesta.status, detalle);
-      return responder(502, { error: mensajeParaError(respuesta.status, detalle) });
+      return await fallar(502, { error: mensajeParaError(respuesta.status, detalle) });
     }
 
-    // 5) Leer la respuesta de Gemini.
+    // 7) Leer la respuesta de Gemini.
     if (datos && datos.promptFeedback && datos.promptFeedback.blockReason) {
-      return responder(422, {
+      return await fallar(422, {
         error: 'Gemini no pudo analizar este texto por sus filtros de seguridad. Probá con otro fragmento.',
       });
     }
@@ -594,7 +834,7 @@ export async function onRequest(context) {
 
     if (!textoRespuesta) {
       console.error('Gemini devolvió una respuesta vacía', JSON.stringify(datos && datos.candidates && datos.candidates[0] && datos.candidates[0].finishReason));
-      return responder(502, { error: 'Gemini no devolvió resultados. Probá de nuevo.' });
+      return await fallar(502, { error: 'Gemini no devolvió resultados. Probá de nuevo.' });
     }
 
     let resultado;
@@ -602,15 +842,16 @@ export async function onRequest(context) {
       resultado = normalizar(extraerJSON(textoRespuesta));
     } catch (e) {
       console.error('No se pudo interpretar la respuesta de Gemini:', e.message);
-      return responder(502, { error: 'La respuesta de Gemini llegó en un formato inesperado. Probá de nuevo.' });
+      return await fallar(502, { error: 'La respuesta de Gemini llegó en un formato inesperado. Probá de nuevo.' });
     }
 
-    // 6) Todo bien: devolvemos el JSON a la página.
+    // 8) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
     // Si el archivo era muy largo, sumamos un "aviso" para que la página lo muestre.
     if (aviso) resultado.aviso = aviso;
+    resultado.uso = resumenDeUso(cupo);
     return responder(200, resultado);
   } catch (error) {
     console.error('Error inesperado en /api/analizar:', error);
-    return responder(500, { error: 'Ocurrió un error inesperado en el servidor. Probá de nuevo en unos minutos.' });
+    return await fallar(500, { error: 'Ocurrió un error inesperado en el servidor. Probá de nuevo en unos minutos.' });
   }
 }
