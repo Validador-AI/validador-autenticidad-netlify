@@ -6,7 +6,6 @@
   <title>Resumen IA — PuroTexto</title>
   <meta name="description" content="Generá un resumen conciso de tu texto en segundos. Elegí el largo (corto, medio o detallado) en español latinoamericano.">
   <link rel="canonical" href="https://purotexto.com/resumen" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -16,6 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/limites.js?v=2" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -369,6 +369,7 @@
           return;
         }
         var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // lo usa limites.js
 
         var btnAuth = document.getElementById('btn-auth');
         var modal = document.getElementById('modal-auth');
@@ -597,6 +598,11 @@
         var radiosLargo = document.querySelectorAll('input[name="largo-resumen"]');
         if (!resTexto) return;
 
+        // Límites de uso: cartel "Te quedan X análisis hoy" y aviso de límite alcanzado
+        if (window.PuroTextoLimites) {
+          PuroTextoLimites.init({ campo: resTexto, boton: resBtnGenerar });
+        }
+
         function largoElegido() {
           var marcado = document.querySelector('input[name="largo-resumen"]:checked');
           return marcado ? marcado.value : 'medio';
@@ -686,10 +692,16 @@
             return;
           }
 
-          resResultados.hidden = true;
           fijarCargando(true);
 
           try {
+            // Límite diario: si no le queda cupo, limites.js muestra el aviso y cortamos acá.
+            if (window.PuroTextoLimites) {
+              var cupo = await PuroTextoLimites.puedeAnalizar();
+              if (!cupo.permitido) return;
+            }
+            resResultados.hidden = true;
+
             var respuesta = await fetchConReintento('/api/resumir', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -706,6 +718,7 @@
             if (!datos.resumen) {
               throw new Error('La respuesta no incluyó el resumen.');
             }
+            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
 
             resSalida.textContent = datos.resumen;
             resResultados.hidden = false;
