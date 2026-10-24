@@ -1680,3 +1680,77 @@ a.boton-principal:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(196, 95, 69, 0.3);
 }
+
+/* ==========================================================================
+   LÍMITES DE USO (Freemium)
+   Pegá este bloque al final de estilos.css.
+   ========================================================================== */
+
+/* Cartel "Te quedan X análisis hoy" / "Análisis ilimitados" */
+.uso-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--superficie-suave);
+  color: var(--petroleo);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.uso-estado::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--petroleo-suave);
+}
+.uso-estado--premium {
+  border-color: #BFE0CF;
+  background: var(--exito-suave);
+  color: var(--exito);
+}
+.uso-estado--premium::before { background: var(--exito); }
+.uso-estado--agotado {
+  border-color: #EAD3AA;
+  background: var(--alerta-suave);
+  color: #7A4B12;
+}
+.uso-estado--agotado::before { background: var(--alerta); }
+
+/* Aviso cuando se alcanzó el límite del día */
+.uso-limite {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid #EAD3AA;
+  border-left: 5px solid var(--alerta);
+  border-radius: 12px;
+  background: var(--alerta-suave);
+  color: #5E3A0E;
+}
+.uso-limite-texto {
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.uso-limite-texto strong { font-weight: 600; }
+.uso-limite-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.uso-limite .boton-principal,
+.uso-limite .boton-secundario {
+  min-height: 44px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.uso-limite .boton-secundario { justify-content: center; }
+
+@media (max-width: 600px) {
+  .uso-limite-acciones > * { width: 100%; justify-content: center; }
+}
