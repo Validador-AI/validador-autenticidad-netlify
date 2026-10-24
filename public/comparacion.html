@@ -6,7 +6,6 @@
   <title>Comparación de Textos — PuroTexto</title>
   <meta name="description" content="Compará dos textos y descubrí las diferencias de contenido, tono y naturalidad entre ellos, con sugerencias para mejorar el más artificial.">
   <link rel="canonical" href="https://purotexto.com/comparacion" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -16,6 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/limites.js?v=2" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -374,6 +374,7 @@
           return;
         }
         var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // lo usa limites.js
 
         var btnAuth = document.getElementById('btn-auth');
         var modal = document.getElementById('modal-auth');
@@ -607,6 +608,16 @@
         var sugerenciasDetalle = document.getElementById('comparar-sugerencias-detalle');
         if (!textoA) return;
 
+        // Límites de uso: cartel "Te quedan X análisis hoy" (arriba de los dos cuadros de texto)
+        // y aviso de límite alcanzado. Cada comparación cuenta como 1 análisis.
+        if (window.PuroTextoLimites) {
+          PuroTextoLimites.init({
+            campo: textoA,
+            boton: btnComparar,
+            anclaBanner: textoA.closest('.campos-fila')
+          });
+        }
+
         function actualizarContador(campo, contadorEl, btnEl) {
           var n = campo.value.length;
           contadorEl.textContent = n + ' / ' + LARGO_MAXIMO;
@@ -701,10 +712,16 @@
             return;
           }
 
-          resultados.hidden = true;
           fijarCargando(true);
 
           try {
+            // Límite diario: si no le queda cupo, limites.js muestra el aviso y cortamos acá.
+            if (window.PuroTextoLimites) {
+              var cupo = await PuroTextoLimites.puedeAnalizar();
+              if (!cupo.permitido) return;
+            }
+            resultados.hidden = true;
+
             var respuesta = await fetchConReintento('/api/comparar', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -721,6 +738,7 @@
             if (datos.masHumano !== 'A' && datos.masHumano !== 'B') {
               throw new Error('La respuesta no indicó con claridad cuál texto suena más humano.');
             }
+            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
 
             var letraGanadora = datos.masHumano;
             elGanador.textContent = 'Texto ' + letraGanadora + ' suena más humano';
