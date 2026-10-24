@@ -6,7 +6,6 @@
   <title>Verificador de Gramática — PuroTexto</title>
   <meta name="description" content="Revisá ortografía, gramática, puntuación y redacción de tu texto, con correcciones sugeridas, en español latinoamericano.">
   <link rel="canonical" href="https://purotexto.com/gramatica" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -16,6 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/limites.js?v=2" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -358,6 +358,7 @@
           return;
         }
         var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // lo usa limites.js
 
         var btnAuth = document.getElementById('btn-auth');
         var modal = document.getElementById('modal-auth');
@@ -587,6 +588,11 @@
         var gramErroresDetalle = document.getElementById('gramatica-errores-detalle');
         if (!gramTexto) return;
 
+        // Límites de uso: cartel "Te quedan X análisis hoy" y aviso de límite alcanzado
+        if (window.PuroTextoLimites) {
+          PuroTextoLimites.init({ campo: gramTexto, boton: gramBtnRevisar });
+        }
+
         function actualizarContador() {
           var n = gramTexto.value.length;
           gramContador.textContent = n + ' / ' + LARGO_MAXIMO;
@@ -706,10 +712,16 @@
             return;
           }
 
-          gramResultados.hidden = true;
           fijarCargando(true);
 
           try {
+            // Límite diario: si no le queda cupo, limites.js muestra el aviso y cortamos acá.
+            if (window.PuroTextoLimites) {
+              var cupo = await PuroTextoLimites.puedeAnalizar();
+              if (!cupo.permitido) return;
+            }
+            gramResultados.hidden = true;
+
             var respuesta = await fetchConReintento('/api/gramatica', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -726,6 +738,7 @@
             if (!datos.textoCorregido) {
               throw new Error('La respuesta no incluyó el texto corregido.');
             }
+            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
 
             gramSalida.textContent = datos.textoCorregido;
 
