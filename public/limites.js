@@ -10,6 +10,7 @@
      1. <script src="/limites.js?v=1" defer></script>
      2. Que la página exponga el cliente de Supabase: window.supabaseClient
      3. Llamar a PuroTextoLimites.init({ campo, boton }) una vez
+        (opcional: anclaBanner = elemento antes del cual poner el cartel de estado)
      4. Antes de analizar:  await PuroTextoLimites.puedeAnalizar()
         Después de un análisis exitoso:  PuroTextoLimites.registrarAnalisis()
 
@@ -197,7 +198,7 @@
     ui.banner.hidden = true;
 
     var campo = opciones.campo;
-    var anclaCampo = (campo && campo.closest && campo.closest('.caja-escritura')) || campo;
+    var anclaCampo = opciones.anclaBanner || (campo && campo.closest && campo.closest('.caja-escritura')) || campo;
     if (anclaCampo && anclaCampo.parentNode) {
       anclaCampo.parentNode.insertBefore(ui.banner, anclaCampo);
     }

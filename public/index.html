@@ -6,7 +6,6 @@
   <title>PuroTexto — Análisis de naturalidad de texto en español latinoamericano</title>
   <meta name="description" content="Pegá un texto y descubrí si suena humano o generado por IA, con las frases puntuales que lo delatan y cómo reescribirlas. Especializado en español latinoamericano.">
   <link rel="canonical" href="https://purotexto.com/" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Tipografía Google Fonts -->
@@ -16,6 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/limites.js?v=2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <link rel="stylesheet" href="estilos.css">
@@ -631,6 +631,7 @@
           return;
         }
         var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient; // lo usa limites.js
 
         var btnAuth = document.getElementById('btn-auth');
         var modal = document.getElementById('modal-auth');
@@ -1460,10 +1461,16 @@
           return;
         }
 
-        resultados.hidden = true;
         fijarCargando(true);
 
         try {
+          // Límite diario: si no le queda cupo, limites.js muestra el aviso y cortamos acá.
+          if (window.PuroTextoLimites) {
+            var cupo = await PuroTextoLimites.puedeAnalizar();
+            if (!cupo.permitido) return;
+          }
+          resultados.hidden = true;
+
           var respuesta = await fetchConReintento('/api/analizar', pedido);
           var datos = null;
           try { datos = await respuesta.json(); } catch (e) {}
@@ -1476,6 +1483,7 @@
             throw new Error(mensaje || 'El servidor respondió con un error (' + respuesta.status + '). Hubo un problema temporal. Volvé a intentar en unos segundos.');
           }
           mostrarResultados(datos, modo === 'archivo' ? ('(Documento subido: ' + (archivoElegido && archivoElegido.name) + ')') : texto);
+          if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
         } catch (err) {
           if (err instanceof TypeError) {
             mostrarError('No pudimos conectarnos con el servidor. Revisá tu conexión a internet.');
@@ -1488,6 +1496,16 @@
       }
 
       botonAnalizar.addEventListener('click', analizar);
+
+      // Límites de uso: cartel "Te quedan X análisis hoy" (arriba del selector de modo,
+      // para que se vea tanto en "Pegar texto" como en "Subir archivo") y aviso de límite
+      if (window.PuroTextoLimites) {
+        PuroTextoLimites.init({
+          campo: campo,
+          boton: botonAnalizar,
+          anclaBanner: document.querySelector('.modos-contenedor')
+        });
+      }
 
       campo.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analizar();
