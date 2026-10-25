@@ -15,7 +15,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/limites.js?v=2" defer></script>
+  <script src="/limites.js?v=3" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
 </head>
@@ -722,14 +722,26 @@
             }
             resultados.hidden = true;
 
+            // Si hay sesión, mandamos el token para que el servidor sepa quién es y cuente su cupo.
+            var cabecerasPedido = { 'Content-Type': 'application/json' };
+            if (window.PuroTextoLimites) {
+              Object.assign(cabecerasPedido, await PuroTextoLimites.cabeceras());
+            }
+
             var respuesta = await fetchConReintento('/api/comparar', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: cabecerasPedido,
               body: JSON.stringify({ textoA: valorA, textoB: valorB })
             });
 
             var datos = null;
             try { datos = await respuesta.json(); } catch (e) { /* la respuesta no era JSON */ }
+
+            // El servidor dijo que no queda cupo hoy: mostramos el aviso con los botones.
+            if (respuesta.status === 429 && datos && datos.codigo === 'limite_diario' && window.PuroTextoLimites) {
+              PuroTextoLimites.limiteAlcanzado(datos.uso);
+              return;
+            }
 
             if (!respuesta.ok || !datos) {
               var mensaje = datos && datos.error;
@@ -738,7 +750,7 @@
             if (datos.masHumano !== 'A' && datos.masHumano !== 'B') {
               throw new Error('La respuesta no indicó con claridad cuál texto suena más humano.');
             }
-            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis();
+            if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis(datos); // el servidor ya descontó: solo actualiza el cartel
 
             var letraGanadora = datos.masHumano;
             elGanador.textContent = 'Texto ' + letraGanadora + ' suena más humano';
