@@ -103,38 +103,49 @@
     }
     .precio-tarjeta--premium .precio-lista svg { color: #B84E2E; }
 
-    /* Botones: base .boton-principal de estilos.css + variantes */
-    .precio-boton {
+    /* ===== Botones de los planes =====
+       Los tres usan .boton-principal (tamaño, padding, tipografía y radio de
+       estilos.css). Los selectores van con DOS clases para ganarle a
+       .boton-principal y a su :hover sin usar !important. */
+    .boton-principal.precio-boton {
       display: flex;
       width: 100%;
       box-sizing: border-box;
-      justify-content: center;
-      align-items: center;
       margin-top: auto;
+      border: 1.5px solid transparent;   /* los 3 botones tienen borde: misma altura */
       text-align: center;
       text-decoration: none;
-      cursor: pointer;
     }
-    /* Botones secundarios: fondo arena, borde y texto petróleo */
-    .precio-boton-arena {
-      background: var(--arena, #EADFCE);
-      color: var(--petroleo, #264B4A);
-      border: 1.5px solid var(--petroleo, #264B4A);
+
+    /* Arena: fondo arena, texto petróleo, borde que se marca al pasar el mouse */
+    .boton-principal.precio-boton-arena {
+      background: var(--arena);
+      color: var(--petroleo);
+      border-color: rgba(38, 75, 74, 0.35);
+      box-shadow: none;
     }
-    .precio-boton-arena:hover {
-      background: var(--arena, #EADFCE);
-      color: var(--petroleo, #264B4A);
-      box-shadow: 0 6px 16px rgba(38, 75, 74, .18);
+    .boton-principal.precio-boton-arena:hover:not(:disabled) {
+      background: var(--arena);
+      color: var(--petroleo);
+      border-color: var(--petroleo);
+      box-shadow: 0 6px 16px rgba(38, 75, 74, 0.18);
       transform: translateY(-2px);
     }
-    .precio-boton.precio-boton-arena:focus-visible { outline-color: var(--petroleo, #264B4A); }
-    .precio-boton-premium {
-      background: #B84E2E;
-      color: #fff;
-      border: 1.5px solid #B84E2E;
+
+    /* Premium: terracota sólido */
+    .boton-principal.precio-boton-premium {
+      background: var(--terracota);
+      color: #FFF;
+      border-color: var(--terracota);
     }
-    .precio-boton-premium:hover { background: #9E4125; border-color: #9E4125; }
-    .precio-boton:focus-visible { outline: 3px solid #B84E2E; outline-offset: 3px; }
+    .boton-principal.precio-boton-premium:hover:not(:disabled) {
+      background: var(--terracota-hover);
+      border-color: var(--terracota-hover);
+    }
+
+    /* Foco con teclado */
+    .boton-principal.precio-boton:focus-visible { outline: 3px solid var(--terracota); outline-offset: 3px; }
+    .boton-principal.precio-boton-arena:focus-visible { outline-color: var(--petroleo); }
 
     /* Cartel "Próximamente" */
     .aviso-proximamente {
@@ -261,7 +272,7 @@
   <main class="contenedor">
 
     <section class="hero-seccion">
-      <h1 class="seccion-titulo">Elegí el plan que va con vos</h1>
+      <h1 class="titulo-principal">Elegí el plan que va con vos</h1>
       <p class="subtitulo">Empezá gratis, sin vueltas. Y si necesitás más, pasate a Premium cuando quieras.</p>
     </section>
 
@@ -278,7 +289,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span><strong>3 análisis</strong> por día</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Sin crear cuenta</span></li>
         </ul>
-        <a href="index.html" class="precio-boton precio-boton-arena">Probar gratis</a>
+        <a href="index.html" class="boton-principal precio-boton precio-boton-arena">Probar gratis</a>
       </article>
 
       <!-- Plan Registrado (gratis) -->
@@ -292,7 +303,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span><strong>10 análisis</strong> por día</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Cuenta gratuita</span></li>
         </ul>
-        <button type="button" id="btn-crear-cuenta" class="precio-boton precio-boton-arena">Crear cuenta</button>
+        <button type="button" id="btn-crear-cuenta" class="boton-principal precio-boton precio-boton-arena">Crear cuenta</button>
       </article>
 
       <!-- Plan Premium (pago) -->
