@@ -463,6 +463,7 @@
           <h3 class="pie-columna-titulo">PuroTexto</h3>
           <ul>
             <li><a href="acerca.html">Acerca de</a></li>
+            <li><a href="precios.html">Precios</a></li>
             <li><a href="#">Artículos</a></li>
             <li><a href="mailto:hola@purotexto.com">Contacto</a></li>
           </ul>
@@ -713,7 +714,8 @@
         }
 
         function actualizarBotonAuth() {
-          btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+          var etiquetaAuth = btnAuth.querySelector('span');
+          (etiquetaAuth || btnAuth).textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
         }
 
         function abrirModal() {
