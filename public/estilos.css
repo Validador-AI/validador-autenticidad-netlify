@@ -1777,6 +1777,10 @@ a.boton-principal:hover {
   border: 1.5px solid rgba(38, 75, 74, .25);
   border-radius: 10px;
   transition: border-color .2s ease, box-shadow .2s ease;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 .sidebar-bottom .sidebar-premium:hover,
 .sidebar-bottom .sidebar-auth:hover,
