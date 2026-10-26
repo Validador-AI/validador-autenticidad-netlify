@@ -1755,33 +1755,37 @@ a.boton-principal:hover {
   .uso-limite-acciones > * { width: 100%; justify-content: center; }
 }
 
-/* Sidebar: "Hazte Premium" e "Iniciar sesión" con el estilo de las tarjetas */
+/* Sidebar: Botones destacados pero delicados */
 .sidebar-bottom {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
 .sidebar-bottom .sidebar-premium,
 .sidebar-bottom .sidebar-auth {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   box-sizing: border-box;
-  font: inherit;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
   background: var(--arena, #EADFCE);
   color: var(--petroleo, #264B4A);
   border: 1.5px solid rgba(38, 75, 74, .25);
-  border-radius: 10px;
+  border-radius: 8px;
   transition: border-color .2s ease, box-shadow .2s ease;
-  padding: 10px 14px;
-  font-size: 0.85rem;
+  
+  /* LO IMPORTANTE PARA QUE SE VEAN CHICOS */
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.75rem; 
   font-weight: 500;
   line-height: 1.2;
 }
+
 .sidebar-bottom .sidebar-premium:hover,
 .sidebar-bottom .sidebar-auth:hover,
 .sidebar-bottom .sidebar-premium:focus-visible,
@@ -1791,8 +1795,19 @@ a.boton-principal:hover {
   border-color: var(--petroleo, #264B4A);
   box-shadow: 0 4px 12px rgba(38, 75, 74, .15);
 }
+
+/* Íconos chiquitos */
+.sidebar-bottom .sidebar-premium svg,
+.sidebar-bottom .sidebar-auth svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 /* Único toque de terracota: la estrellita */
-.sidebar-bottom .sidebar-premium svg { color: var(--terracota, #B84E2E); }
+.sidebar-bottom .sidebar-premium svg { 
+  color: var(--terracota, #B84E2E); 
+}
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar-bottom .sidebar-premium,
