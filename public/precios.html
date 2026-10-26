@@ -115,12 +115,19 @@
       text-decoration: none;
       cursor: pointer;
     }
-    .precio-boton-contorno {
-      background: transparent;
-      color: inherit;
-      border: 1.5px solid currentColor;
+    /* Botones secundarios: fondo arena, borde y texto petróleo */
+    .precio-boton-arena {
+      background: var(--arena, #EADFCE);
+      color: var(--petroleo, #264B4A);
+      border: 1.5px solid var(--petroleo, #264B4A);
     }
-    .precio-boton-contorno:hover { background: rgba(127, 127, 127, .12); }
+    .precio-boton-arena:hover {
+      background: var(--arena, #EADFCE);
+      color: var(--petroleo, #264B4A);
+      box-shadow: 0 6px 16px rgba(38, 75, 74, .18);
+      transform: translateY(-2px);
+    }
+    .precio-boton.precio-boton-arena:focus-visible { outline-color: var(--petroleo, #264B4A); }
     .precio-boton-premium {
       background: #B84E2E;
       color: #fff;
@@ -217,6 +224,12 @@
       </nav>
 
       <div class="sidebar-bottom">
+        <!-- Acceso a los planes -->
+        <a href="precios.html" class="sidebar-item sidebar-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Hazte Premium</span>
+        </a>
+
         <!-- Botón de autenticación (cambia según haya sesión activa o no) -->
         <button type="button" id="btn-auth" class="sidebar-item sidebar-auth">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -265,7 +278,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span><strong>3 análisis</strong> por día</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Sin crear cuenta</span></li>
         </ul>
-        <a href="index.html" class="boton-principal precio-boton precio-boton-contorno">Probar gratis</a>
+        <a href="index.html" class="boton-principal precio-boton precio-boton-arena">Probar gratis</a>
       </article>
 
       <!-- Plan Registrado (gratis) -->
@@ -279,7 +292,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span><strong>10 análisis</strong> por día</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Cuenta gratuita</span></li>
         </ul>
-        <button type="button" id="btn-crear-cuenta" class="boton-principal precio-boton">Crear cuenta</button>
+        <button type="button" id="btn-crear-cuenta" class="boton-principal precio-boton precio-boton-arena">Crear cuenta</button>
       </article>
 
       <!-- Plan Premium (pago) -->
@@ -569,7 +582,8 @@
         }
 
         function actualizarBotonAuth() {
-          btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+          var etiquetaAuth = btnAuth.querySelector('span');
+          (etiquetaAuth || btnAuth).textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
         }
 
         function abrirModal(modoInicial) {
