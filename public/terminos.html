@@ -436,8 +436,7 @@
         }
 
         function actualizarBotonAuth() {
-          var etiquetaAuth = btnAuth.querySelector('span');
-          (etiquetaAuth || btnAuth).textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
+       btnAuth.textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
         }
 
         function abrirModal() {
