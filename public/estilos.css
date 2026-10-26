@@ -671,7 +671,7 @@
       background: none;
       border: 0;
       padding: 0;
-      font: inherit;
+      
       color: var(--terracota);
       font-weight: 600;
       text-decoration: underline;
