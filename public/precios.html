@@ -19,12 +19,29 @@
   <link rel="stylesheet" href="estilos.css">
   <style>
     /* ===== Página de precios ===== */
+
+    /* Título y subtítulo (más chicos que los de la portada) */
+    .hero-seccion { margin: 28px 0 22px; }
+    .hero-seccion h1.titulo-principal {
+      margin: 0 0 10px;
+      font-family: var(--fuente-editorial);              /* Lora */
+      font-size: clamp(1.35rem, 2.4vw + 0.8rem, 2rem);   /* entra en una sola línea */
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+    .hero-seccion .subtitulo {
+      font-family: var(--fuente);                        /* Inter */
+      font-size: 0.95rem;
+      line-height: 1.55;
+      max-width: 52ch;
+    }
+
     .precios-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
-      max-width: 460px;
-      margin: 32px auto 8px;
+      gap: 18px;
+      max-width: 440px;
+      margin: 26px auto 8px;
     }
     @media (min-width: 1100px) {
       .precios-grid { grid-template-columns: repeat(3, 1fr); max-width: 1000px; }
@@ -35,102 +52,82 @@
       display: flex;
       flex-direction: column;
       margin: 0;
-      padding: 28px 24px 24px;
+      padding: 24px 20px 20px;
       box-sizing: border-box;
     }
-    .precio-tarjeta--premium {
-      border: 2px solid #B84E2E;
-    }
+    .precio-tarjeta--premium { border: 2px solid var(--terracota); }
 
     .precio-insignia {
       position: absolute;
-      top: -13px;
-      left: 24px;
-      padding: 4px 12px;
+      top: -12px;
+      left: 20px;
+      padding: 3px 11px;
       border-radius: 999px;
-      background: #B84E2E;
-      color: #fff;
-      font-size: .78rem;
+      background: var(--terracota);
+      color: #FFF;
+      font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: .02em;
+      letter-spacing: 0.02em;
     }
 
-    .precio-nombre {
-      margin: 0;
-      font-size: 1.35rem;
-      font-weight: 600;
-    }
-    .precio-etiqueta {
-      margin: 4px 0 0;
-      font-size: .9rem;
-      opacity: .7;
-    }
+    .precio-nombre { margin: 0; font-size: 1.15rem; font-weight: 600; }
+    .precio-etiqueta { margin: 2px 0 0; font-size: 0.82rem; opacity: 0.7; }
 
-    .precio-monto {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin: 20px 0 4px;
-    }
-    .precio-cifra {
-      font-size: 2.6rem;
-      font-weight: 600;
-      line-height: 1;
-    }
-    .precio-periodo {
-      font-size: .95rem;
-      opacity: .7;
-    }
+    .precio-monto { display: flex; align-items: baseline; gap: 5px; margin: 16px 0 2px; }
+    .precio-cifra { font-size: 2.1rem; font-weight: 600; line-height: 1; }
+    .precio-periodo { font-size: 0.85rem; opacity: 0.7; }
 
     .precio-lista {
       list-style: none;
-      margin: 20px 0 28px;
+      margin: 16px 0 22px;
       padding: 0;
       display: grid;
-      gap: 12px;
-    }
-    .precio-lista li {
-      display: flex;
-      align-items: flex-start;
       gap: 10px;
-      line-height: 1.4;
+      font-size: 0.9rem;
     }
-    .precio-lista svg {
-      flex: 0 0 auto;
-      width: 20px;
-      height: 20px;
-      margin-top: 1px;
-    }
-    .precio-tarjeta--premium .precio-lista svg { color: #B84E2E; }
+    .precio-lista li { display: flex; align-items: flex-start; gap: 9px; line-height: 1.4; }
+    .precio-lista svg { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 1px; }
+    .precio-tarjeta--premium .precio-lista svg { color: var(--terracota); }
 
     /* ===== Botones de los planes =====
-       Los tres usan .boton-principal (tamaño, padding, tipografía y radio de
-       estilos.css). Los selectores van con DOS clases para ganarle a
-       .boton-principal y a su :hover sin usar !important. */
+       Los tres usan .boton-principal y comparten tamaño; solo cambian los colores.
+       Selectores con dos clases para ganarle a .boton-principal y a su :hover. */
     .boton-principal.precio-boton {
       display: flex;
       width: 100%;
       box-sizing: border-box;
       margin-top: auto;
+      min-height: 46px;
+      padding: 11px 16px;
       border: 1.5px solid transparent;   /* los 3 botones tienen borde: misma altura */
+      font-size: 0.9rem;
+      line-height: 1.2;
+      white-space: nowrap;               /* una sola línea */
       text-align: center;
       text-decoration: none;
     }
 
-    /* Arena: fondo arena, texto petróleo, borde que se marca al pasar el mouse */
-    .boton-principal.precio-boton-arena {
+    /* Arena: fondo arena, texto petróleo oscuro, borde que se marca al pasar el mouse.
+       Se fija el color también para :link y :visited, para que el enlace
+       "Probar gratis" no herede el blanco de .boton-principal. */
+    .boton-principal.precio-boton-arena,
+    a.boton-principal.precio-boton-arena:link,
+    a.boton-principal.precio-boton-arena:visited {
       background: var(--arena);
-      color: var(--petroleo);
+      color: var(--petroleo-oscuro);
       border-color: rgba(38, 75, 74, 0.35);
       box-shadow: none;
     }
-    .boton-principal.precio-boton-arena:hover:not(:disabled) {
+    .boton-principal.precio-boton-arena:hover:not(:disabled),
+    a.boton-principal.precio-boton-arena:hover,
+    a.boton-principal.precio-boton-arena:focus,
+    a.boton-principal.precio-boton-arena:active {
       background: var(--arena);
-      color: var(--petroleo);
+      color: var(--petroleo-oscuro);
       border-color: var(--petroleo);
       box-shadow: 0 6px 16px rgba(38, 75, 74, 0.18);
-      transform: translateY(-2px);
     }
+    .boton-principal.precio-boton-arena:hover:not(:disabled) { transform: translateY(-2px); }
 
     /* Premium: terracota sólido */
     .boton-principal.precio-boton-premium {
@@ -154,22 +151,19 @@
       bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       z-index: 1000;
       max-width: min(90vw, 420px);
-      padding: 14px 20px;
+      padding: 12px 18px;
       border-radius: 12px;
-      background: #264B4A;
-      color: #F5EFE7;
-      font-size: .95rem;
+      background: var(--petroleo);
+      color: var(--hueso);
+      font-size: 0.9rem;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
       opacity: 0;
       transform: translate(-50%, 12px);
       pointer-events: none;
-      transition: opacity .25s ease, transform .25s ease;
+      transition: opacity 0.25s ease, transform 0.25s ease;
     }
-    .aviso-proximamente.visible {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
+    .aviso-proximamente.visible { opacity: 1; transform: translate(-50%, 0); }
     @media (prefers-reduced-motion: reduce) {
       .aviso-proximamente { transition: none; }
     }
