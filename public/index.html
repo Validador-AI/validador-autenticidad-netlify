@@ -22,6 +22,47 @@
   <style>
     /* Ajuste del hero: marca "PuroTexto" un poco más grande (antes 1.4rem) */
     .hero-marca { font-size: 1.9rem; }
+
+    /* Botones dentro del cartel de error (ej.: texto más largo que el límite de la cuenta) */
+    .error-acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .error-boton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 20px;
+      border: 1.5px solid transparent;
+      border-radius: 12px;
+      font-family: var(--fuente);
+      font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.2;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .error-boton--arena {
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      border-color: rgba(38, 75, 74, 0.35);
+    }
+    .error-boton--arena:hover {
+      border-color: var(--petroleo);
+      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
+    }
+    .error-boton--premium {
+      background: var(--terracota);
+      color: #FFF;
+      border-color: var(--terracota);
+    }
+    .error-boton--premium:hover {
+      background: var(--terracota-hover);
+      border-color: var(--terracota-hover);
+    }
+    .error-boton:focus-visible { outline: 3px solid var(--petroleo); outline-offset: 3px; }
+    @media (max-width: 600px) {
+      .error-boton { width: 100%; }
+    }
   </style>
 </head>
 
@@ -84,11 +125,12 @@
       </nav>
 
       <div class="sidebar-bottom">
-                <!-- Acceso a los planes -->
+        <!-- Acceso a los planes -->
         <a href="precios.html" class="sidebar-item sidebar-premium">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           <span>Hazte Premium</span>
         </a>
+
         <!-- Botón de autenticación (cambia según haya sesión activa o no) -->
         <button type="button" id="btn-auth" class="sidebar-item sidebar-auth">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -200,7 +242,7 @@
         </div>
 
         <div id="info-archivo" style="margin-top: 12px; font-size: 0.88rem; color: var(--texto-suave);" hidden>
-          <span>Se analizan los primeros 8000 caracteres del archivo.</span>
+          <span>Si el archivo es muy largo, se analiza solo el comienzo (hasta 5.000 caracteres sin cuenta, 8.000 con cuenta gratis y 15.000 con Premium).</span>
         </div>
       </div>
 
@@ -226,8 +268,9 @@
     </div>
 
     <div id="error" class="error" role="alert" hidden>
-      <strong>No pudimos completar el análisis</strong>
+      <strong id="error-titulo">No pudimos completar el análisis</strong>
       <span id="error-mensaje"></span>
+      <div id="error-acciones" class="error-acciones" hidden></div>
     </div>
 
     <!-- ===== DEMO ILUSTRATIVA: muestra cómo se ve un resultado, sin backend real ===== -->
@@ -381,7 +424,7 @@
           </div>
           <p class="paso-numero">PASO 1</p>
           <h3>Pegá o subí tu texto</h3>
-          <p>Ingresá hasta 8000 caracteres o cargá un documento PDF o Word (.docx).</p>
+          <p>Ingresá hasta 5.000 caracteres (8.000 si te registrás) o cargá un documento PDF o Word (.docx).</p>
         </li>
         <li class="tarjeta paso">
           <div class="step-icon">
@@ -410,7 +453,7 @@
         <details>
           <summary>¿Qué formatos de archivo aceptan?</summary>
           <div class="respuesta">
-            <p>Aceptamos archivos PDF y Word (.docx) de hasta 4 MB. El PDF debe incluir texto seleccionable (los escaneados o imágenes no son compatibles). Si el documento supera los 8000 caracteres, se analizará la primera sección.</p>
+            <p>Aceptamos archivos PDF y Word (.docx) de hasta 4 MB. El PDF debe incluir texto seleccionable (los escaneados o imágenes no son compatibles). Si el documento supera el límite de caracteres de tu cuenta (5.000 sin registro, 8.000 registrado gratis y 15.000 Premium), se analizará la primera sección.</p>
           </div>
         </details>
         <details>
@@ -463,7 +506,6 @@
           <h3 class="pie-columna-titulo">PuroTexto</h3>
           <ul>
             <li><a href="acerca.html">Acerca de</a></li>
-            <li><a href="precios.html">Precios</a></li>
             <li><a href="precios.html">Precios</a></li>
             <li><a href="#">Artículos</a></li>
             <li><a href="mailto:hola@purotexto.com">Contacto</a></li>
@@ -719,7 +761,7 @@
           (etiquetaAuth || btnAuth).textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
         }
 
-        function abrirModal() {
+        function abrirModal(modoInicial) {
           ocultarError();
           if (sesionActual) {
             vistaAuth.hidden = true;
@@ -729,7 +771,7 @@
             vistaCuenta.hidden = true;
             vistaAuth.hidden = false;
             formAuth.reset();
-            cambiarModo('login');
+            cambiarModo(modoInicial === 'registro' ? 'registro' : 'login');
             if (btnTogglePassword) {
               inputPassword.type = 'password';
               btnTogglePassword.setAttribute('aria-pressed', 'false');
@@ -746,7 +788,8 @@
           document.body.style.overflow = '';
         }
 
-        btnAuth.addEventListener('click', abrirModal);
+        btnAuth.addEventListener('click', function () { abrirModal(); });
+        window.abrirModalAuth = abrirModal; // lo usa el cartel de error ("Registrarme gratis")
         btnCerrarModal.addEventListener('click', cerrarModal);
         modal.addEventListener('click', function (e) {
           if (e.target === modal) cerrarModal();
@@ -938,7 +981,11 @@
          LOGICA DE APLICACIÓN Y ANALISIS DE TEXTO
          ---------------------------------------------------------------------- */
       var LARGO_MINIMO = 50;
-      var LARGO_MAXIMO = 8000;
+      // Tope del frontend: el más alto (Premium). El límite real de cada cuenta lo valida
+      // el servidor (5.000 anónimo, 8.000 registrado, 15.000 Premium) y, si se pasa,
+      // la página muestra el cartel de error con los botones para registrarse o ver Premium.
+      var LARGO_MAXIMO = 15000;
+      var MAXIMO_ANONIMO = 5000; // solo se usa para decidir qué botones mostrar
       var TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024;
 
       var TEXTO_EJEMPLO =
@@ -956,6 +1003,8 @@
       var estadoTexto = $('estado-texto');
       var cajaError = $('error');
       var mensajeError = $('error-mensaje');
+      var tituloError = $('error-titulo');
+      var accionesError = $('error-acciones');
       var resultados = $('resultados');
       var avisoResultado = $('aviso-resultado');
       var tarjetaPuntaje = $('tarjeta-puntaje');
@@ -1038,11 +1087,68 @@
       $('btn-ej-humano').addEventListener('click', function () { cargarEjemplo(EJEMPLOS.humano); });
       $('btn-ej-dudoso').addEventListener('click', function () { cargarEjemplo(EJEMPLOS.dudoso); });
 
-      function mostrarError(mensaje) {
-        mensajeError.textContent = mensaje;
-        cajaError.hidden = false;
+      var TITULO_ERROR_POR_DEFECTO = 'No pudimos completar el análisis';
+
+      // 15000 -> "15.000"
+      function conPuntos(numero) {
+        return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       }
-      function ocultarError() { cajaError.hidden = true; }
+
+      // Muestra el cartel de error. Opcional: { titulo, acciones: [{ texto, estilo, href | alClick }] }
+      function mostrarError(mensaje, opciones) {
+        opciones = opciones || {};
+        tituloError.textContent = opciones.titulo || TITULO_ERROR_POR_DEFECTO;
+        mensajeError.textContent = mensaje;
+
+        accionesError.innerHTML = '';
+        var acciones = opciones.acciones || [];
+        acciones.forEach(function (accion) {
+          var elemento;
+          if (accion.href) {
+            elemento = document.createElement('a');
+            elemento.href = accion.href;
+          } else {
+            elemento = document.createElement('button');
+            elemento.type = 'button';
+            elemento.addEventListener('click', accion.alClick);
+          }
+          elemento.className = 'error-boton error-boton--' + accion.estilo;
+          elemento.textContent = accion.texto;
+          accionesError.appendChild(elemento);
+        });
+        accionesError.hidden = acciones.length === 0;
+
+        cajaError.hidden = false;
+        // Que el cartel siempre se vea, aunque quede fuera de la pantalla (sobre todo en el celular).
+        cajaError.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'nearest' });
+      }
+      function ocultarError() {
+        cajaError.hidden = true;
+        accionesError.hidden = true;
+        accionesError.innerHTML = '';
+      }
+
+      function abrirRegistro() {
+        if (window.abrirModalAuth) {
+          window.abrirModalAuth('registro');
+        } else {
+          var botonCuenta = $('btn-auth');
+          if (botonCuenta) botonCuenta.click();
+        }
+      }
+
+      // Botones del cartel cuando el texto supera el límite de la cuenta.
+      // Sin cuenta: registrarse o Premium. Registrado: Premium. Premium: ninguno.
+      function accionesPorTextoLargo(maximoCuenta) {
+        var acciones = [];
+        if (maximoCuenta <= MAXIMO_ANONIMO) {
+          acciones.push({ texto: 'Registrarme gratis', estilo: 'arena', alClick: abrirRegistro });
+        }
+        if (maximoCuenta < LARGO_MAXIMO) {
+          acciones.push({ texto: 'Ver Premium', estilo: 'premium', href: 'precios.html' });
+        }
+        return acciones;
+      }
 
       function fijarCargando(cargando) {
         botonAnalizar.disabled = cargando;
@@ -1454,7 +1560,7 @@
             return;
           }
           if (texto.length > LARGO_MAXIMO) {
-            mostrarError('El texto es muy largo (' + texto.length + ' caracteres). El máximo es ' + LARGO_MAXIMO + '.');
+            mostrarError('El texto es muy largo (' + conPuntos(texto.length) + ' caracteres). El máximo es ' + conPuntos(LARGO_MAXIMO) + ' caracteres.', { titulo: 'El texto es demasiado largo' });
             return;
           }
           pedido = {
@@ -1493,6 +1599,17 @@
           // El servidor dijo que no queda cupo hoy: mostramos el aviso con los botones.
           if (respuesta.status === 429 && datos && datos.codigo === 'limite_diario' && window.PuroTextoLimites) {
             PuroTextoLimites.limiteAlcanzado(datos.uso);
+            return;
+          }
+
+          // El texto es más largo que el límite de esta cuenta (no se descontó ningún análisis):
+          // mostramos el cartel de error con los botones para registrarse o ver Premium.
+          if (respuesta.status === 400 && datos && datos.codigo === 'texto_largo') {
+            var maximoCuenta = Number(datos.maximo) || LARGO_MAXIMO;
+            mostrarError(datos.error, {
+              titulo: 'El texto es demasiado largo',
+              acciones: accionesPorTextoLargo(maximoCuenta)
+            });
             return;
           }
 
