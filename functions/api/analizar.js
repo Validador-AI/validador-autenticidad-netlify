@@ -31,6 +31,17 @@
 // (borrando localStorage, llamando directo a /api/analizar, etc.).
 // Los números reales viven en la base de datos (limites.sql y limites_servidor.sql).
 //
+// LÍMITE DE LARGO DEL TEXTO (según el tipo de cuenta)
+// ---------------------------------------------------
+//   · Anónimo (sin sesión) ..... hasta  5.000 caracteres por texto
+//   · Registrado (gratis) ...... hasta  8.000 caracteres por texto
+//   · Premium .................. hasta 15.000 caracteres por texto
+// El largo se valida ANTES de descontar el análisis del cupo: un texto demasiado
+// largo se rechaza (400) sin gastar nada. Para saber si la cuenta es Premium se
+// consulta profiles.is_premium (solo lectura), sin tocar el cupo.
+// Con archivos PDF/DOCX no se rechaza: si el texto extraído supera el tope de la
+// cuenta, se analiza solo el comienzo y se devuelve un "aviso".
+//
 // ORDEN IMPORTANTE con los archivos: el cupo se descuenta ANTES de abrir el
 // archivo. Si no queda cupo, se responde 429 sin leer ni descomprimir nada (ni
 // siquiera se llama a formData()), así no se gastan recursos en pedidos que de
@@ -66,9 +77,12 @@ import zlib from 'node:zlib';
 // de entorno GEMINI_MODEL (por ejemplo: gemini-3.6-flash) y volvé a desplegar.
 const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 
-// Largo permitido del texto que pega la persona (en caracteres).
+// Largo permitido del texto (en caracteres). El máximo depende del tipo de cuenta
+// y debe coincidir con lo que promete la página de precios (precios.html).
 const LARGO_MINIMO = 50;
-const LARGO_MAXIMO = 8000;
+const LARGO_MAXIMO_ANONIMO = 5000;
+const LARGO_MAXIMO_REGISTRADO = 8000;
+const LARGO_MAXIMO_PREMIUM = 15000;
 
 // Archivos: tamaño máximo (4 MB; es un límite propio, no de Cloudflare)
 // y cuántas páginas de un PDF se leen como máximo.
@@ -232,13 +246,40 @@ function sinMarcasDelPrompt(texto) {
   return String(texto || '').replace(/<\/?texto_a_analizar>/gi, '').trim();
 }
 
-// Revisa el largo del texto. Devuelve el mensaje de error, o null si está bien.
-function errorDeLargo(texto) {
+// Máximo de caracteres por texto según el tipo de cuenta:
+// 'anonimo' (sin sesión), 'registrado' (con sesión, gratis) o 'premium'.
+function maximoDeCaracteres(tipoCuenta) {
+  if (tipoCuenta === 'premium') return LARGO_MAXIMO_PREMIUM;
+  if (tipoCuenta === 'registrado') return LARGO_MAXIMO_REGISTRADO;
+  return LARGO_MAXIMO_ANONIMO;
+}
+
+// 8000 -> "8.000" (para los mensajes que se le muestran a la persona).
+function conPuntos(numero) {
+  return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Revisa el largo del texto. Devuelve { codigo, error, maximo? } si hay un
+// problema, o null si está bien. Es una revisión barata: no toca el cupo.
+function errorDeLargo(texto, maximo, tipoCuenta) {
   if (texto.length < LARGO_MINIMO) {
-    return `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.`;
+    return { codigo: 'texto_corto', error: `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.` };
   }
-  if (texto.length > LARGO_MAXIMO) {
-    return `El texto es muy largo. El máximo es de ${LARGO_MAXIMO} caracteres.`;
+  if (texto.length > maximo) {
+    let mensaje;
+    if (tipoCuenta === 'anonimo') {
+      mensaje =
+        `El texto es muy largo: sin cuenta se pueden analizar hasta ${conPuntos(maximo)} caracteres. ` +
+        `Registrate gratis para llegar a ${conPuntos(LARGO_MAXIMO_REGISTRADO)}, ` +
+        `o pasate a Premium para hasta ${conPuntos(LARGO_MAXIMO_PREMIUM)}.`;
+    } else if (tipoCuenta === 'registrado') {
+      mensaje =
+        `El texto es muy largo: tu cuenta permite hasta ${conPuntos(maximo)} caracteres. ` +
+        `Con Premium podés analizar hasta ${conPuntos(LARGO_MAXIMO_PREMIUM)}.`;
+    } else {
+      mensaje = `El texto es muy largo. El máximo es de ${conPuntos(maximo)} caracteres.`;
+    }
+    return { codigo: 'texto_largo', error: mensaje, maximo };
   }
   return null;
 }
@@ -305,6 +346,19 @@ async function llamarFuncion(env, nombre, argumentos) {
   return texto ? JSON.parse(texto) : null;
 }
 
+// ¿Esta persona es Premium? Solo LEE profiles.is_premium: no toca el cupo, así se
+// puede saber el tope de caracteres antes de descontar el análisis.
+// Si no hay fila de perfil, se la trata como cuenta registrada normal.
+// (Se asume que profiles.id es el id del usuario de Supabase Auth.)
+async function esUsuarioPremium(env, userId) {
+  const url =
+    urlSupabase(env) + '/rest/v1/profiles?select=is_premium&limit=1&id=eq.' + encodeURIComponent(userId);
+  const respuesta = await pedirSupabase(url, { method: 'GET', headers: encabezadosServicio(env) });
+  if (!respuesta.ok) throw new Error('profiles respondió ' + respuesta.status);
+  const filas = await respuesta.json();
+  return Array.isArray(filas) && filas.length > 0 && filas[0].is_premium === true;
+}
+
 // Para IPv6 usamos solo los primeros 64 bits (el "barrio" de la conexión): una
 // misma persona puede cambiar los últimos 64 bits a voluntad y así esquivar el límite.
 function normalizarIp(ip) {
@@ -362,7 +416,7 @@ function detectarTipo(bytes, nombre) {
 // Extrae el texto de un PDF con la librería "unpdf".
 // Lee página por página y se detiene apenas junta suficiente texto,
 // para no gastar tiempo en documentos larguísimos.
-async function extraerDePDF(bytes) {
+async function extraerDePDF(bytes, maximo) {
   const { getDocumentProxy } = await import('unpdf'); // se carga solo si hace falta
   const pdf = await getDocumentProxy(bytes);
   try {
@@ -379,7 +433,7 @@ async function extraerDePDF(bytes) {
           .map((item) => item.str + (item.hasEOL ? '\n' : ''))
           .join('') + '\n';
       ultimaLeida = n;
-      if (texto.length >= LARGO_MAXIMO * 1.5) break; // ya tenemos de sobra
+      if (texto.length >= maximo * 1.5) break; // ya tenemos de sobra
     }
     return { texto, leyoTodo: ultimaLeida >= totalPaginas };
   } finally {
@@ -546,7 +600,9 @@ function recortar(texto, maximo) {
 }
 
 // Recibe el pedido con el archivo y devuelve { texto, aviso } o { estado, error }.
-async function textoDesdeArchivo(request) {
+// "maximo" es el tope de caracteres de la cuenta: si el archivo trae más, se
+// analiza solo el comienzo (no se rechaza).
+async function textoDesdeArchivo(request, maximo) {
   let formulario;
   try {
     formulario = await request.formData();
@@ -584,7 +640,7 @@ async function textoDesdeArchivo(request) {
 
   let extraido;
   try {
-    extraido = tipo === 'pdf' ? await extraerDePDF(bytes) : await extraerDeDOCX(bytes);
+    extraido = tipo === 'pdf' ? await extraerDePDF(bytes, maximo) : await extraerDeDOCX(bytes);
   } catch (e) {
     // Solo registramos el tipo de error, nunca el contenido del archivo.
     console.error('No se pudo leer el archivo', tipo, e && e.name, e && e.message);
@@ -615,11 +671,13 @@ async function textoDesdeArchivo(request) {
     };
   }
 
-  const { texto, recortado } = recortar(limpio, LARGO_MAXIMO);
-  const aviso =
-    recortado || !extraido.leyoTodo
-      ? `Tu archivo es más largo de lo que se puede analizar de una vez, así que se analizó solo el comienzo (unos ${texto.length} caracteres).`
-      : null;
+  const { texto, recortado } = recortar(limpio, maximo);
+  let aviso = null;
+  if (recortado) {
+    aviso = `Tu archivo es más largo de lo que permite tu cuenta (hasta ${conPuntos(maximo)} caracteres por texto), así que se analizó solo el comienzo (unos ${texto.length} caracteres).`;
+  } else if (!extraido.leyoTodo) {
+    aviso = `Tu archivo es más largo de lo que se puede analizar de una vez, así que se analizó solo el comienzo (unos ${texto.length} caracteres).`;
+  }
 
   return { texto, aviso };
 }
@@ -707,17 +765,22 @@ export async function onRequest(context) {
         cuerpo = {};
       }
       texto = sinMarcasDelPrompt(cuerpo && typeof cuerpo.texto === 'string' ? cuerpo.texto : '');
-      const problemaDeLargo = errorDeLargo(texto);
-      if (problemaDeLargo) return responder(400, { error: problemaDeLargo });
+      // Muy corto, o más largo de lo que NADIE puede analizar (ni siquiera Premium):
+      // se rechaza ya mismo, sin preguntarle nada a Supabase.
+      const problemaBasico = errorDeLargo(texto, LARGO_MAXIMO_PREMIUM, 'premium');
+      if (problemaBasico) return responder(400, problemaBasico);
     }
 
-    // 4) Límite diario de uso (se valida en el servidor, con Supabase).
+    // 4) ¿Quién es y cuánto texto puede analizar? (todavía NO se descuenta nada)
     if (!env.SUPABASE_SERVICE_ROLE_KEY) {
       console.error('Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY');
       return responder(500, {
         error: 'El servidor todavía no tiene configurada la clave de Supabase (SUPABASE_SERVICE_ROLE_KEY).',
       });
     }
+
+    let tipoCuenta = 'anonimo'; // 'anonimo' | 'registrado' | 'premium'
+    let maximo = LARGO_MAXIMO_ANONIMO;
 
     try {
       // ¿Es una persona con sesión? Si manda un token, Supabase nos dice quién es.
@@ -736,8 +799,31 @@ export async function onRequest(context) {
       const ipHash = await hashearIp(normalizarIp(ip), env.SUPABASE_SERVICE_ROLE_KEY);
       identidad = { userId, ipHash };
 
+      // Con sesión: se consulta si es Premium (solo lectura) para saber su tope.
+      if (userId) {
+        tipoCuenta = (await esUsuarioPremium(env, userId)) ? 'premium' : 'registrado';
+      }
+      maximo = maximoDeCaracteres(tipoCuenta);
+    } catch (e) {
+      console.error('No se pudo verificar la cuenta:', e.message);
+      identidad = null;
+      return responder(503, {
+        error: 'No pudimos verificar tu cuenta. Probá de nuevo en unos segundos.',
+      });
+    }
+
+    // 4b) Largo del texto pegado según el tipo de cuenta. Va ANTES de descontar el
+    // cupo: un texto demasiado largo se rechaza y no gasta ningún análisis.
+    // (Con archivos no se rechaza: se recorta más abajo, al leerlos.)
+    if (!esArchivo) {
+      const problemaDeLargo = errorDeLargo(texto, maximo, tipoCuenta);
+      if (problemaDeLargo) return responder(400, problemaDeLargo);
+    }
+
+    // 5) Límite diario de uso (se valida en el servidor, con Supabase).
+    try {
       // Descuenta 1 análisis de forma atómica y dice si estaba permitido.
-      cupo = await llamarFuncion(env, 'servidor_consumir', { p_user: userId, p_ip_hash: ipHash });
+      cupo = await llamarFuncion(env, 'servidor_consumir', { p_user: identidad.userId, p_ip_hash: identidad.ipHash });
       if (!cupo || typeof cupo.permitido !== 'boolean') throw new Error('Respuesta inesperada de servidor_consumir');
     } catch (e) {
       console.error('No se pudo verificar el cupo de uso:', e.message);
@@ -759,19 +845,19 @@ export async function onRequest(context) {
       });
     }
 
-    // 5) Recién ahora, con el cupo confirmado, se procesa el archivo (si había uno).
+    // 6) Recién ahora, con el cupo confirmado, se procesa el archivo (si había uno).
     // Si el archivo no sirve, fallar() le devuelve el análisis al cupo.
     if (esArchivo) {
-      const lectura = await textoDesdeArchivo(request);
+      const lectura = await textoDesdeArchivo(request, maximo);
       if (lectura.error) return await fallar(lectura.estado, { error: lectura.error });
       texto = sinMarcasDelPrompt(lectura.texto);
       aviso = lectura.aviso;
 
-      const problemaDeLargo = errorDeLargo(texto);
-      if (problemaDeLargo) return await fallar(400, { error: problemaDeLargo });
+      const problemaDeLargo = errorDeLargo(texto, maximo, tipoCuenta);
+      if (problemaDeLargo) return await fallar(400, problemaDeLargo);
     }
 
-    // 6) Llamar a Gemini.
+    // 7) Llamar a Gemini.
     const modelo = env.GEMINI_MODEL || MODELO_POR_DEFECTO;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
 
@@ -817,7 +903,7 @@ export async function onRequest(context) {
       return await fallar(502, { error: mensajeParaError(respuesta.status, detalle) });
     }
 
-    // 7) Leer la respuesta de Gemini.
+    // 8) Leer la respuesta de Gemini.
     if (datos && datos.promptFeedback && datos.promptFeedback.blockReason) {
       return await fallar(422, {
         error: 'Gemini no pudo analizar este texto por sus filtros de seguridad. Probá con otro fragmento.',
@@ -845,7 +931,7 @@ export async function onRequest(context) {
       return await fallar(502, { error: 'La respuesta de Gemini llegó en un formato inesperado. Probá de nuevo.' });
     }
 
-    // 8) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
+    // 9) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
     // Si el archivo era muy largo, sumamos un "aviso" para que la página lo muestre.
     if (aviso) resultado.aviso = aviso;
     resultado.uso = resumenDeUso(cupo);
