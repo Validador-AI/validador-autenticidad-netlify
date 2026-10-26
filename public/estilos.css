@@ -1813,3 +1813,9 @@ a.boton-principal:hover {
   .sidebar-bottom .sidebar-premium,
   .sidebar-bottom .sidebar-auth { transition: none; }
 }
+
+/* Forzar el color del texto en el botón de arena de precios */
+.boton-principal.precio-boton-arena,
+.boton-principal.precio-boton-arena:hover {
+  color: var(--petroleo-oscuro) !important;
+}
