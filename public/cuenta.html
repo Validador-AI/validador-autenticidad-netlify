@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi Cuenta — PuroTexto</title>
+  <meta name="description" content="Tu cuenta de PuroTexto: tu plan y el historial de tus análisis.">
+  <!-- Página privada: que Google no la indexe -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://purotexto.com/cuenta" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- PARTE 2: acá se agregan el cliente de Supabase y limites.js, igual que en index.html -->
+
+  <link rel="stylesheet" href="estilos.css">
+  <style>
+    /* ==========================================================================
+       MI CUENTA — estilos propios de esta página
+       Usan las variables y clases de estilos.css (.tarjeta, .boton-principal,
+       .boton-secundario, .uso-limite, [data-nivel], etc.).
+       Si querés, pegá este bloque al final de estilos.css.
+       ========================================================================== */
+
+    /* ----- Cabecera de la cuenta ----- */
+    .cuenta-titulo {
+      margin: 8px 0 24px;
+      font-family: var(--fuente-editorial);
+      font-weight: 400;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      color: var(--petroleo);
+    }
+
+    .cuenta-perfil {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px;
+    }
+
+    .cuenta-avatar {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--arena);
+      color: var(--petroleo);
+    }
+    .cuenta-avatar svg { width: 26px; height: 26px; }
+
+    .cuenta-datos { flex: 1; min-width: 0; }
+
+    .cuenta-etiqueta {
+      display: block;
+      margin-bottom: 2px;
+      font-family: var(--fuente);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--texto-suave);
+    }
+
+    .cuenta-email {
+      margin: 0 0 12px;
+      font-family: var(--fuente-titulos);
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--petroleo);
+      overflow-wrap: anywhere;
+    }
+
+    .cuenta-plan-fila {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Insignia del plan: Gratis (arena) · Registrado (petróleo suave) · Premium (terracota) */
+    .plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-family: var(--fuente);
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .plan-badge svg { width: 14px; height: 14px; flex: none; }
+    .plan-badge[data-plan="gratis"] {
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+    }
+    .plan-badge[data-plan="registrado"] {
+      background: rgba(38, 75, 74, 0.1);
+      border-color: rgba(38, 75, 74, 0.25);
+      color: var(--petroleo);
+    }
+    .plan-badge[data-plan="premium"] {
+      background: var(--tono-suave);       /* #FBECE8 por defecto */
+      border-color: #EBC3B9;
+      color: var(--terracota);
+    }
+
+    .cuenta-plan-detalle {
+      font-size: 0.88rem;
+      color: var(--texto-suave);
+    }
+
+    .btn-cerrar-sesion { flex: none; }
+
+    /* ----- Historial ----- */
+    .historial-seccion { margin-top: 48px; }
+    .historial-seccion .titulo-seccion { margin-top: 0; }
+
+    .historial-lista {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 16px;
+    }
+
+    .historial-card {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 20px;
+      padding: 20px 22px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .historial-card:hover {
+      border-color: var(--linea-fuerte);
+      box-shadow: 0 2px 4px rgba(38, 75, 74, 0.06), 0 12px 24px rgba(38, 75, 74, 0.1);
+    }
+
+    /* Bloque del puntaje (usa --tono de [data-nivel]: verde / ámbar / rojo) */
+    .historial-puntaje {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 8px;
+      border-radius: 14px;
+      background: var(--tono-suave);
+      text-align: center;
+    }
+    .historial-puntaje-num {
+      font-family: var(--fuente-editorial);
+      font-size: 2.4rem;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--tono);
+    }
+    .historial-puntaje-etiqueta {
+      font-family: var(--fuente);
+      font-size: 0.74rem;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--tono);
+    }
+
+    /* Herramientas sin puntaje (parafraseador, resumen...): ícono en vez de número */
+    .historial-puntaje--herramienta {
+      --tono: var(--petroleo);
+      --tono-suave: var(--hueso);
+      border: 1px solid var(--linea);
+    }
+    .historial-puntaje--herramienta svg { width: 30px; height: 30px; color: var(--petroleo); }
+
+    .historial-cuerpo { min-width: 0; display: flex; flex-direction: column; }
+
+    .historial-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      margin-bottom: 10px;
+    }
+    .historial-herramienta {
+      padding: 3px 11px;
+      border-radius: 999px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-family: var(--fuente);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .historial-fecha {
+      font-size: 0.84rem;
+      color: var(--texto-suave);
+    }
+
+    .historial-fragmento {
+      margin: 0 0 16px;
+      padding: 10px 14px;
+      border-left: 3px solid var(--linea-fuerte);
+      border-radius: 0 10px 10px 0;
+      background: var(--hueso);
+      color: var(--petroleo-oscuro);
+      font-size: 0.97rem;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .historial-acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    /* Botones chicos para las tarjetas */
+    .historial-acciones .boton-secundario,
+    .btn-borrar {
+      min-height: 40px;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+    }
+
+    .btn-borrar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: none;
+      color: var(--texto-suave);
+      font-family: var(--fuente);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-borrar svg { width: 16px; height: 16px; flex: none; }
+    .btn-borrar:hover {
+      color: var(--peligro);
+      border-color: var(--peligro);
+      background: var(--peligro-suave);
+    }
+
+    .historial-acciones .boton-secundario:focus-visible,
+    .btn-borrar:focus-visible,
+    .btn-cerrar-sesion:focus-visible {
+      outline: 3px solid var(--petroleo);
+      outline-offset: 3px;
+    }
+
+    /* Cartel "exclusivo de Premium" (reusa .uso-limite de estilos.css) */
+    .historial-premium { margin-top: 20px; }
+    .historial-premium .uso-limite-texto { margin-bottom: 14px; }
+
+    /* Estado vacío */
+    .historial-vacio {
+      padding: 36px 24px;
+      text-align: center;
+    }
+    .historial-vacio-icono {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      background: var(--arena);
+      color: var(--petroleo);
+    }
+    .historial-vacio-icono svg { width: 24px; height: 24px; }
+    .historial-vacio h3 {
+      margin: 0 0 6px;
+      font-family: var(--fuente-titulos);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--petroleo);
+    }
+    .historial-vacio p { margin: 0 0 18px; color: var(--texto-suave); }
+
+    /* ----- Mobile ----- */
+    @media (max-width: 600px) {
+      .cuenta-perfil { flex-wrap: wrap; padding: 20px; }
+      .btn-cerrar-sesion { width: 100%; justify-content: center; }
+
+      .historial-card {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 18px;
+      }
+      .historial-puntaje {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 10px 14px;
+      }
+      .historial-puntaje-num { font-size: 1.9rem; }
+      .historial-acciones > * { flex: 1 1 auto; justify-content: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="menu-movil" aria-label="Navegación principal">
+      <a href="index.html" class="sidebar-top">
+        <img src="/logo-icono.png" alt="" width="40" height="40" class="sidebar-logo-icono">
+        <span class="sidebar-logo-texto">Puro<span class="logo-texto-acento">Texto</span></span>
+      </a>
+      <span class="badge-beta">v1.0 Beta</span>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-grupo-titulo">Herramientas</p>
+          <a href="index.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Detector de IA</span>
+          </a>
+          <a href="contador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg>
+            <span>Contador de palabras</span>
+          </a>
+          <a href="parafraseador.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Parafraseador</span>
+          </a>
+          <a href="resumen.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path></svg>
+            <span>Resumen IA</span>
+          </a>
+          <a href="traductor.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Traductor</span>
+          </a>
+          <a href="gramatica.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>Verificador de Gramática</span>
+          </a>
+          <a href="comparacion.html" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="18" rx="1.5"></rect><rect x="13" y="3" width="8" height="18" rx="1.5"></rect><path d="M11 9l2 3-2 3"></path></svg>
+            <span>Comparación de Textos</span>
+          </a>
+
+        <p class="sidebar-grupo-titulo">Recursos</p>
+          <a href="index.html#como-funciona" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M10 8l6 4-6 4V8z"></path></svg>
+            <span>Tutoriales</span>
+          </a>
+          <a href="index.html#beneficios" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+            <span>Recursos</span>
+          </a>
+          <a href="index.html#faq" class="sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Preguntas frecuentes</span>
+          </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <!-- Acceso a los planes -->
+        <a href="precios.html" class="sidebar-item sidebar-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>Hazte Premium</span>
+        </a>
+
+        <!-- En esta página el usuario ya está en su cuenta -->
+        <a href="cuenta.html" class="sidebar-item sidebar-auth" id="btn-auth" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Mi cuenta</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="contenido-principal">
+
+      <div class="topbar-movil">
+        <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
+          <svg class="icono-hamburguesa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="6" y1="18" x2="18" y2="6"></line>
+          </svg>
+        </button>
+        <a href="index.html" class="topbar-logo">
+          <img src="/logo-icono.png" alt="PuroTexto" width="28" height="28">
+          <span>PuroTexto</span>
+        </a>
+      </div>
+
+  <main class="contenedor">
+
+    <h1 class="cuenta-titulo">Mi Cuenta</h1>
+
+    <!-- ===== PERFIL: email, plan y cerrar sesión ===== -->
+    <section class="tarjeta cuenta-perfil" aria-label="Datos de tu cuenta">
+      <div class="cuenta-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+
+      <div class="cuenta-datos">
+        <span class="cuenta-etiqueta">Sesión iniciada como</span>
+        <p class="cuenta-email" id="cuenta-email">tu-email@ejemplo.com</p>
+
+        <div class="cuenta-plan-fila">
+          <!-- data-plan: "gratis" | "registrado" | "premium" -->
+          <span class="plan-badge" id="cuenta-plan" data-plan="registrado">Plan Registrado</span>
+          <span class="cuenta-plan-detalle" id="cuenta-plan-detalle">10 análisis por día</span>
+        </div>
+      </div>
+
+      <button type="button" id="btn-cerrar-sesion" class="boton-secundario btn-cerrar-sesion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Cerrar sesión
+      </button>
+    </section>
+
+    <!-- ===== HISTORIAL DE ANÁLISIS ===== -->
+    <section class="historial-seccion" id="historial" aria-labelledby="historial-titulo">
+      <h2 class="titulo-seccion" id="historial-titulo">Historial de análisis</h2>
+      <p class="titulo-seccion-detalle">Tus análisis más recientes, del más nuevo al más viejo.</p>
+
+      <!-- Lista de tarjetas.
+           PARTE 2: se rellena desde Supabase. Las 3 tarjetas de abajo son de ejemplo
+           para ver el diseño; se reemplazan por las reales.
+           [data-nivel] pinta el puntaje: "alto" (verde) · "medio" (ámbar) · "bajo" (rojo) -->
+      <ul class="historial-lista" id="historial-lista">
+
+        <!-- Ejemplo 1: Detector, puntaje alto (suena humano) -->
+        <li>
+          <article class="tarjeta historial-card" data-id="ejemplo-1" data-nivel="alto">
+            <div class="historial-puntaje">
+              <span class="historial-puntaje-num">87</span>
+              <span class="historial-puntaje-etiqueta">Suena humano</span>
+            </div>
+            <div class="historial-cuerpo">
+              <div class="historial-meta">
+                <span class="historial-herramienta">Detector de IA</span>
+                <time class="historial-fecha" datetime="2026-10-27">27 oct 2026</time>
+              </div>
+              <p class="historial-fragmento">Ayer estuve dándole vueltas al tema del trabajo y la verdad que no sé si me conviene aceptar la propuesta, aunque el sueldo es mejor que el de ahora y me queda más cerca de casa…</p>
+              <div class="historial-acciones">
+                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-1">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  Ver detalle
+                </button>
+                <button type="button" class="btn-borrar" data-id="ejemplo-1">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+                  Borrar
+                </button>
+              </div>
+            </div>
+          </article>
+        </li>
+
+        <!-- Ejemplo 2: Detector, puntaje bajo (suena a IA) -->
+        <li>
+          <article class="tarjeta historial-card" data-id="ejemplo-2" data-nivel="bajo">
+            <div class="historial-puntaje">
+              <span class="historial-puntaje-num">23</span>
+              <span class="historial-puntaje-etiqueta">Suena a IA</span>
+            </div>
+            <div class="historial-cuerpo">
+              <div class="historial-meta">
+                <span class="historial-herramienta">Detector de IA</span>
+                <time class="historial-fecha" datetime="2026-10-25">25 oct 2026</time>
+              </div>
+              <p class="historial-fragmento">En el mundo actual, la tecnología desempeña un papel fundamental en diversos aspectos de la vida cotidiana, ya que permite optimizar procesos y facilitar la comunicación entre las personas…</p>
+              <div class="historial-acciones">
+                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  Ver detalle
+                </button>
+                <button type="button" class="btn-borrar" data-id="ejemplo-2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+                  Borrar
+                </button>
+              </div>
+            </div>
+          </article>
+        </li>
+
+        <!-- Ejemplo 3: herramienta sin puntaje (Parafraseador): ícono en lugar del número -->
+        <li>
+          <article class="tarjeta historial-card" data-id="ejemplo-3">
+            <div class="historial-puntaje historial-puntaje--herramienta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            <div class="historial-cuerpo">
+              <div class="historial-meta">
+                <span class="historial-herramienta">Parafraseador</span>
+                <time class="historial-fecha" datetime="2026-10-22">22 oct 2026</time>
+              </div>
+              <p class="historial-fragmento">Necesito que me confirmes si llegás a la reunión del jueves, porque tenemos que cerrar el presupuesto antes de que termine la semana y todavía faltan varios datos…</p>
+              <div class="historial-acciones">
+                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  Ver detalle
+                </button>
+                <button type="button" class="btn-borrar" data-id="ejemplo-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+                  Borrar
+                </button>
+              </div>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <!-- Cartel para usuarios que no son Premium (PARTE 2: se oculta con hidden si el plan es Premium) -->
+      <div class="uso-limite historial-premium" id="historial-premium">
+        <p class="uso-limite-texto"><strong>El historial completo es exclusivo de Premium.</strong> Con tu plan actual ves tus últimos 3 análisis.</p>
+        <div class="uso-limite-acciones">
+          <a href="precios.html" class="boton-principal">Ver Premium</a>
+        </div>
+      </div>
+
+      <!-- Estado vacío (PARTE 2: se muestra cuando no hay análisis; el listado y el cartel se ocultan) -->
+      <div class="tarjeta historial-vacio" id="historial-vacio" hidden>
+        <span class="historial-vacio-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </span>
+        <h3>Todavía no hay análisis guardados</h3>
+        <p>Cuando analices un texto estando con tu sesión iniciada, va a aparecer acá.</p>
+        <a href="index.html" class="boton-principal">Analizar un texto</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== PIE DE PÁGINA ===== -->
+  <footer class="pie fade-in">
+    <div class="pie-contenido">
+      <div class="pie-columnas">
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Herramientas</h3>
+          <ul>
+            <li><a href="index.html">Detector de IA</a></li>
+            <li><a href="contador.html">Contador de palabras</a></li>
+            <li><a href="parafraseador.html">Parafraseador</a></li>
+            <li><a href="resumen.html">Resumen IA</a></li>
+            <li><a href="traductor.html">Traductor</a></li>
+            <li><a href="gramatica.html">Verificador de Gramática</a></li>
+            <li><a href="comparacion.html">Comparación de Textos</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">PuroTexto</h3>
+          <ul>
+            <li><a href="acerca.html">Acerca de</a></li>
+            <li><a href="precios.html">Precios</a></li>
+            <li><a href="#">Artículos</a></li>
+            <li><a href="mailto:hola@purotexto.com">Contacto</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Legal</h3>
+          <ul>
+            <li><a href="privacidad.html">Política de Privacidad</a></li>
+            <li><a href="terminos.html">Términos de Uso</a></li>
+            <li><a href="privacidad.html#cookies">Aviso de Cookies</a></li>
+          </ul>
+        </div>
+
+        <div class="pie-columna">
+          <h3 class="pie-columna-titulo">Seguinos</h3>
+          <div class="pie-redes">
+            <a href="#" class="pie-red" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5"></circle></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4v9.5a3.5 3.5 0 1 1-3.5-3.5"></path><path d="M16 4c0 2.5 2 4.5 4.5 4.5"></path></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="X (Twitter)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line></svg>
+            </a>
+            <a href="#" class="pie-red" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3"></rect><line x1="7" y1="10" x2="7" y2="17"></line><circle cx="7" cy="7" r="0.5"></circle><path d="M11 17v-4a2 2 0 0 1 4 0v4"></path><line x1="11" y1="10" x2="11" y2="17"></line></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pie-inferior">
+        <p>© <span id="anio">2026</span> PuroTexto. Todos los derechos reservados.</p>
+        <p>Hecho con 💚 en Argentina</p>
+      </div>
+    </div>
+  </footer>
+
+    </div><!-- /.contenido-principal -->
+  </div><!-- /.app-layout -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var reducirMovimiento = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* ---------- Menú hamburguesa (mobile) ---------- */
+      (function () {
+        var btnMenu = document.getElementById('btn-menu-movil');
+        var menu = document.getElementById('menu-movil');
+        if (!btnMenu || !menu) return;
+
+        function abrirMenu() {
+          menu.classList.add('abierto');
+          btnMenu.setAttribute('aria-expanded', 'true');
+          btnMenu.setAttribute('aria-label', 'Cerrar menú');
+        }
+        function cerrarMenu() {
+          menu.classList.remove('abierto');
+          btnMenu.setAttribute('aria-expanded', 'false');
+          btnMenu.setAttribute('aria-label', 'Abrir menú');
+        }
+
+        btnMenu.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (menu.classList.contains('abierto')) cerrarMenu(); else abrirMenu();
+        });
+        Array.prototype.forEach.call(menu.querySelectorAll('a'), function (enlace) {
+          enlace.addEventListener('click', cerrarMenu);
+        });
+        document.addEventListener('click', function (e) {
+          if (!menu.classList.contains('abierto')) return;
+          if (menu.contains(e.target) || btnMenu.contains(e.target)) return;
+          cerrarMenu();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') cerrarMenu();
+        });
+      })();
+
+      /* ---------- Fade-in del footer al hacer scroll ---------- */
+      var elementosFade = document.querySelectorAll('.fade-in');
+      if (!reducirMovimiento && 'IntersectionObserver' in window) {
+        var observadorScroll = new IntersectionObserver(function (entradas, observer) {
+          entradas.forEach(function (entrada) {
+            if (entrada.isIntersecting) {
+              entrada.target.classList.add('visible');
+              observer.unobserve(entrada.target);
+            }
+          });
+        }, { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.15 });
+        elementosFade.forEach(function (el) { observadorScroll.observe(el); });
+      } else {
+        elementosFade.forEach(function (el) { el.classList.add('visible'); });
+      }
+
+      /* ---------- Año del footer ---------- */
+      var anio = document.getElementById('anio');
+      if (anio) anio.textContent = new Date().getFullYear();
+
+      /* ----------------------------------------------------------------------
+         PARTE 2 (pendiente): sesión con Supabase, traer el historial,
+         "Ver detalle", "Borrar" y "Cerrar sesión".
+         ---------------------------------------------------------------------- */
+    });
+  </script>
+</body>
+</html>
