@@ -25,6 +25,15 @@
 // análisis se le devuelve al cupo: nadie pierde uno por un error.
 // Los números reales viven en la base de datos (limites.sql y limites_servidor.sql).
 //
+// LÍMITE DE LARGO DEL TEXTO (según el tipo de cuenta)
+// ---------------------------------------------------
+//   · Anónimo (sin sesión) ..... hasta  5.000 caracteres por texto
+//   · Registrado (gratis) ...... hasta  8.000 caracteres por texto
+//   · Premium .................. hasta 15.000 caracteres por texto
+// El largo se valida ANTES de descontar el análisis del cupo: un texto demasiado
+// largo se rechaza (400) sin gastar nada. Para saber si la cuenta es Premium se
+// consulta profiles.is_premium (solo lectura), sin tocar el cupo.
+//
 // Para que funcione hace falta, en Cloudflare (Settings → Variables and Secrets):
 //   · SUPABASE_SERVICE_ROLE_KEY  (tipo "Secret": la clave secreta de Supabase)
 //   · SUPABASE_URL               (opcional; si falta se usa SUPABASE_URL_POR_DEFECTO)
@@ -34,6 +43,7 @@
 // Salida:   200 { "textoCorregido": "...", "errores": [{ "original": "...",
 //                 "correccion": "...", "tipo": "ortografía" }, ...],
 //                 "uso": { premium, usados, limite, restantes } }
+//           400 { "codigo": "texto_corto"|"texto_largo", "error": "...", "maximo"? }
 //           429 { "codigo": "limite_diario", "error": "...", "uso": {...} }
 //           4xx/5xx { "error": "mensaje" }
 // =============================================================================
@@ -46,11 +56,13 @@
 // herramientas a la vez).
 const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 
-// Largo permitido del texto que pega la persona (en caracteres).
-// Tiene que coincidir con analizar.js, parafrasear.js, resumir.js, traducir.js
-// y gramatica.html.
+// Largo permitido del texto (en caracteres). El máximo depende del tipo de cuenta.
+// Tiene que coincidir con analizar.js, parafrasear.js, resumir.js, traducir.js,
+// gramatica.html y la página de precios (precios.html).
 const LARGO_MINIMO = 50;
-const LARGO_MAXIMO = 8000;
+const LARGO_MAXIMO_ANONIMO = 5000;
+const LARGO_MAXIMO_REGISTRADO = 8000;
+const LARGO_MAXIMO_PREMIUM = 15000;
 
 // Freno simple contra abusos: máximo de revisiones por minuto desde una misma IP.
 // (Es un freno de ráfagas; el límite DIARIO lo controla Supabase, más abajo.)
@@ -59,16 +71,16 @@ const MAX_POR_MINUTO = 8;
 // Tiempo máximo de espera a Gemini (milisegundos).
 const ESPERA_MAXIMA_MS = 25000;
 
-// Máximo de errores que se aceptan en la respuesta (por las dudas Gemini se
-// vaya de tema con un texto muy largo; no tiene sentido mostrar cientos).
-const MAX_ERRORES = 60;
-
 // Dirección de tu proyecto de Supabase (es la misma que ya está en el HTML, no
 // es secreta). Si algún día cambia, podés poner SUPABASE_URL como variable de entorno.
 const SUPABASE_URL_POR_DEFECTO = 'https://bprvlyzdnsykwjamumhw.supabase.co';
 
 // Tiempo máximo de espera a Supabase (milisegundos).
 const ESPERA_SUPABASE_MS = 8000;
+
+// Máximo de errores que se aceptan en la respuesta (por las dudas Gemini se
+// vaya de tema con un texto muy largo; no tiene sentido mostrar cientos).
+const MAX_ERRORES = 60;
 
 // ----- El prompt (las instrucciones para Gemini) ------------------------------
 // Le pide a Gemini que revise el texto y que responda SOLO con un JSON (así
@@ -184,6 +196,44 @@ function mensajeParaError(status, detalle) {
   return 'No se pudo completar la revisión. Probá de nuevo en unos segundos.';
 }
 
+// Máximo de caracteres por texto según el tipo de cuenta:
+// 'anonimo' (sin sesión), 'registrado' (con sesión, gratis) o 'premium'.
+function maximoDeCaracteres(tipoCuenta) {
+  if (tipoCuenta === 'premium') return LARGO_MAXIMO_PREMIUM;
+  if (tipoCuenta === 'registrado') return LARGO_MAXIMO_REGISTRADO;
+  return LARGO_MAXIMO_ANONIMO;
+}
+
+// 8000 -> "8.000" (para los mensajes que se le muestran a la persona).
+function conPuntos(numero) {
+  return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Revisa el largo del texto. Devuelve { codigo, error, maximo? } si hay un
+// problema, o null si está bien. Es una revisión barata: no toca el cupo.
+function errorDeLargo(texto, maximo, tipoCuenta) {
+  if (texto.length < LARGO_MINIMO) {
+    return { codigo: 'texto_corto', error: `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.` };
+  }
+  if (texto.length > maximo) {
+    let mensaje;
+    if (tipoCuenta === 'anonimo') {
+      mensaje =
+        `El texto es muy largo: sin cuenta se pueden revisar hasta ${conPuntos(maximo)} caracteres. ` +
+        `Registrate gratis para llegar a ${conPuntos(LARGO_MAXIMO_REGISTRADO)}, ` +
+        `o pasate a Premium para hasta ${conPuntos(LARGO_MAXIMO_PREMIUM)}.`;
+    } else if (tipoCuenta === 'registrado') {
+      mensaje =
+        `El texto es muy largo: tu cuenta permite hasta ${conPuntos(maximo)} caracteres. ` +
+        `Con Premium podés revisar hasta ${conPuntos(LARGO_MAXIMO_PREMIUM)}.`;
+    } else {
+      mensaje = `El texto es muy largo. El máximo es de ${conPuntos(maximo)} caracteres.`;
+    }
+    return { codigo: 'texto_largo', error: mensaje, maximo };
+  }
+  return null;
+}
+
 // ----- Límites de uso: hablar con Supabase ------------------------------------
 
 // Dirección de Supabase sin barra final.
@@ -244,6 +294,19 @@ async function llamarFuncion(env, nombre, argumentos) {
     throw new Error('rpc ' + nombre + ' respondió ' + respuesta.status + ' ' + texto.slice(0, 200));
   }
   return texto ? JSON.parse(texto) : null;
+}
+
+// ¿Esta persona es Premium? Solo LEE profiles.is_premium: no toca el cupo, así se
+// puede saber el tope de caracteres antes de descontar el análisis.
+// Si no hay fila de perfil, se la trata como cuenta registrada normal.
+// (Se asume que profiles.id es el id del usuario de Supabase Auth.)
+async function esUsuarioPremium(env, userId) {
+  const url =
+    urlSupabase(env) + '/rest/v1/profiles?select=is_premium&limit=1&id=eq.' + encodeURIComponent(userId);
+  const respuesta = await pedirSupabase(url, { method: 'GET', headers: encabezadosServicio(env) });
+  if (!respuesta.ok) throw new Error('profiles respondió ' + respuesta.status);
+  const filas = await respuesta.json();
+  return Array.isArray(filas) && filas.length > 0 && filas[0].is_premium === true;
 }
 
 // Para IPv6 usamos solo los primeros 64 bits (el "barrio" de la conexión): una
@@ -357,21 +420,21 @@ export async function onRequest(context) {
     // para que no puedan confundir a Gemini.
     texto = texto.replace(/<\/?texto_a_analizar>/gi, '').trim();
 
-    // Estas validaciones van ANTES de descontar el cupo: un texto inválido no gasta análisis.
-    if (texto.length < LARGO_MINIMO) {
-      return responder(400, { error: `El texto es muy corto. Pegá al menos ${LARGO_MINIMO} caracteres.` });
-    }
-    if (texto.length > LARGO_MAXIMO) {
-      return responder(400, { error: `El texto es muy largo. El máximo es de ${LARGO_MAXIMO} caracteres.` });
-    }
+    // Revisión barata, ANTES de hablar con Supabase y ANTES de descontar el cupo:
+    // muy corto, o más largo de lo que NADIE puede revisar (ni siquiera Premium).
+    const problemaBasico = errorDeLargo(texto, LARGO_MAXIMO_PREMIUM, 'premium');
+    if (problemaBasico) return responder(400, problemaBasico);
 
-    // 4) Límite diario de uso (se valida en el servidor, con Supabase).
+    // 4) ¿Quién es y cuánto texto puede revisar? (todavía NO se descuenta nada)
     if (!env.SUPABASE_SERVICE_ROLE_KEY) {
       console.error('Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY');
       return responder(500, {
         error: 'El servidor todavía no tiene configurada la clave de Supabase (SUPABASE_SERVICE_ROLE_KEY).',
       });
     }
+
+    let tipoCuenta = 'anonimo'; // 'anonimo' | 'registrado' | 'premium'
+    let maximo = LARGO_MAXIMO_ANONIMO;
 
     try {
       // ¿Es una persona con sesión? Si manda un token, Supabase nos dice quién es.
@@ -390,8 +453,28 @@ export async function onRequest(context) {
       const ipHash = await hashearIp(normalizarIp(ip), env.SUPABASE_SERVICE_ROLE_KEY);
       identidad = { userId, ipHash };
 
+      // Con sesión: se consulta si es Premium (solo lectura) para saber su tope.
+      if (userId) {
+        tipoCuenta = (await esUsuarioPremium(env, userId)) ? 'premium' : 'registrado';
+      }
+      maximo = maximoDeCaracteres(tipoCuenta);
+    } catch (e) {
+      console.error('No se pudo verificar la cuenta:', e.message);
+      identidad = null;
+      return responder(503, {
+        error: 'No pudimos verificar tu cuenta. Probá de nuevo en unos segundos.',
+      });
+    }
+
+    // 4b) Largo del texto según el tipo de cuenta. Va ANTES de descontar el cupo:
+    // un texto demasiado largo se rechaza y no gasta ningún análisis.
+    const problemaDeLargo = errorDeLargo(texto, maximo, tipoCuenta);
+    if (problemaDeLargo) return responder(400, problemaDeLargo);
+
+    // 5) Límite diario de uso (se valida en el servidor, con Supabase).
+    try {
       // Descuenta 1 análisis de forma atómica y dice si estaba permitido.
-      cupo = await llamarFuncion(env, 'servidor_consumir', { p_user: userId, p_ip_hash: ipHash });
+      cupo = await llamarFuncion(env, 'servidor_consumir', { p_user: identidad.userId, p_ip_hash: identidad.ipHash });
       if (!cupo || typeof cupo.permitido !== 'boolean') throw new Error('Respuesta inesperada de servidor_consumir');
     } catch (e) {
       console.error('No se pudo verificar el cupo de uso:', e.message);
@@ -413,7 +496,7 @@ export async function onRequest(context) {
       });
     }
 
-    // 5) Llamar a Gemini.
+    // 6) Llamar a Gemini.
     const modelo = env.GEMINI_MODEL || MODELO_POR_DEFECTO;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
 
@@ -465,7 +548,7 @@ export async function onRequest(context) {
       return await fallar(502, { error: mensajeParaError(respuesta.status, detalle) });
     }
 
-    // 6) Leer la respuesta de Gemini.
+    // 7) Leer la respuesta de Gemini.
     if (datos && datos.promptFeedback && datos.promptFeedback.blockReason) {
       return await fallar(422, {
         error: 'Gemini no pudo revisar este texto por sus filtros de seguridad. Probá con otro fragmento.',
@@ -493,7 +576,7 @@ export async function onRequest(context) {
       return await fallar(502, { error: 'La respuesta de Gemini llegó en un formato inesperado. Probá de nuevo.' });
     }
 
-    // 7) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
+    // 8) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
     return responder(200, Object.assign({}, resultado, { uso: resumenDeUso(cupo) }));
   } catch (error) {
     console.error('Error inesperado en /api/gramatica:', error);
