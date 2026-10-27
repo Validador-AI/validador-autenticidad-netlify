@@ -18,6 +18,48 @@
   <script src="/limites.js?v=3" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
+  <style>
+    /* Botones dentro del cartel de error (ej.: texto más largo que el límite de la cuenta) */
+    .error-acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .error-boton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 20px;
+      border: 1.5px solid transparent;
+      border-radius: 12px;
+      font-family: var(--fuente);
+      font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.2;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .error-boton--arena {
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      border-color: rgba(38, 75, 74, 0.35);
+    }
+    .error-boton--arena:hover {
+      border-color: var(--petroleo);
+      box-shadow: 0 4px 12px rgba(38, 75, 74, 0.15);
+    }
+    .error-boton--premium {
+      background: var(--terracota);
+      color: #FFF;
+      border-color: var(--terracota);
+    }
+    .error-boton--premium:hover {
+      background: var(--terracota-hover);
+      border-color: var(--terracota-hover);
+    }
+    .error-boton:focus-visible { outline: 3px solid var(--petroleo); outline-offset: 3px; }
+    @media (max-width: 600px) {
+      .error-boton { width: 100%; }
+    }
+  </style>
 </head>
 
 <body>
@@ -123,7 +165,7 @@
           <textarea id="para-texto" rows="8" placeholder="Pegá acá el texto que querés humanizar..."></textarea>
           <div class="textarea-pie">
             <button type="button" id="para-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
-            <div class="contador-box"><span id="para-contador">0 / 8000</span></div>
+            <div class="contador-box"><span id="para-contador">0 / 15.000</span></div>
           </div>
         </div>
 
@@ -148,8 +190,9 @@
 
       <!-- ===== Error ===== -->
       <div id="para-error" class="error" role="alert" hidden>
-        <strong>No pudimos completar la reescritura</strong>
+        <strong id="para-error-titulo">No pudimos completar la reescritura</strong>
         <span id="para-error-mensaje"></span>
+        <div id="para-error-acciones" class="error-acciones" hidden></div>
       </div>
 
       <!-- ===== Resultado: antes y después ===== -->
@@ -236,7 +279,6 @@
       </div>
     </div>
   </footer>
-
     </div><!-- /.contenido-principal -->
   </div><!-- /.app-layout -->
 
@@ -302,11 +344,6 @@
     </div>
   </div>
 
-  <!-- ==========================================================================
-
-  <!-- ==========================================================================
-     LÓGICA JAVASCRIPT (Ubicado al final del body)
-     ========================================================================== -->
 
   <!-- ==========================================================================
      LÓGICA JAVASCRIPT (Ubicado al final del body)
@@ -454,7 +491,7 @@
           (etiquetaAuth || btnAuth).textContent = sesionActual ? 'Mi cuenta' : 'Iniciar sesión';
         }
 
-        function abrirModal() {
+        function abrirModal(modoInicial) {
           ocultarError();
           if (sesionActual) {
             vistaAuth.hidden = true;
@@ -464,7 +501,7 @@
             vistaCuenta.hidden = true;
             vistaAuth.hidden = false;
             formAuth.reset();
-            cambiarModo('login');
+            cambiarModo(modoInicial === 'registro' ? 'registro' : 'login');
             if (btnTogglePassword) {
               inputPassword.type = 'password';
               btnTogglePassword.setAttribute('aria-pressed', 'false');
@@ -481,7 +518,8 @@
           document.body.style.overflow = '';
         }
 
-        btnAuth.addEventListener('click', abrirModal);
+        btnAuth.addEventListener('click', function () { abrirModal(); });
+        window.abrirModalAuth = abrirModal; // lo usa el cartel de error ("Registrarme gratis")
         btnCerrarModal.addEventListener('click', cerrarModal);
         modal.addEventListener('click', function (e) {
           if (e.target === modal) cerrarModal();
@@ -588,7 +626,12 @@
          ---------------------------------------------------------------------- */
       (function () {
         var LARGO_MINIMO = 50;
-        var LARGO_MAXIMO = 8000;
+        // Tope del frontend: el más alto (Premium). El límite real de cada cuenta lo valida
+        // el servidor (5.000 anónimo, 8.000 registrado, 15.000 Premium) y, si se pasa,
+        // la página muestra el cartel de error con los botones para registrarse o ver Premium.
+        var LARGO_MAXIMO = 15000;
+        var MAXIMO_ANONIMO = 5000; // solo se usa para decidir qué botones mostrar
+        var TITULO_ERROR_POR_DEFECTO = 'No pudimos completar la reescritura';
 
         var paraTexto = document.getElementById('para-texto');
         var paraContador = document.getElementById('para-contador');
@@ -596,7 +639,9 @@
         var paraBtnHumanizar = document.getElementById('para-btn-humanizar');
         var paraEstado = document.getElementById('para-estado');
         var paraError = document.getElementById('para-error');
+        var paraErrorTitulo = document.getElementById('para-error-titulo');
         var paraErrorMensaje = document.getElementById('para-error-mensaje');
+        var paraErrorAcciones = document.getElementById('para-error-acciones');
         var paraResultados = document.getElementById('para-resultados');
         var paraOriginal = document.getElementById('para-original');
         var paraHumanizado = document.getElementById('para-humanizado');
@@ -608,18 +653,74 @@
           PuroTextoLimites.init({ campo: paraTexto, boton: paraBtnHumanizar });
         }
 
+        // 15000 -> "15.000"
+        function conPuntos(numero) {
+          return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
         function actualizarContador() {
           var n = paraTexto.value.length;
-          paraContador.textContent = n + ' / ' + LARGO_MAXIMO;
+          paraContador.textContent = conPuntos(n) + ' / ' + conPuntos(LARGO_MAXIMO);
           paraContador.classList.toggle('excedido', n > LARGO_MAXIMO);
           paraBtnLimpiar.hidden = n === 0;
         }
         paraTexto.addEventListener('input', actualizarContador);
 
-        function ocultarError() { paraError.hidden = true; }
-        function mostrarError(mensaje) {
+        function ocultarError() {
+          paraError.hidden = true;
+          paraErrorAcciones.hidden = true;
+          paraErrorAcciones.innerHTML = '';
+        }
+
+        // Muestra el cartel de error. Opcional: { titulo, acciones: [{ texto, estilo, href | alClick }] }
+        function mostrarError(mensaje, opciones) {
+          opciones = opciones || {};
+          paraErrorTitulo.textContent = opciones.titulo || TITULO_ERROR_POR_DEFECTO;
           paraErrorMensaje.textContent = mensaje;
+
+          paraErrorAcciones.innerHTML = '';
+          var acciones = opciones.acciones || [];
+          acciones.forEach(function (accion) {
+            var elemento;
+            if (accion.href) {
+              elemento = document.createElement('a');
+              elemento.href = accion.href;
+            } else {
+              elemento = document.createElement('button');
+              elemento.type = 'button';
+              elemento.addEventListener('click', accion.alClick);
+            }
+            elemento.className = 'error-boton error-boton--' + accion.estilo;
+            elemento.textContent = accion.texto;
+            paraErrorAcciones.appendChild(elemento);
+          });
+          paraErrorAcciones.hidden = acciones.length === 0;
+
           paraError.hidden = false;
+          // Que el cartel siempre se vea, aunque quede fuera de la pantalla (sobre todo en el celular).
+          paraError.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'nearest' });
+        }
+
+        function abrirRegistro() {
+          if (window.abrirModalAuth) {
+            window.abrirModalAuth('registro');
+          } else {
+            var botonCuenta = document.getElementById('btn-auth');
+            if (botonCuenta) botonCuenta.click();
+          }
+        }
+
+        // Botones del cartel cuando el texto supera el límite de la cuenta.
+        // Sin cuenta: registrarse o Premium. Registrado: Premium. Premium: ninguno.
+        function accionesPorTextoLargo(maximoCuenta) {
+          var acciones = [];
+          if (maximoCuenta <= MAXIMO_ANONIMO) {
+            acciones.push({ texto: 'Registrarme gratis', estilo: 'arena', alClick: abrirRegistro });
+          }
+          if (maximoCuenta < LARGO_MAXIMO) {
+            acciones.push({ texto: 'Ver Premium', estilo: 'premium', href: 'precios.html' });
+          }
+          return acciones;
         }
 
         paraBtnLimpiar.addEventListener('click', function () {
@@ -684,7 +785,10 @@
             return;
           }
           if (texto.length > LARGO_MAXIMO) {
-            mostrarError('El texto es muy largo (' + texto.length + ' caracteres). El máximo es ' + LARGO_MAXIMO + '.');
+            mostrarError(
+              'El texto es muy largo (' + conPuntos(texto.length) + ' caracteres). El máximo es ' + conPuntos(LARGO_MAXIMO) + ' caracteres.',
+              { titulo: 'El texto es demasiado largo' }
+            );
             return;
           }
           if (location.protocol === 'file:') {
@@ -720,6 +824,17 @@
             // El servidor dijo que no queda cupo hoy: mostramos el aviso con los botones.
             if (respuesta.status === 429 && datos && datos.codigo === 'limite_diario' && window.PuroTextoLimites) {
               PuroTextoLimites.limiteAlcanzado(datos.uso);
+              return;
+            }
+
+            // El texto es más largo que el límite de esta cuenta (no se descontó ningún análisis):
+            // mostramos el cartel de error con los botones para registrarse o ver Premium.
+            if (respuesta.status === 400 && datos && datos.codigo === 'texto_largo') {
+              var maximoCuenta = Number(datos.maximo) || LARGO_MAXIMO;
+              mostrarError(datos.error, {
+                titulo: 'El texto es demasiado largo',
+                acciones: accionesPorTextoLargo(maximoCuenta)
+              });
               return;
             }
 
