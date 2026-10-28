@@ -15,7 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- PARTE 2: acá se agregan el cliente de Supabase y limites.js, igual que en index.html -->
+  <!-- Cliente de Supabase (el mismo que usás en index.html) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <link rel="stylesheet" href="estilos.css">
   <style>
@@ -25,6 +26,12 @@
        .boton-secundario, .uso-limite, [data-nivel], etc.).
        Si querés, pegá este bloque al final de estilos.css.
        ========================================================================== */
+
+    /* Que el atributo hidden siempre oculte, aunque la clase defina display */
+    .historial-premium[hidden],
+    .historial-vacio[hidden],
+    .historial-lista[hidden],
+    .historial-estado[hidden] { display: none !important; }
 
     /* ----- Cabecera de la cuenta ----- */
     .cuenta-titulo {
@@ -123,6 +130,7 @@
     /* ----- Historial ----- */
     .historial-seccion { margin-top: 48px; }
     .historial-seccion .titulo-seccion { margin-top: 0; }
+    .historial-seccion .titulo-seccion:focus { outline: none; }
 
     .historial-lista {
       list-style: none;
@@ -130,6 +138,14 @@
       padding: 0;
       display: grid;
       gap: 16px;
+    }
+
+    /* Mensaje de "Cargando…" */
+    .historial-estado {
+      margin: 0;
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--texto-suave);
     }
 
     .historial-card {
@@ -216,6 +232,7 @@
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      overflow-wrap: anywhere;
     }
 
     .historial-acciones {
@@ -252,10 +269,13 @@
       border-color: var(--peligro);
       background: var(--peligro-suave);
     }
+    .btn-borrar:disabled,
+    .btn-cerrar-sesion:disabled { opacity: 0.6; cursor: wait; }
 
     .historial-acciones .boton-secundario:focus-visible,
     .btn-borrar:focus-visible,
-    .btn-cerrar-sesion:focus-visible {
+    .btn-cerrar-sesion:focus-visible,
+    .modal-cerrar:focus-visible {
       outline: 3px solid var(--petroleo);
       outline-offset: 3px;
     }
@@ -264,7 +284,7 @@
     .historial-premium { margin-top: 20px; }
     .historial-premium .uso-limite-texto { margin-bottom: 14px; }
 
-    /* Estado vacío */
+    /* Estado vacío / error */
     .historial-vacio {
       padding: 36px 24px;
       text-align: center;
@@ -290,6 +310,134 @@
     }
     .historial-vacio p { margin: 0 0 18px; color: var(--texto-suave); }
 
+    /* ----- Ventana de detalle ----- */
+    .modal-detalle {
+      width: min(680px, calc(100% - 32px));
+      max-height: calc(100vh - 48px);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      overflow: visible;
+    }
+    .modal-detalle::backdrop { background: rgba(23, 48, 47, 0.55); }
+
+    .modal-caja {
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .modal-cabecera {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .modal-titulo {
+      margin: 0 0 4px;
+      font-family: var(--fuente-editorial);
+      font-weight: 400;
+      font-size: 1.6rem;
+      line-height: 1.2;
+      color: var(--petroleo);
+    }
+    .modal-fecha { margin: 0; font-size: 0.86rem; color: var(--texto-suave); }
+
+    .modal-cerrar {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--linea);
+      border-radius: 10px;
+      background: none;
+      color: var(--petroleo);
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .modal-cerrar:hover { background: var(--arena); }
+    .modal-cerrar svg { width: 18px; height: 18px; }
+
+    .detalle-puntaje {
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 12px;
+      width: fit-content;
+      margin-top: 18px;
+      padding: 10px 18px;
+    }
+    .detalle-puntaje .historial-puntaje-num { font-size: 2rem; }
+
+    .detalle-bloque { margin-top: 22px; }
+    .detalle-bloque h4 {
+      margin: 0 0 8px;
+      font-family: var(--fuente-titulos);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--petroleo);
+    }
+    .detalle-bloque p,
+    .detalle-bloque dd {
+      margin: 0;
+      line-height: 1.6;
+      color: var(--petroleo-oscuro);
+      overflow-wrap: anywhere;
+    }
+    .detalle-frases {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .detalle-frases li {
+      padding: 10px 14px;
+      border-left: 3px solid var(--linea-fuerte);
+      border-radius: 0 10px 10px 0;
+      background: var(--hueso);
+      line-height: 1.55;
+      color: var(--petroleo-oscuro);
+      overflow-wrap: anywhere;
+    }
+    .detalle-frases small {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.86rem;
+      color: var(--texto-suave);
+    }
+    .detalle-bloque dl { margin: 0; display: grid; gap: 10px; }
+    .detalle-bloque dt {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--texto-suave);
+    }
+    .detalle-bloque pre {
+      margin: 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--hueso);
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .detalle-texto summary {
+      cursor: pointer;
+      font-family: var(--fuente-titulos);
+      font-weight: 500;
+      color: var(--petroleo);
+    }
+    .detalle-texto p {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--hueso);
+      white-space: pre-wrap;
+    }
+    .detalle-vacio { margin: 22px 0 0; color: var(--texto-suave); }
+
     /* ----- Mobile ----- */
     @media (max-width: 600px) {
       .cuenta-perfil { flex-wrap: wrap; padding: 20px; }
@@ -308,6 +456,8 @@
       }
       .historial-puntaje-num { font-size: 1.9rem; }
       .historial-acciones > * { flex: 1 1 auto; justify-content: center; }
+
+      .modal-caja { padding: 18px; }
     }
   </style>
 </head>
@@ -417,12 +567,12 @@
 
       <div class="cuenta-datos">
         <span class="cuenta-etiqueta">Sesión iniciada como</span>
-        <p class="cuenta-email" id="cuenta-email">tu-email@ejemplo.com</p>
+        <p class="cuenta-email" id="cuenta-email">Cargando…</p>
 
         <div class="cuenta-plan-fila">
-          <!-- data-plan: "gratis" | "registrado" | "premium" -->
-          <span class="plan-badge" id="cuenta-plan" data-plan="registrado">Plan Registrado</span>
-          <span class="cuenta-plan-detalle" id="cuenta-plan-detalle">10 análisis por día</span>
+          <!-- data-plan: "gratis" | "registrado" | "premium" (lo completa el script según is_premium) -->
+          <span class="plan-badge" id="cuenta-plan" data-plan="registrado">Cargando…</span>
+          <span class="cuenta-plan-detalle" id="cuenta-plan-detalle"></span>
         </div>
       </div>
 
@@ -434,105 +584,24 @@
 
     <!-- ===== HISTORIAL DE ANÁLISIS ===== -->
     <section class="historial-seccion" id="historial" aria-labelledby="historial-titulo">
-      <h2 class="titulo-seccion" id="historial-titulo">Historial de análisis</h2>
+      <h2 class="titulo-seccion" id="historial-titulo" tabindex="-1">Historial de análisis</h2>
       <p class="titulo-seccion-detalle">Tus análisis más recientes, del más nuevo al más viejo.</p>
 
-      <!-- Lista de tarjetas.
-           PARTE 2: se rellena desde Supabase. Las 3 tarjetas de abajo son de ejemplo
-           para ver el diseño; se reemplazan por las reales.
-           [data-nivel] pinta el puntaje: "alto" (verde) · "medio" (ámbar) · "bajo" (rojo) -->
-      <ul class="historial-lista" id="historial-lista">
+      <!-- Mensaje mientras se carga -->
+      <p class="historial-estado" id="historial-estado" role="status">Cargando tu historial…</p>
 
-        <!-- Ejemplo 1: Detector, puntaje alto (suena humano) -->
-        <li>
-          <article class="tarjeta historial-card" data-id="ejemplo-1" data-nivel="alto">
-            <div class="historial-puntaje">
-              <span class="historial-puntaje-num">87</span>
-              <span class="historial-puntaje-etiqueta">Suena humano</span>
-            </div>
-            <div class="historial-cuerpo">
-              <div class="historial-meta">
-                <span class="historial-herramienta">Detector de IA</span>
-                <time class="historial-fecha" datetime="2026-10-27">27 oct 2026</time>
-              </div>
-              <p class="historial-fragmento">Ayer estuve dándole vueltas al tema del trabajo y la verdad que no sé si me conviene aceptar la propuesta, aunque el sueldo es mejor que el de ahora y me queda más cerca de casa…</p>
-              <div class="historial-acciones">
-                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-1">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  Ver detalle
-                </button>
-                <button type="button" class="btn-borrar" data-id="ejemplo-1">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                  Borrar
-                </button>
-              </div>
-            </div>
-          </article>
-        </li>
+      <!-- Lista de tarjetas: la rellena el script con los datos reales de Supabase -->
+      <ul class="historial-lista" id="historial-lista" hidden></ul>
 
-        <!-- Ejemplo 2: Detector, puntaje bajo (suena a IA) -->
-        <li>
-          <article class="tarjeta historial-card" data-id="ejemplo-2" data-nivel="bajo">
-            <div class="historial-puntaje">
-              <span class="historial-puntaje-num">23</span>
-              <span class="historial-puntaje-etiqueta">Suena a IA</span>
-            </div>
-            <div class="historial-cuerpo">
-              <div class="historial-meta">
-                <span class="historial-herramienta">Detector de IA</span>
-                <time class="historial-fecha" datetime="2026-10-25">25 oct 2026</time>
-              </div>
-              <p class="historial-fragmento">En el mundo actual, la tecnología desempeña un papel fundamental en diversos aspectos de la vida cotidiana, ya que permite optimizar procesos y facilitar la comunicación entre las personas…</p>
-              <div class="historial-acciones">
-                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-2">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  Ver detalle
-                </button>
-                <button type="button" class="btn-borrar" data-id="ejemplo-2">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                  Borrar
-                </button>
-              </div>
-            </div>
-          </article>
-        </li>
-
-        <!-- Ejemplo 3: herramienta sin puntaje (Parafraseador): ícono en lugar del número -->
-        <li>
-          <article class="tarjeta historial-card" data-id="ejemplo-3">
-            <div class="historial-puntaje historial-puntaje--herramienta">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            </div>
-            <div class="historial-cuerpo">
-              <div class="historial-meta">
-                <span class="historial-herramienta">Parafraseador</span>
-                <time class="historial-fecha" datetime="2026-10-22">22 oct 2026</time>
-              </div>
-              <p class="historial-fragmento">Necesito que me confirmes si llegás a la reunión del jueves, porque tenemos que cerrar el presupuesto antes de que termine la semana y todavía faltan varios datos…</p>
-              <div class="historial-acciones">
-                <button type="button" class="boton-secundario btn-ver-detalle" data-id="ejemplo-3">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  Ver detalle
-                </button>
-                <button type="button" class="btn-borrar" data-id="ejemplo-3">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                  Borrar
-                </button>
-              </div>
-            </div>
-          </article>
-        </li>
-      </ul>
-
-      <!-- Cartel para usuarios que no son Premium (PARTE 2: se oculta con hidden si el plan es Premium) -->
-      <div class="uso-limite historial-premium" id="historial-premium">
+      <!-- Cartel para usuarios que no son Premium y tienen más de 3 análisis -->
+      <div class="uso-limite historial-premium" id="historial-premium" hidden>
         <p class="uso-limite-texto"><strong>El historial completo es exclusivo de Premium.</strong> Con tu plan actual ves tus últimos 3 análisis.</p>
         <div class="uso-limite-acciones">
           <a href="precios.html" class="boton-principal">Ver Premium</a>
         </div>
       </div>
 
-      <!-- Estado vacío (PARTE 2: se muestra cuando no hay análisis; el listado y el cartel se ocultan) -->
+      <!-- Estado vacío: no hay análisis guardados -->
       <div class="tarjeta historial-vacio" id="historial-vacio" hidden>
         <span class="historial-vacio-icono" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -540,6 +609,16 @@
         <h3>Todavía no hay análisis guardados</h3>
         <p>Cuando analices un texto estando con tu sesión iniciada, va a aparecer acá.</p>
         <a href="index.html" class="boton-principal">Analizar un texto</a>
+      </div>
+
+      <!-- Estado de error al traer el historial -->
+      <div class="tarjeta historial-vacio" id="historial-error" hidden>
+        <span class="historial-vacio-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </span>
+        <h3>No pudimos cargar tu historial</h3>
+        <p>Revisá tu conexión e intentá de nuevo.</p>
+        <button type="button" class="boton-principal" id="btn-reintentar">Reintentar</button>
       </div>
     </section>
 
@@ -610,6 +689,22 @@
     </div><!-- /.contenido-principal -->
   </div><!-- /.app-layout -->
 
+  <!-- ===== VENTANA "VER DETALLE" ===== -->
+  <dialog class="modal-detalle" id="modal-detalle" aria-labelledby="modal-titulo">
+    <div class="tarjeta modal-caja">
+      <div class="modal-cabecera">
+        <div>
+          <h3 class="modal-titulo" id="modal-titulo">Detalle del análisis</h3>
+          <p class="modal-fecha" id="modal-fecha"></p>
+        </div>
+        <button type="button" class="modal-cerrar" id="modal-cerrar" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>
+        </button>
+      </div>
+      <div id="modal-cuerpo"></div>
+    </div>
+  </dialog>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       'use strict';
@@ -671,10 +766,445 @@
       var anio = document.getElementById('anio');
       if (anio) anio.textContent = new Date().getFullYear();
 
-      /* ----------------------------------------------------------------------
-         PARTE 2 (pendiente): sesión con Supabase, traer el historial,
-         "Ver detalle", "Borrar" y "Cerrar sesión".
-         ---------------------------------------------------------------------- */
+      /* ======================================================================
+         MI CUENTA · Supabase: sesión, plan, historial, detalle, borrar, salir
+         ====================================================================== */
+
+      /* Pegá acá la MISMA URL y anon key que usás en index.html */
+      var SUPABASE_URL = 'https://bprvlyzdnsykwjamumhw.supabase.co';
+      var SUPABASE_ANON_KEY = 'sb_publishable_KkrHOVTWjZfFbX7Yz_SwMQ_O8xLbFlx';
+
+      var LIMITE_HISTORIAL = 50;   // máximo de registros que se traen
+      var LIMITE_GRATIS = 3;       // análisis visibles si no es Premium
+      var PAGINA_INICIO = 'index.html';
+
+      var sb = null;
+      try {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (e) {
+        console.error('No se pudo iniciar Supabase:', e);
+      }
+
+      var usuario = null;
+      var esPremium = false;
+      var filas = [];              // historial en memoria (más nuevo primero)
+
+      /* ---------- Referencias al DOM ---------- */
+      var elEmail = document.getElementById('cuenta-email');
+      var elPlan = document.getElementById('cuenta-plan');
+      var elPlanDetalle = document.getElementById('cuenta-plan-detalle');
+      var btnSalir = document.getElementById('btn-cerrar-sesion');
+      var elTituloHistorial = document.getElementById('historial-titulo');
+      var elEstado = document.getElementById('historial-estado');
+      var elLista = document.getElementById('historial-lista');
+      var elCartel = document.getElementById('historial-premium');
+      var elVacio = document.getElementById('historial-vacio');
+      var elError = document.getElementById('historial-error');
+      var btnReintentar = document.getElementById('btn-reintentar');
+      var modal = document.getElementById('modal-detalle');
+      var modalTitulo = document.getElementById('modal-titulo');
+      var modalFecha = document.getElementById('modal-fecha');
+      var modalCuerpo = document.getElementById('modal-cuerpo');
+      var modalCerrar = document.getElementById('modal-cerrar');
+
+      /* ---------- Utilidades ---------- */
+      function esc(valor) {
+        return String(valor == null ? '' : valor).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      var formatoCorto = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
+      var formatoLargo = new Intl.DateTimeFormat('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+
+      function fechaCorta(iso) {
+        var d = new Date(iso);
+        return isNaN(d) ? '' : formatoCorto.format(d);
+      }
+      function fechaLarga(iso) {
+        var d = new Date(iso);
+        return isNaN(d) ? '' : formatoLargo.format(d);
+      }
+
+      function resumir(texto) {
+        var s = String(texto || '').replace(/\s+/g, ' ').trim();
+        return s.length > 200 ? s.slice(0, 200).trim() + '…' : s;
+      }
+
+      function humanizar(clave) {
+        var s = String(clave).replace(/[_-]+/g, ' ').trim();
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      function pick(obj, claves) {
+        if (!obj || typeof obj !== 'object') return undefined;
+        for (var i = 0; i < claves.length; i++) {
+          var v = obj[claves[i]];
+          if (v !== undefined && v !== null && v !== '') return v;
+        }
+        return undefined;
+      }
+
+      /* ---------- Herramientas: nombre e ícono ---------- */
+      var ICONOS = {
+        detector: '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>',
+        contador: '<path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path>',
+        parafraseador: '<path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>',
+        resumen: '<path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path>',
+        traductor: '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>',
+        gramatica: '<path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>',
+        comparacion: '<rect x="3" y="3" width="8" height="18" rx="1.5"></rect><rect x="13" y="3" width="8" height="18" rx="1.5"></rect><path d="M11 9l2 3-2 3"></path>',
+        otro: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>'
+      };
+      var NOMBRES = {
+        detector: 'Detector de IA',
+        contador: 'Contador de palabras',
+        parafraseador: 'Parafraseador',
+        resumen: 'Resumen IA',
+        traductor: 'Traductor',
+        gramatica: 'Verificador de Gramática',
+        comparacion: 'Comparación de Textos'
+      };
+
+      function claveHerramienta(tipo) {
+        var s = String(tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (/detect/.test(s)) return 'detector';
+        if (/contad/.test(s)) return 'contador';
+        if (/parafras/.test(s)) return 'parafraseador';
+        if (/resum/.test(s)) return 'resumen';
+        if (/traduc/.test(s)) return 'traductor';
+        if (/gramat/.test(s)) return 'gramatica';
+        if (/compar/.test(s)) return 'comparacion';
+        return 'otro';
+      }
+      function nombreHerramienta(tipo) {
+        var clave = claveHerramienta(tipo);
+        if (NOMBRES[clave]) return NOMBRES[clave];
+        return tipo ? humanizar(tipo) : 'Análisis';
+      }
+      function svgIcono(clave, extra) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' +
+          (extra || '') + '>' + (ICONOS[clave] || ICONOS.otro) + '</svg>';
+      }
+
+      /* ---------- Puntaje → nivel (verde / ámbar / rojo) ---------- */
+      function nivelDe(puntaje) {
+        if (puntaje >= 70) return 'alto';
+        if (puntaje >= 40) return 'medio';
+        return 'bajo';
+      }
+      var ETIQUETA_NIVEL = { alto: 'Suena humano', medio: 'Mixto', bajo: 'Suena a IA' };
+
+      function tienePuntaje(fila) {
+        return fila.puntaje !== null && fila.puntaje !== undefined && !isNaN(Number(fila.puntaje));
+      }
+
+      /* ---------- Estados de la sección historial ---------- */
+      function mostrarEstado(cual) {
+        elEstado.hidden = cual !== 'cargando';
+        elLista.hidden = cual !== 'lista';
+        elVacio.hidden = cual !== 'vacio';
+        elError.hidden = cual !== 'error';
+        if (cual !== 'lista') elCartel.hidden = true;
+      }
+
+      /* ---------- Tarjetas ---------- */
+      function tarjetaHTML(fila) {
+        var clave = claveHerramienta(fila.tipo_herramienta);
+        var conPuntaje = tienePuntaje(fila);
+        var puntaje = conPuntaje ? Math.round(Number(fila.puntaje)) : null;
+        var nivel = conPuntaje ? nivelDe(puntaje) : '';
+        var id = esc(fila.id);
+
+        var bloquePuntaje = conPuntaje
+          ? '<div class="historial-puntaje">' +
+              '<span class="historial-puntaje-num">' + puntaje + '</span>' +
+              '<span class="historial-puntaje-etiqueta">' + ETIQUETA_NIVEL[nivel] + '</span>' +
+            '</div>'
+          : '<div class="historial-puntaje historial-puntaje--herramienta">' + svgIcono(clave) + '</div>';
+
+        return '<li>' +
+          '<article class="tarjeta historial-card" data-id="' + id + '"' + (nivel ? ' data-nivel="' + nivel + '"' : '') + '>' +
+            bloquePuntaje +
+            '<div class="historial-cuerpo">' +
+              '<div class="historial-meta">' +
+                '<span class="historial-herramienta">' + esc(nombreHerramienta(fila.tipo_herramienta)) + '</span>' +
+                '<time class="historial-fecha" datetime="' + esc(fila.created_at) + '">' + esc(fechaCorta(fila.created_at)) + '</time>' +
+              '</div>' +
+              '<p class="historial-fragmento">' + esc(resumir(fila.texto_original)) + '</p>' +
+              '<div class="historial-acciones">' +
+                '<button type="button" class="boton-secundario btn-ver-detalle" data-id="' + id + '">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>' +
+                  ' Ver detalle' +
+                '</button>' +
+                '<button type="button" class="btn-borrar" data-id="' + id + '">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>' +
+                  ' Borrar' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+          '</article>' +
+        '</li>';
+      }
+
+      function renderHistorial() {
+        if (!filas.length) {
+          mostrarEstado('vacio');
+          return;
+        }
+        // No Premium: solo los 3 más recientes. Premium: todos (hasta 50).
+        var visibles = esPremium ? filas : filas.slice(0, LIMITE_GRATIS);
+        elLista.innerHTML = visibles.map(tarjetaHTML).join('');
+        mostrarEstado('lista');
+        // Cartel solo si NO es Premium y tiene más de 3 análisis guardados
+        elCartel.hidden = esPremium || filas.length <= LIMITE_GRATIS;
+      }
+
+      /* ---------- Plan ---------- */
+      function pintarPlan() {
+        elPlan.setAttribute('data-plan', esPremium ? 'premium' : 'registrado');
+        elPlan.textContent = esPremium ? 'Plan Premium' : 'Plan Registrado';
+        elPlanDetalle.textContent = esPremium ? 'Análisis ilimitados' : '10 análisis por día';
+      }
+
+      /* ---------- Carga de datos ---------- */
+      async function obtenerPremium() {
+        try {
+          var r = await sb.from('profiles').select('is_premium').eq('id', usuario.id).maybeSingle();
+          return !!(r.data && r.data.is_premium);
+        } catch (e) {
+          return false;
+        }
+      }
+
+      async function obtenerHistorial() {
+        var r = await sb
+          .from('historial_analisis')
+          .select('id, tipo_herramienta, puntaje, texto_original, created_at')
+          .eq('user_id', usuario.id)
+          .order('created_at', { ascending: false })
+          .limit(LIMITE_HISTORIAL);
+        if (r.error) throw r.error;
+        return r.data || [];
+      }
+
+      async function cargarTodo() {
+        mostrarEstado('cargando');
+        try {
+          var resultados = await Promise.all([obtenerPremium(), obtenerHistorial()]);
+          esPremium = resultados[0];
+          filas = resultados[1];
+          pintarPlan();
+          renderHistorial();
+        } catch (e) {
+          console.error('Error al cargar el historial:', e);
+          pintarPlan();
+          mostrarEstado('error');
+        }
+      }
+
+      /* ---------- Ver detalle ---------- */
+      function valorHTML(v) {
+        if (v === null || v === undefined || v === '') return '';
+        if (Array.isArray(v)) {
+          if (!v.length) return '';
+          return '<ul class="detalle-frases">' + v.map(function (x) {
+            return '<li>' + (typeof x === 'object' && x !== null ? '<pre>' + esc(JSON.stringify(x, null, 2)) + '</pre>' : esc(x)) + '</li>';
+          }).join('') + '</ul>';
+        }
+        if (typeof v === 'object') {
+          var claves = Object.keys(v);
+          if (!claves.length) return '';
+          return '<dl>' + claves.map(function (k) {
+            var inner = valorHTML(v[k]);
+            return inner ? '<div><dt>' + esc(humanizar(k)) + '</dt><dd>' + inner + '</dd></div>' : '';
+          }).join('') + '</dl>';
+        }
+        return '<p>' + esc(v) + '</p>';
+      }
+
+      function frasesHTML(lista) {
+        return '<ul class="detalle-frases">' + lista.map(function (item) {
+          if (item !== null && typeof item === 'object') {
+            var texto = pick(item, ['frase', 'texto', 'text', 'fragmento', 'oracion', 'phrase']);
+            var motivo = pick(item, ['motivo', 'razon', 'explicacion', 'reason', 'por_que', 'comentario']);
+            if (texto === undefined) return '<li><pre>' + esc(JSON.stringify(item, null, 2)) + '</pre></li>';
+            return '<li>' + esc(texto) + (motivo !== undefined ? '<small>' + esc(motivo) + '</small>' : '') + '</li>';
+          }
+          return '<li>' + esc(item) + '</li>';
+        }).join('') + '</ul>';
+      }
+
+      function detalleHTML(fila, resultado) {
+        var html = '';
+
+        if (tienePuntaje(fila)) {
+          var p = Math.round(Number(fila.puntaje));
+          var nivel = nivelDe(p);
+          html += '<div class="historial-puntaje detalle-puntaje" data-nivel="' + nivel + '">' +
+            '<span class="historial-puntaje-num">' + p + '</span>' +
+            '<span class="historial-puntaje-etiqueta">' + ETIQUETA_NIVEL[nivel] + '</span>' +
+          '</div>';
+        }
+
+        if (typeof resultado === 'string') {
+          try { resultado = JSON.parse(resultado); } catch (e) { /* queda como texto */ }
+        }
+
+        var veredicto = pick(resultado, ['veredicto', 'verdict', 'conclusion', 'conclusión']);
+        var frases = pick(resultado, ['frases', 'frases_sospechosas', 'frases_ia', 'frases_detectadas', 'oraciones', 'phrases']);
+        var hayFrases = Array.isArray(frases) && frases.length > 0;
+
+        if (veredicto !== undefined) {
+          html += '<section class="detalle-bloque"><h4>Veredicto</h4>' + valorHTML(veredicto) + '</section>';
+        }
+        if (hayFrases) {
+          html += '<section class="detalle-bloque"><h4>Frases señaladas</h4>' + frasesHTML(frases) + '</section>';
+        }
+
+        // Si no tiene el formato de detector (o no hay nada para mostrar), se muestra lo que haya guardado
+        if (veredicto === undefined && !hayFrases) {
+          var generico = (resultado === null || resultado === undefined) ? '' : valorHTML(resultado);
+          html += generico
+            ? '<section class="detalle-bloque"><h4>Resultado</h4>' + generico + '</section>'
+            : '<p class="detalle-vacio">No hay detalle guardado para este análisis.</p>';
+        }
+
+        if (fila.texto_original) {
+          html += '<section class="detalle-bloque detalle-texto"><details><summary>Texto analizado</summary><p>' +
+            esc(fila.texto_original) + '</p></details></section>';
+        }
+        return html;
+      }
+
+      var detalleSolicitado = null;
+
+      async function verDetalle(id) {
+        var fila = filas.filter(function (f) { return String(f.id) === String(id); })[0];
+        if (!fila) return;
+
+        detalleSolicitado = id;
+        modalTitulo.textContent = nombreHerramienta(fila.tipo_herramienta);
+        modalFecha.textContent = fechaLarga(fila.created_at);
+        modalCuerpo.innerHTML = '<p class="detalle-vacio">Cargando detalle…</p>';
+        if (!modal.open) modal.showModal();
+
+        try {
+          if (!('resultado_json' in fila)) {
+            var r = await sb
+              .from('historial_analisis')
+              .select('resultado_json')
+              .eq('id', id)
+              .eq('user_id', usuario.id)
+              .maybeSingle();
+            if (r.error) throw r.error;
+            fila.resultado_json = r.data ? r.data.resultado_json : null;
+          }
+          if (detalleSolicitado !== id) return; // el usuario abrió otro u cerró
+          modalCuerpo.innerHTML = detalleHTML(fila, fila.resultado_json);
+        } catch (e) {
+          console.error('Error al traer el detalle:', e);
+          if (detalleSolicitado === id) {
+            modalCuerpo.innerHTML = '<p class="detalle-vacio">No pudimos cargar el detalle. Probá de nuevo en unos minutos.</p>';
+          }
+        }
+      }
+
+      function cerrarModal() {
+        detalleSolicitado = null;
+        if (modal.open) modal.close();
+      }
+      modalCerrar.addEventListener('click', cerrarModal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) cerrarModal(); // clic en el fondo oscuro
+      });
+      modal.addEventListener('close', function () { detalleSolicitado = null; });
+
+      /* ---------- Borrar ---------- */
+      async function borrar(id, boton) {
+        if (!window.confirm('¿Querés borrar este análisis? No se puede deshacer.')) return;
+
+        boton.disabled = true;
+        try {
+          var r = await sb
+            .from('historial_analisis')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', usuario.id)
+            .select('id');
+          if (r.error) throw r.error;
+          if (!r.data || !r.data.length) throw new Error('No se borró ninguna fila (¿falta la política DELETE?).');
+
+          filas = filas.filter(function (f) { return String(f.id) !== String(id); });
+          renderHistorial();
+          if (elTituloHistorial) elTituloHistorial.focus();
+        } catch (e) {
+          console.error('Error al borrar:', e);
+          boton.disabled = false;
+          window.alert('No pudimos borrar el análisis. Probá de nuevo en unos minutos.');
+        }
+      }
+
+      /* Un solo listener para todos los botones de las tarjetas */
+      elLista.addEventListener('click', function (e) {
+        var btnVer = e.target.closest('.btn-ver-detalle');
+        if (btnVer) {
+          verDetalle(btnVer.getAttribute('data-id'));
+          return;
+        }
+        var btnBorrar = e.target.closest('.btn-borrar');
+        if (btnBorrar) {
+          borrar(btnBorrar.getAttribute('data-id'), btnBorrar);
+        }
+      });
+
+      btnReintentar.addEventListener('click', cargarTodo);
+
+      /* ---------- Cerrar sesión ---------- */
+      btnSalir.addEventListener('click', async function () {
+        btnSalir.disabled = true;
+        try {
+          await sb.auth.signOut();
+        } catch (e) {
+          console.error('Error al cerrar sesión:', e);
+        }
+        window.location.href = PAGINA_INICIO;
+      });
+
+      /* ---------- Arranque: exige sesión iniciada ---------- */
+      async function iniciar() {
+        if (!sb) {
+          elEmail.textContent = 'No disponible';
+          elPlan.textContent = '';
+          mostrarEstado('error');
+          return;
+        }
+
+        var sesion = null;
+        try {
+          var r = await sb.auth.getSession();
+          sesion = r && r.data ? r.data.session : null;
+        } catch (e) {
+          console.error('Error al leer la sesión:', e);
+        }
+
+        if (!sesion) {
+          window.location.replace(PAGINA_INICIO); // sin sesión → al index
+          return;
+        }
+
+        usuario = sesion.user;
+        elEmail.textContent = usuario.email || '';
+
+        // Si la sesión se cierra (acá o en otra pestaña), volver al index
+        sb.auth.onAuthStateChange(function (evento) {
+          if (evento === 'SIGNED_OUT') window.location.replace(PAGINA_INICIO);
+        });
+
+        cargarTodo();
+      }
+
+      iniciar();
     });
   </script>
 </body>
