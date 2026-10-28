@@ -523,6 +523,9 @@
             }
           }
           modal.hidden = false;
+          } else {
+    if (modal) modal.hidden = false;
+  }
           document.body.style.overflow = 'hidden';
         }
         function cerrarModal() {
