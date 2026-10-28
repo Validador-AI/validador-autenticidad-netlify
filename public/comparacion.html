@@ -506,11 +506,10 @@
 
         function abrirModal(modoInicial) {
           ocultarError();
-          if (sesionActual) {
-            vistaAuth.hidden = true;
-            vistaCuenta.hidden = false;
-            cuentaEmail.textContent = sesionActual.user.email;
-          } else {
+           if (sesionActual) {
+    window.location.href = 'cuenta.html';
+    return;
+  }
             vistaCuenta.hidden = true;
             vistaAuth.hidden = false;
             formAuth.reset();
