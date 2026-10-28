@@ -285,8 +285,6 @@
   </div>
 
   <!-- ==========================================================================
-
-  <!-- ==========================================================================
      LÓGICA JAVASCRIPT (Ubicado al final del body)
      ========================================================================== -->
   <script>
@@ -434,7 +432,9 @@
         function abrirModal() {
           ocultarError();
           if (sesionActual) {
-             window.location.href = 'cuenta.html';
+            // Con sesión iniciada, "Mi cuenta" va directo a la página de cuenta
+            window.location.href = 'cuenta.html';
+            return;
           } else {
             vistaCuenta.hidden = true;
             vistaAuth.hidden = false;
