@@ -42,6 +42,18 @@
 // Con archivos PDF/DOCX no se rechaza: si el texto extraído supera el tope de la
 // cuenta, se analiza solo el comienzo y se devuelve un "aviso".
 //
+// HISTORIAL DE ANÁLISIS (solo usuarios con sesión)
+// ------------------------------------------------
+// Cuando un análisis sale bien y la persona tiene sesión, se guarda un registro
+// en la tabla public.historial_analisis de Supabase:
+//   user_id, tipo_herramienta ('detector'), texto_original, puntaje, resultado_json
+//   (resultado_json = { veredicto, frases, aviso? }).
+// Los usuarios ANÓNIMOS no guardan historial.
+// El guardado NUNCA puede romper el análisis: se hace "por detrás" (waitUntil), con
+// su propio try/catch, y si falla solo queda un renglón en los Logs de Cloudflare.
+// La página recibe el resultado igual, tarde lo que tarde (o falle lo que falle)
+// Supabase. El user_id sale del token ya verificado, nunca de lo que mande la página.
+//
 // ORDEN IMPORTANTE con los archivos: el cupo se descuenta ANTES de abrir el
 // archivo. Si no queda cupo, se responde 429 sin leer ni descomprimir nada (ni
 // siquiera se llama a formData()), así no se gastan recursos en pedidos que de
@@ -108,6 +120,10 @@ const SUPABASE_URL_POR_DEFECTO = 'https://bprvlyzdnsykwjamumhw.supabase.co';
 
 // Tiempo máximo de espera a Supabase (milisegundos).
 const ESPERA_SUPABASE_MS = 8000;
+
+// Historial: nombre de la tabla y valor de "tipo_herramienta" para este detector.
+const TABLA_HISTORIAL = 'historial_analisis';
+const TIPO_HERRAMIENTA_DETECTOR = 'detector';
 
 // ----- El prompt (las instrucciones para Gemini) ------------------------------
 // Está escrito en español y le pide a Gemini que responda SOLO con un JSON.
@@ -395,6 +411,64 @@ function resumenDeUso(cupo) {
     limite: cupo.limite == null ? null : cupo.limite,
     restantes: cupo.restantes == null ? null : cupo.restantes,
   };
+}
+
+// ----- Historial de análisis (solo usuarios con sesión) -----------------------
+
+// Postgres no acepta el carácter nulo (\u0000) ni en columnas "text" ni dentro de
+// un jsonb: si aparece (puede venir de un texto pegado), el guardado fallaría
+// completo. Lo sacamos de cualquier texto antes de guardarlo.
+function sinNulos(valor) {
+  return String(valor == null ? '' : valor).replace(/\u0000/g, '');
+}
+
+// Guarda un análisis en public.historial_analisis usando la clave secreta (por eso
+// no choca con las políticas de seguridad de la tabla). El user_id que recibe sale
+// del token ya verificado por el servidor, nunca de lo que mande la página.
+//
+// REGLA DE ORO: esta función NUNCA lanza un error. Si algo sale mal (Supabase caído,
+// tabla inexistente, tiempo agotado...) solo deja un renglón en los Logs de Cloudflare
+// y sigue: el análisis ya está hecho y la persona lo recibe igual.
+// En los logs NO se escribe el texto ni el cuerpo de la respuesta de Supabase (los
+// errores de Postgres a veces traen copia de la fila), solo el estado y el código.
+async function guardarEnHistorial(env, userId, texto, resultado, aviso) {
+  try {
+    const detalle = {
+      veredicto: resultado.veredicto,
+      frases: resultado.frases.map((f) => ({
+        texto: sinNulos(f.texto),
+        problema: sinNulos(f.problema),
+        sugerencia: sinNulos(f.sugerencia),
+      })),
+    };
+    if (aviso) detalle.aviso = sinNulos(aviso);
+
+    const respuesta = await pedirSupabase(urlSupabase(env) + '/rest/v1/' + TABLA_HISTORIAL, {
+      method: 'POST',
+      // "return=minimal": que Supabase no nos devuelva la fila (no la necesitamos).
+      headers: Object.assign({}, encabezadosServicio(env), { Prefer: 'return=minimal' }),
+      body: JSON.stringify({
+        user_id: userId,
+        tipo_herramienta: TIPO_HERRAMIENTA_DETECTOR,
+        texto_original: sinNulos(texto),
+        puntaje: resultado.puntaje,
+        resultado_json: detalle,
+      }),
+    });
+
+    if (!respuesta.ok) {
+      let codigo = '';
+      try {
+        const cuerpoError = await respuesta.json();
+        codigo = (cuerpoError && cuerpoError.code) || '';
+      } catch (e) {
+        /* no pasa nada */
+      }
+      console.error('No se pudo guardar en el historial. Estado:', respuesta.status, 'Código:', codigo);
+    }
+  } catch (e) {
+    console.error('No se pudo guardar en el historial:', e && e.name, e && e.message);
+  }
 }
 
 // ----- Lectura de archivos (PDF y DOCX) ---------------------------------------
@@ -685,7 +759,8 @@ async function textoDesdeArchivo(request, maximo) {
 // ----- La función principal ---------------------------------------------------
 // Cloudflare Pages ejecuta esta función cada vez que alguien visita /api/analizar.
 // "context" trae, entre otras cosas: request (el pedido), env (las variables de
-// entorno y secretos) y params (partes dinámicas de la URL, acá no se usan).
+// entorno y secretos), waitUntil (para terminar tareas después de responder) y
+// params (partes dinámicas de la URL, acá no se usan).
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -931,7 +1006,22 @@ export async function onRequest(context) {
       return await fallar(502, { error: 'La respuesta de Gemini llegó en un formato inesperado. Probá de nuevo.' });
     }
 
-    // 9) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
+    // 9) Historial: si la persona tiene sesión, se guarda este análisis.
+    // Los anónimos (identidad.userId == null) NO guardan nada.
+    // Se hace ANTES de agregar "uso" y "aviso" a la respuesta, y "por detrás": con
+    // waitUntil, Cloudflare termina el guardado aunque la respuesta ya haya salido, así
+    // la persona no espera a Supabase. guardarEnHistorial nunca lanza errores, de modo
+    // que pase lo que pase acá, el análisis se devuelve igual en el paso 10.
+    if (identidad && identidad.userId) {
+      const tareaHistorial = guardarEnHistorial(env, identidad.userId, texto, resultado, aviso);
+      if (typeof context.waitUntil === 'function') {
+        context.waitUntil(tareaHistorial);
+      } else {
+        await tareaHistorial; // por si algún día se ejecuta en un entorno sin waitUntil
+      }
+    }
+
+    // 10) Todo bien: devolvemos el JSON a la página, con lo que le queda de cupo.
     // Si el archivo era muy largo, sumamos un "aviso" para que la página lo muestre.
     if (aviso) resultado.aviso = aviso;
     resultado.uso = resumenDeUso(cupo);
