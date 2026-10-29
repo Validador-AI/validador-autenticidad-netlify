@@ -764,7 +764,9 @@
         function abrirModal(modoInicial) {
           ocultarError();
           if (sesionActual) {
+            // Con sesión iniciada, "Mi cuenta" va directo a la página de cuenta
             window.location.href = 'cuenta.html';
+            return;
           } else {
             vistaCuenta.hidden = true;
             vistaAuth.hidden = false;
