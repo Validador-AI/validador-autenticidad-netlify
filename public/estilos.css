@@ -2001,3 +2001,117 @@ a.boton-principal:hover { box-shadow: 0 2px 6px rgba(184, 78, 46, 0.2), 0 8px 18
 
 /* Para usuarios Premium: cuando tengas una clase en <body> (ej. "es-premium"), descomentá: */
 /* body.es-premium .anuncio { display: none; } */
+
+/* ==========================================================================
+   AJUSTES VISUALES 2 (después de ver las capturas)
+   Pegá este bloque al FINAL de estilos.css, DESPUÉS del bloque anterior.
+   Para deshacerlo, borrá solo lo que está debajo de este comentario.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   A. CAJA DE TEXTO: que el protagonista sea el texto, no los controles
+   -------------------------------------------------------------------------- */
+textarea { font-size: 1.05rem; }
+textarea::placeholder { font-size: 0.95rem; color: #8A7F70; }
+
+.uso-estado {
+  font-size: 0.8rem;
+  padding: 4px 12px;
+}
+.modo span {
+  font-size: 0.88rem;
+  padding: 9px 18px;
+}
+.ejemplos-titulo { font-size: 0.82rem; }
+.chip { font-size: 0.85rem; }
+
+/* El contador y "Limpiar" tenían fondo blanco: pasan a arena */
+.contador-box {
+  font-size: 0.78rem;
+  background: var(--superficie-suave);
+}
+.btn-limpiar {
+  background: var(--superficie);
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   B. ZONA DE PRIVACIDAD + EJEMPLO: menos cajas iguales, más aire
+   -------------------------------------------------------------------------- */
+
+/* El aviso de privacidad deja de ser una tarjeta: pasa a ser una nota discreta */
+.privacidad-caja {
+  margin-top: var(--e3);
+  padding: var(--e2) 0 0;
+  border: 0;
+  border-top: 1px solid var(--linea);
+  border-radius: 0;
+  background: transparent;
+}
+.privacidad-caja strong { font-size: 0.88rem; }
+.privacidad-caja span { font-size: 0.82rem; }
+
+/* La demo se separa más del resto y se ve como "ejemplo", no como segunda herramienta */
+.demo-seccion {
+  margin-top: var(--e5);
+  margin-bottom: var(--e5);
+}
+.demo-etiqueta { margin-bottom: var(--e2); }
+.demo-mini-editor {
+  background: transparent;
+  border: 1px dashed var(--linea-fuerte);
+  box-shadow: none;
+}
+
+/* El botón de la demo deja de competir con "Analizar texto":
+   pasa a secundario (contorno petróleo, centrado, más chico) */
+.demo-play-btn.boton-principal {
+  display: flex;
+  width: auto;
+  min-height: 44px;
+  margin: 0 auto;
+  padding: 10px 26px;
+  background: transparent;
+  color: var(--petroleo);
+  border: 1.5px solid var(--petroleo);
+  font-size: 0.95rem;
+  box-shadow: none;
+}
+.demo-play-btn.boton-principal:hover:not(:disabled) {
+  background: var(--petroleo);
+  color: var(--hueso);
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   C. BLOQUE DE BENEFICIOS: petróleo traslúcido en vez de sólido
+   (el petróleo sólido queda solo para el footer)
+   Si lo querés con más presencia, subí 0.10 a 0.16.
+   -------------------------------------------------------------------------- */
+.seccion-beneficios {
+  background: rgba(38, 75, 74, 0.10);
+  border: 1px solid rgba(38, 75, 74, 0.14);
+  color: var(--texto);
+}
+.seccion-beneficios .seccion-titulo,
+.seccion-beneficios h2 { color: var(--petroleo); }
+.seccion-beneficios .seccion-intro { color: var(--texto-suave); }
+.seccion-beneficios .tarjeta-beneficio {
+  background: var(--superficie);
+  box-shadow: 0 1px 2px rgba(38, 75, 74, 0.05), 0 6px 16px rgba(38, 75, 74, 0.07);
+}
+
+/* --------------------------------------------------------------------------
+   D. SIDEBAR: un poco más ancho para que los nombres no se partan en dos
+   (solo en escritorio; en celular sigue el panel deslizante)
+   -------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  .sidebar {
+    flex: 0 0 236px;
+    width: 236px;
+  }
+}
+.sidebar-item {
+  gap: 10px;
+  padding: 9px 11px;
+}
