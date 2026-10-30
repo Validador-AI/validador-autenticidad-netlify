@@ -1819,3 +1819,185 @@ a.boton-principal:hover {
 .boton-principal.precio-boton-arena:hover {
   color: var(--petroleo-oscuro) !important;
 }
+
+/* ==========================================================================
+   AJUSTES VISUALES (refrescada)
+   Pegá este bloque COMPLETO al final de estilos.css.
+   Para volver atrás, borrá todo lo que está entre este comentario y el final.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PALETA: arena con cuerpo, petróleo y terracota (sin blanco)
+   Escala de arena, de más oscuro a más claro:
+   fondo #E9DECD  <  tarjetas #F5EFE7  ·  énfasis #D9C6AF
+   -------------------------------------------------------------------------- */
+:root {
+  --fondo: #E9DECD;
+  --superficie: #F5EFE7;
+  --superficie-suave: #E2D6C2;
+  --arena-claro: #DFD2BD;
+
+  --linea: #D2C4AF;
+  --linea-fuerte: #BCAD97;
+
+  /* Escala tipográfica */
+  --t-h1: clamp(2rem, 4.5vw, 2.75rem);
+  --t-h2: 1.5rem;
+  --t-h3: 1.1rem;
+
+  /* Escala de espaciado */
+  --e1: 8px;
+  --e2: 16px;
+  --e3: 24px;
+  --e4: 40px;
+  --e5: 64px;
+}
+
+/* --------------------------------------------------------------------------
+   2. PESOS: el cuerpo en 400, el énfasis solo donde corresponde
+   -------------------------------------------------------------------------- */
+body { font-weight: 400; }
+.subtitulo { font-weight: 400; }
+textarea { font-weight: 400; }
+textarea::placeholder { color: #8A7F70; }
+
+/* --------------------------------------------------------------------------
+   3. TÍTULOS: una sola escala, Lora para h1 y h2
+   -------------------------------------------------------------------------- */
+h1.titulo-principal {
+  font-size: var(--t-h1);
+  line-height: 1.15;
+}
+
+.seccion-titulo,
+.titulo-seccion {
+  font-family: var(--fuente-editorial);
+  font-size: var(--t-h2);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.prosa h2 {
+  font-family: var(--fuente-editorial);
+  font-size: var(--t-h2);
+  font-weight: 500;
+}
+
+.tarjeta-beneficio h3,
+.paso h3 { font-size: var(--t-h3); }
+
+.puntaje { font-size: clamp(2.75rem, 6vw, 3.5rem); }
+
+/* --------------------------------------------------------------------------
+   4. AIRE: más espacio entre secciones que dentro de ellas
+   -------------------------------------------------------------------------- */
+.seccion { margin-top: var(--e5); }
+.hero-seccion { margin: var(--e4) 0 var(--e4); }
+.entrada { margin-top: var(--e4); padding: var(--e3); }
+.seccion-intro { margin-bottom: var(--e3); }
+.titulo-seccion { margin-top: var(--e4); }
+#texto { min-height: 340px; }
+
+/* --------------------------------------------------------------------------
+   5. CONTRASTE ENTRE ARENAS (como la tarjeta ahora es #F5EFE7,
+      lo que antes usaba --hueso adentro de una tarjeta se separa con
+      --superficie-suave)
+   -------------------------------------------------------------------------- */
+.chip,
+.zona,
+.archivo-elegido,
+.cita { background: var(--superficie-suave); }
+
+.chip:hover { background: var(--arena); }
+.zona:hover,
+.zona.arrastrando { background: var(--arena-claro); }
+
+.topbar-movil { background: rgba(233, 222, 205, 0.92); }
+
+/* --------------------------------------------------------------------------
+   6. SECCIONES CON RITMO: beneficios en petróleo, FAQ en arena más cálido
+   -------------------------------------------------------------------------- */
+.seccion-beneficios {
+  background: var(--petroleo);
+  color: var(--hueso);
+}
+.seccion-beneficios .seccion-titulo,
+.seccion-beneficios h2 { color: var(--hueso); }
+.seccion-beneficios .seccion-intro { color: var(--arena); }
+.seccion-beneficios .tarjeta-beneficio { background: var(--superficie); }
+
+#faq { background: var(--arena-claro); }
+
+/* --------------------------------------------------------------------------
+   7. MENOS HOVERS "SALTARINES": la elevación queda solo para lo importante
+      (botón principal y tarjetas de beneficios)
+   -------------------------------------------------------------------------- */
+.chip:hover,
+.chip-oscuro:hover,
+.modo:hover span,
+.modal-tab:not(.activo):hover,
+.boton-google:hover:not(:disabled),
+.boton-secundario:hover,
+.copiar:hover,
+.btn-limpiar:hover,
+.sidebar-bottom .sidebar-premium:hover,
+.sidebar-bottom .sidebar-auth:hover {
+  box-shadow: none;
+}
+
+.entrada:hover,
+.cp-tarjeta:hover,
+.herramienta-tarjeta:hover { box-shadow: none; }
+
+.paso:hover { transform: none; box-shadow: none; }
+
+/* Botón <a> con la misma sombra terracota que el resto (antes usaba otro rojo) */
+a.boton-principal { box-shadow: 0 6px 20px rgba(184, 78, 46, 0.25); }
+a.boton-principal:hover { box-shadow: 0 2px 6px rgba(184, 78, 46, 0.2), 0 8px 18px rgba(184, 78, 46, 0.3); }
+
+/* --------------------------------------------------------------------------
+   8. TAMAÑOS MÍNIMOS LEGIBLES (sidebar)
+   -------------------------------------------------------------------------- */
+.sidebar-item { font-size: 0.82rem; }
+.sidebar-grupo-titulo { font-size: 0.72rem; }
+.sidebar-bottom .sidebar-premium,
+.sidebar-bottom .sidebar-auth { font-size: 0.82rem; }
+
+@media (max-width: 900px) {
+  .sidebar-item { font-size: 0.82rem; }
+}
+
+/* --------------------------------------------------------------------------
+   9. ESPACIOS RESERVADOS PARA PUBLICIDAD
+   Uso en el HTML:  <aside class="anuncio" aria-label="Publicidad"></aside>
+   Ponelos debajo del resultado, entre secciones y antes del footer.
+   Nunca pegados al textarea ni al botón "Analizar".
+   -------------------------------------------------------------------------- */
+.anuncio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;      /* reserva el alto para que nada salte al cargar */
+  margin: var(--e4) 0;
+  padding: var(--e3) var(--e2) var(--e2);
+  border: 1px dashed var(--linea-fuerte);
+  border-radius: 12px;
+  background: transparent;
+  overflow: hidden;
+}
+.anuncio::before {
+  content: "Publicidad";
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-family: var(--fuente);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+/* Para usuarios Premium: cuando tengas una clase en <body> (ej. "es-premium"), descomentá: */
+/* body.es-premium .anuncio { display: none; } */
