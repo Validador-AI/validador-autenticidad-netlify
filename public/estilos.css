@@ -2115,3 +2115,66 @@ textarea::placeholder { font-size: 0.95rem; color: #8A7F70; }
   gap: 10px;
   padding: 9px 11px;
 }
+
+/* ==========================================================================
+   AJUSTES VISUALES 3
+   Pegá este bloque al FINAL de estilos.css, después del bloque 2.
+   Para deshacerlo, borrá solo lo que está debajo de este comentario.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   A. BENEFICIOS: petróleo intermedio (ni sólido oscuro, ni traslúcido gris)
+   Para ajustarlo cambiá solo este valor:
+   más oscuro  -> #355F5C     más claro -> #4A8480
+   -------------------------------------------------------------------------- */
+:root { --petroleo-medio: #3F7774; }
+
+.seccion-beneficios {
+  background: var(--petroleo-medio);
+  border: 0;
+  color: var(--hueso);
+}
+.seccion-beneficios .seccion-titulo,
+.seccion-beneficios h2 { color: var(--hueso); }
+.seccion-beneficios .seccion-intro { color: var(--hueso); opacity: 0.9; }
+.seccion-beneficios .tarjeta-beneficio {
+  background: var(--superficie);
+  box-shadow: 0 8px 20px rgba(30, 58, 58, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   B. SIDEBAR: más ancho, márgenes internos más chicos y scrollbar fina
+   (la barra gris de scroll le comía ancho al texto)
+   -------------------------------------------------------------------------- */
+.sidebar { scrollbar-width: thin; }
+.sidebar-item { font-size: 0.8rem; }
+
+@media (min-width: 901px) {
+  .sidebar {
+    flex: 0 0 248px;
+    width: 248px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   C. CAJA DE TEXTO: vuelve a ser grande, con la letra más chica
+   (en el bloque 1 yo la había achicado de 450px a 340px: era un error)
+   -------------------------------------------------------------------------- */
+#texto { min-height: 450px; }
+textarea {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+textarea::placeholder { font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  #texto { min-height: 350px; }
+}
+
+/* --------------------------------------------------------------------------
+   D. OPCIONAL: bajar TODA la tipografía de la página parejo (~6%).
+   Si sentís que todo sigue grande, borrá las marcas de comentario de la línea de abajo.
+   -------------------------------------------------------------------------- */
+/* html { font-size: 93.75%; } */
