@@ -2188,3 +2188,9 @@ textarea::placeholder { font-size: 0.9rem; }
     padding-right: 14px;
   }
 }
+
+/* Todas las cajas de texto, sin depender de la estructura */
+textarea { min-height: 420px !important; }
+@media (max-width: 600px) {
+  textarea { min-height: 320px !important; }
+}
