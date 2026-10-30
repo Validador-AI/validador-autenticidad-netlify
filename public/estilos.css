@@ -2178,3 +2178,13 @@ textarea::placeholder { font-size: 0.9rem; }
    Si sentís que todo sigue grande, borrá las marcas de comentario de la línea de abajo.
    -------------------------------------------------------------------------- */
 /* html { font-size: 93.75%; } */
+
+/* Sidebar: vuelve al ancho original */
+@media (min-width: 901px) {
+  .sidebar {
+    flex: 0 0 210px;
+    width: 210px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
