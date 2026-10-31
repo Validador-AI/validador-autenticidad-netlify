@@ -2194,3 +2194,55 @@ textarea { min-height: 420px !important; }
 @media (max-width: 600px) {
   textarea { min-height: 320px !important; }
 }
+
+/* ==========================================================================
+   AJUSTES PARA CELULAR
+   Pegá este bloque al FINAL de estilos.css (después de todo lo anterior).
+   Para deshacerlo, borrá solo lo que está debajo de este comentario.
+   ========================================================================== */
+
+/* La sombra del menú lateral se filtraba como una franja oscura
+   en el borde izquierdo de la pantalla cuando el menú está cerrado */
+@media (max-width: 900px) {
+  .sidebar:not(.abierto) { box-shadow: none; }
+}
+
+/* Etiqueta "v1.0 Beta": que no ocupe todo el ancho del menú */
+.sidebar .badge-beta { align-self: flex-start; }
+
+@media (max-width: 600px) {
+
+  /* El nombre ya está en la barra de arriba: no repetirlo en el hero */
+  .hero-marca { display: none; }
+  .hero-seccion { margin-top: var(--e3); }
+  .subtitulo { font-size: 1rem; }
+
+  /* Pestañas "Pegar texto / Subir archivo": un solo renglón, mitad y mitad */
+  .modos { display: flex; width: 100%; }
+  .modo { flex: 1; }
+  .modo span {
+    justify-content: center;
+    white-space: nowrap;
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  /* Botones de ejemplo (IA / humano / dudoso): los tres en una fila */
+  .ejemplos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .ejemplos-grid .chip {
+    padding: 9px 4px;
+    font-size: 0.78rem;
+  }
+
+  /* Menos espacio vacío entre secciones */
+  .demo-seccion { margin-top: var(--e4); margin-bottom: var(--e4); }
+  .seccion { margin-top: var(--e4); }
+
+  /* Secciones con fondo: menos relleno lateral para que el contenido respire */
+  .seccion-beneficios { padding: 24px 14px; }
+  #faq { padding: 24px 14px; }
+}
