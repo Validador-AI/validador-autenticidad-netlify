@@ -2246,3 +2246,14 @@ textarea { min-height: 420px !important; }
   .seccion-beneficios { padding: 24px 14px; }
   #faq { padding: 24px 14px; }
 }
+
+/* Footer: ocultar enlaces que todavía no existen (los que apuntan a "#") */
+.pie-columna li:has(> a[href="#"]),
+.pie-red[href="#"] { display: none; }
+
+/* Si ninguna red tiene enlace real, ocultar también el título "Seguinos" */
+.pie-columna:has(.pie-redes):not(:has(.pie-red:not([href="#"]))) { display: none; }
+
+@media (min-width: 721px) {
+  .pie-columnas:not(:has(.pie-red:not([href="#"]))) { grid-template-columns: repeat(3, 1fr); }
+}
