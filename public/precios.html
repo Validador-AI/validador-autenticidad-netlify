@@ -36,6 +36,9 @@
       max-width: 52ch;
     }
 
+    /* Esta página usa un contenedor más ancho, para que las 3 tarjetas no queden angostas */
+    .contenedor:has(.precios-grid) { max-width: 1048px; }
+
     .precios-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -274,8 +277,8 @@
 
       <!-- Plan Gratuito (anónimo) -->
       <article class="tarjeta precio-tarjeta">
-        <h2 class="precio-nombre">Gratuito</h2>
-        <p class="precio-etiqueta">Anónimo</p>
+        <h2 class="precio-nombre">Sin cuenta</h2>
+        <p class="precio-etiqueta">Gratis</p>
         <div class="precio-monto">
           <span class="precio-cifra">$0</span>
         </div>
@@ -290,7 +293,7 @@
 
       <!-- Plan Registrado (gratis) -->
       <article class="tarjeta precio-tarjeta">
-        <h2 class="precio-nombre">Registrado</h2>
+        <h2 class="precio-nombre">Con cuenta</h2>
         <p class="precio-etiqueta">Gratis</p>
         <div class="precio-monto">
           <span class="precio-cifra">$0</span>
