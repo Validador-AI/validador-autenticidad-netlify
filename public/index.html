@@ -14,9 +14,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <!-- Cliente de Supabase (autenticación) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="/limites.js?v=3" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
   <style>
@@ -60,6 +60,9 @@
       border-color: var(--terracota-hover);
     }
     .error-boton:focus-visible { outline: 3px solid var(--petroleo); outline-offset: 3px; }
+
+    /* Espacios de publicidad: no se ven hasta que tengan un anuncio adentro */
+    .anuncio:empty { display: none; }
     @media (max-width: 600px) {
       .error-boton { width: 100%; }
     }
@@ -337,7 +340,7 @@
         <button type="button" id="btn-demo-reiniciar" class="chip demo-reiniciar">🔁 Ver de nuevo</button>
       </div>
 
-      <p class="demo-nota">Ejemplo ilustrativo. Probá con tu propio texto acá abajo 👇</p>
+      <p class="demo-nota">Ejemplo ilustrativo. Probá con tu propio texto en el cuadro de arriba ☝️</p>
     </div>
 
 
@@ -382,6 +385,9 @@
           Exportar a PDF
         </button>
       </div>
+
+      <!-- Espacio de publicidad 1: solo aparece cuando hay un resultado -->
+      <aside class="anuncio" aria-label="Publicidad"></aside>
     </section>
 
     <!-- ===== 2. & 5. SECCIÓN BENEFICIOS (Con Elevación -8px + Sombra + Fade-in Scroll) ===== -->
@@ -445,6 +451,9 @@
       </ol>
     </section>
 
+    <!-- Espacio de publicidad 2: entre "¿Cómo funciona?" y las preguntas frecuentes -->
+    <aside class="anuncio" aria-label="Publicidad"></aside>
+
     <!-- ===== 5. PREGUNTAS FRECUENTES (Fade-in Scroll) ===== -->
     <section id="faq" class="seccion fade-in">
       <h2 class="seccion-titulo">Preguntas frecuentes</h2>
@@ -459,7 +468,7 @@
         <details>
           <summary>¿Guardan mis textos?</summary>
           <div class="respuesta">
-            <p>No. PuroTexto no almacena, guarda ni comparte tus escritos ni tus archivos personales.</p>
+            <p>Depende. Si no tenés cuenta, no guardamos tus textos. Si tenés una cuenta registrada, guardamos tu historial de análisis para que puedas consultarlo. Para analizarlos, tus textos se procesan mediante IA, por eso te recomendamos no subir información confidencial.</p>
           </div>
         </details>
         <details>
@@ -471,7 +480,7 @@
         <details>
           <summary>¿Es totalmente gratuito?</summary>
           <div class="respuesta">
-            <p>Sí, podés usar la herramienta de forma gratuita con límites razonables de solicitudes por minuto.</p>
+            <p>Podés usar PuroTexto gratis con un límite diario de análisis: 3 por día sin cuenta y 10 por día con una cuenta gratuita. Si necesitás más, el plan Premium ofrece análisis ilimitados. Podés ver el detalle en la página de <a href="precios.html">Precios</a>.</p>
           </div>
         </details>
         <details>
