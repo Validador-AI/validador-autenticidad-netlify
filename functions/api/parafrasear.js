@@ -358,7 +358,7 @@ export async function onRequest(context) {
 
   try {
     // 1) La clave: se lee de la variable de entorno, nunca del código.
-    const apiKey = env.GEMINI_API_KEY;
+    let apiKey = env.GEMINI_API_KEY; // clave gratuita (la de siempre). Para Premium se cambia más abajo.
     if (!apiKey) {
       console.error('Falta la variable de entorno GEMINI_API_KEY');
       return responder(500, {
@@ -430,6 +430,17 @@ export async function onRequest(context) {
         tipoCuenta = (await esUsuarioPremium(env, userId)) ? 'premium' : 'registrado';
       }
       maximo = maximoDeCaracteres(tipoCuenta);
+
+      // Dos claves de Gemini: la gratuita (GEMINI_API_KEY) sirve para anónimos y
+      // registrados; Premium usa la paga (GEMINI_API_KEY_PREMIUM) si está cargada.
+      // Mientras no exista la variable, Premium sigue con la gratuita (y queda un aviso en los logs).
+      if (tipoCuenta === 'premium') {
+        if (env.GEMINI_API_KEY_PREMIUM) {
+          apiKey = env.GEMINI_API_KEY_PREMIUM;
+        } else {
+          console.warn('Falta GEMINI_API_KEY_PREMIUM: este análisis Premium usa la clave gratuita.');
+        }
+      }
     } catch (e) {
       console.error('No se pudo verificar la cuenta:', e.message);
       identidad = null;
