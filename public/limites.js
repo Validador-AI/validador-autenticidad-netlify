@@ -131,7 +131,31 @@
 
     estado.listo = true;
     pintarBanner();
+    cargarPublicidad();
     return estado;
+  }
+
+  /* ------------------------------------------------------------------------
+     Publicidad (banner lateral)
+     Solo se carga si la persona NO es Premium. Va dentro de un iframe aislado
+     ("sandbox", sin allow-same-origin): el anuncio no puede leer la página,
+     ni los textos, ni la sesión de la cuenta, ni redirigir la página principal.
+     ------------------------------------------------------------------------ */
+  var publicidadCargada = false;
+
+  function cargarPublicidad() {
+    if (publicidadCargada || !estado.listo || estado.error || estado.premium) return;
+    var cont = document.getElementById('anuncio-lateral');
+    if (!cont) return;
+    publicidadCargada = true;
+    var f = document.createElement('iframe');
+    f.src = '/anuncio-lateral.html';
+    f.title = 'Publicidad';
+    f.width = '160';
+    f.height = '600';
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
+    cont.appendChild(f);
   }
 
   function restantes() {
