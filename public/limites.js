@@ -4,7 +4,7 @@
 
    Anónimo ........ 3 análisis por día  (se cuenta en localStorage)
    Registrado ..... 10 análisis por día (se cuenta en Supabase, tabla user_usage)
-   Premium ........ ilimitado           (profiles.is_premium = true)
+   Premium ........ 20 análisis por día (se cuenta en Supabase, tabla user_usage)
 
    Requisitos en cada página:
      1. <script src="/limites.js?v=1" defer></script>
@@ -46,7 +46,7 @@
     listo: false
   };
 
-  var ui = { banner: null, panel: null, textoPanel: null, btnRegistro: null };
+  var ui = { banner: null, panel: null, textoPanel: null, btnRegistro: null, enlacePremium: null };
   var iniciado = false;
 
   /* ------------------------------------------------------------------------
@@ -135,7 +135,6 @@
   }
 
   function restantes() {
-    if (estado.premium) return Infinity;
     return Math.max(estado.limite - estado.usados, 0);
   }
 
@@ -152,11 +151,9 @@
 
     var n = restantes();
     ui.banner.classList.toggle('uso-estado--premium', estado.premium);
-    ui.banner.classList.toggle('uso-estado--agotado', !estado.premium && n === 0);
+    ui.banner.classList.toggle('uso-estado--agotado', n === 0);
 
-    if (estado.premium) {
-      ui.banner.textContent = 'Análisis ilimitados';
-    } else if (n === 0) {
+    if (n === 0) {
       ui.banner.textContent = 'Llegaste al límite de análisis de hoy';
     } else if (n === 1) {
       ui.banner.textContent = 'Te queda 1 análisis hoy';
@@ -166,7 +163,7 @@
     ui.banner.hidden = false;
 
     // Si ya hay cupo (por ejemplo porque se logueó o pasó la medianoche), se oculta el aviso.
-    if (ui.panel && (estado.premium || n > 0)) ui.panel.hidden = true;
+    if (ui.panel && n > 0) ui.panel.hidden = true;
   }
 
   function abrirRegistro() {
@@ -178,7 +175,11 @@
 
   function mostrarLimite() {
     if (!ui.panel) return;
-    if (estado.sesion) {
+    ui.enlacePremium.hidden = !!estado.premium;
+    if (estado.premium) {
+      ui.textoPanel.textContent = 'Tu cupo de 20 análisis por día se renueva mañana.';
+      ui.btnRegistro.hidden = true;
+    } else if (estado.sesion) {
       ui.textoPanel.textContent = 'Actualizá a Premium para tener 20 análisis por día. Tu cupo gratuito se renueva mañana.';
       ui.btnRegistro.hidden = true;
     } else {
@@ -227,6 +228,7 @@
 
     var enlacePremium = crear('a', 'boton-secundario', 'Ver Premium');
     enlacePremium.href = CONFIG.paginaPrecios;
+    ui.enlacePremium = enlacePremium;
 
     acciones.appendChild(ui.btnRegistro);
     acciones.appendChild(enlacePremium);
@@ -263,19 +265,15 @@
   function aplicarUsoServidor(uso) {
     estado.error = false;
     estado.listo = true;
-    if (uso.premium) {
-      estado.premium = true;
-    } else {
-      estado.premium = false;
-      estado.limite = uso.limite || estado.limite;
-      estado.usados = uso.usados || 0;
-      if (!estado.sesion) {
-        // Anónimo: el servidor cuenta por IP y el navegador por su cuenta; nos quedamos con el mayor.
-        var datos = leerAnonimo();
-        datos.n = Math.max(datos.n + 1, uso.usados || 0);
-        guardarAnonimo(datos);
-        estado.usados = datos.n;
-      }
+    estado.premium = !!uso.premium;
+    estado.limite = uso.limite || estado.limite;
+    estado.usados = uso.usados || 0;
+    if (!estado.premium && !estado.sesion) {
+      // Anónimo: el servidor cuenta por IP y el navegador por su cuenta; nos quedamos con el mayor.
+      var datos = leerAnonimo();
+      datos.n = Math.max(datos.n + 1, uso.usados || 0);
+      guardarAnonimo(datos);
+      estado.usados = datos.n;
     }
     pintarBanner();
   }
@@ -284,7 +282,7 @@
   function limiteAlcanzado(uso) {
     estado.error = false;
     estado.listo = true;
-    estado.premium = false;
+    estado.premium = !!(uso && uso.premium);
     if (uso && uso.limite) estado.limite = uso.limite;
     estado.usados = estado.limite;
     if (!estado.sesion) {
@@ -325,7 +323,7 @@
   // Si no hay cupo, muestra el aviso con los botones de registro / Premium.
   async function puedeAnalizar() {
     await refrescar();
-    if (estado.error || estado.premium || restantes() > 0) {
+    if (estado.error || restantes() > 0) {
       return { permitido: true };
     }
     mostrarLimite();
@@ -347,12 +345,9 @@
       try {
         var rpc = await sb.rpc('consumir_analisis');
         if (rpc.error || !rpc.data) throw (rpc.error || new Error('sin datos'));
-        if (rpc.data.premium) {
-          estado.premium = true;
-        } else {
-          estado.usados = rpc.data.usados;
-          estado.limite = rpc.data.limite;
-        }
+        estado.premium = !!rpc.data.premium;
+        estado.usados = rpc.data.usados;
+        estado.limite = rpc.data.limite;
         pintarBanner();
       } catch (e) {
         refrescar();
