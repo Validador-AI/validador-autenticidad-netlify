@@ -35,7 +35,7 @@
 // ---------------------------------------------------
 //   · Anónimo (sin sesión) ..... hasta  5.000 caracteres por texto
 //   · Registrado (gratis) ...... hasta  8.000 caracteres por texto
-//   · Premium .................. hasta 15.000 caracteres por texto
+//   · Premium .................. hasta 20.000 caracteres por texto
 // El largo se valida ANTES de descontar el análisis del cupo: un texto demasiado
 // largo se rechaza (400) sin gastar nada. Para saber si la cuenta es Premium se
 // consulta profiles.is_premium (solo lectura), sin tocar el cupo.
@@ -94,7 +94,7 @@ const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 const LARGO_MINIMO = 50;
 const LARGO_MAXIMO_ANONIMO = 5000;
 const LARGO_MAXIMO_REGISTRADO = 8000;
-const LARGO_MAXIMO_PREMIUM = 15000;
+const LARGO_MAXIMO_PREMIUM = 20000;
 
 // Archivos: tamaño máximo (4 MB; es un límite propio, no de Cloudflare)
 // y cuántas páginas de un PDF se leen como máximo.
@@ -925,8 +925,8 @@ export async function onRequest(context) {
       return responder(429, {
         codigo: 'limite_diario',
         error: identidad.userId
-          ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para uso ilimitado.'
-          : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para uso ilimitado.',
+          ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para tener 20 análisis por día.'
+          : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para tener 20 análisis por día.',
         uso: usoActual,
       });
     }

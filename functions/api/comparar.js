@@ -30,7 +30,7 @@
 // -------------------------------------------------------
 //   · Anónimo (sin sesión) ..... hasta  5.000 caracteres por texto
 //   · Registrado (gratis) ...... hasta  8.000 caracteres por texto
-//   · Premium .................. hasta 15.000 caracteres por texto
+//   · Premium .................. hasta 20.000 caracteres por texto
 // Como esta herramienta recibe DOS textos, el límite se aplica a cada uno por
 // separado (el Texto A y el Texto B). Si cualquiera de los dos lo supera, se
 // rechaza. El largo se valida ANTES de descontar el análisis del cupo: un texto
@@ -65,7 +65,7 @@ const MODELO_POR_DEFECTO = 'gemini-3.5-flash-lite';
 const LARGO_MINIMO = 50;
 const LARGO_MAXIMO_ANONIMO = 5000;
 const LARGO_MAXIMO_REGISTRADO = 8000;
-const LARGO_MAXIMO_PREMIUM = 15000;
+const LARGO_MAXIMO_PREMIUM = 20000;
 
 // Freno simple contra abusos: máximo de comparaciones por minuto desde una misma IP.
 // (Es un freno de ráfagas; el límite DIARIO lo controla Supabase, más abajo.)
@@ -516,8 +516,8 @@ export async function onRequest(context) {
       return responder(429, {
         codigo: 'limite_diario',
         error: identidad.userId
-          ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para uso ilimitado.'
-          : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para uso ilimitado.',
+          ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para tener 20 análisis por día.'
+          : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para tener 20 análisis por día.',
         uso: usoActual,
       });
     }
