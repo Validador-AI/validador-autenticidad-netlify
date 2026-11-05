@@ -2277,3 +2277,7 @@ textarea { min-height: 420px !important; }
     border: 0;
   }
 }
+
+/* Tipografía general 10% más chica.
+   Si querés ajustarla, cambiá solo este número (por ejemplo 92% o 88%). */
+html { font-size: 90%; }
