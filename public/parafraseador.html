@@ -165,7 +165,7 @@
           <textarea id="para-texto" rows="8" placeholder="Pegá acá el texto que querés humanizar..."></textarea>
           <div class="textarea-pie">
             <button type="button" id="para-btn-limpiar" class="btn-limpiar" hidden>Limpiar</button>
-            <div class="contador-box"><span id="para-contador">0 / 15.000</span></div>
+            <div class="contador-box"><span id="para-contador">0 / 20.000</span></div>
           </div>
         </div>
 
@@ -627,9 +627,9 @@
       (function () {
         var LARGO_MINIMO = 50;
         // Tope del frontend: el más alto (Premium). El límite real de cada cuenta lo valida
-        // el servidor (5.000 anónimo, 8.000 registrado, 15.000 Premium) y, si se pasa,
+        // el servidor (5.000 anónimo, 8.000 registrado, 20.000 Premium) y, si se pasa,
         // la página muestra el cartel de error con los botones para registrarse o ver Premium.
-        var LARGO_MAXIMO = 15000;
+        var LARGO_MAXIMO = 20000;
         var MAXIMO_ANONIMO = 5000; // solo se usa para decidir qué botones mostrar
         var TITULO_ERROR_POR_DEFECTO = 'No pudimos completar la reescritura';
 
@@ -653,7 +653,7 @@
           PuroTextoLimites.init({ campo: paraTexto, boton: paraBtnHumanizar });
         }
 
-        // 15000 -> "15.000"
+        // 20000 -> "20.000"
         function conPuntos(numero) {
           return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }

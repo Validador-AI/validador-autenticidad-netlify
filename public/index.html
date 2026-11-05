@@ -245,7 +245,7 @@
         </div>
 
         <div id="info-archivo" style="margin-top: 12px; font-size: 0.88rem; color: var(--texto-suave);" hidden>
-          <span>Si el archivo es muy largo, se analiza solo el comienzo (hasta 5.000 caracteres sin cuenta, 8.000 con cuenta gratis y 15.000 con Premium).</span>
+          <span>Si el archivo es muy largo, se analiza solo el comienzo (hasta 5.000 caracteres sin cuenta, 8.000 con cuenta gratis y 20.000 con Premium).</span>
         </div>
       </div>
 
@@ -462,7 +462,7 @@
         <details>
           <summary>¿Qué formatos de archivo aceptan?</summary>
           <div class="respuesta">
-            <p>Aceptamos archivos PDF y Word (.docx) de hasta 4 MB. El PDF debe incluir texto seleccionable (los escaneados o imágenes no son compatibles). Si el documento supera el límite de caracteres de tu cuenta (5.000 sin registro, 8.000 registrado gratis y 15.000 Premium), se analizará la primera sección.</p>
+            <p>Aceptamos archivos PDF y Word (.docx) de hasta 4 MB. El PDF debe incluir texto seleccionable (los escaneados o imágenes no son compatibles). Si el documento supera el límite de caracteres de tu cuenta (5.000 sin registro, 8.000 registrado gratis y 20.000 Premium), se analizará la primera sección.</p>
           </div>
         </details>
         <details>
@@ -480,7 +480,7 @@
         <details>
           <summary>¿Es totalmente gratuito?</summary>
           <div class="respuesta">
-            <p>Podés usar PuroTexto gratis con un límite diario de análisis: 3 por día sin cuenta y 10 por día con una cuenta gratuita. Si necesitás más, el plan Premium ofrece análisis ilimitados. Podés ver el detalle en la página de <a href="precios.html">Precios</a>.</p>
+            <p>Podés usar PuroTexto gratis con un límite diario de análisis: 3 por día sin cuenta y 10 por día con una cuenta gratuita. Si necesitás más, el plan Premium ofrece hasta 20 por día y textos de hasta 20.000 caracteres. Podés ver el detalle en la página de <a href="precios.html">Precios</a>.</p>
           </div>
         </details>
         <details>
@@ -991,9 +991,9 @@
          ---------------------------------------------------------------------- */
       var LARGO_MINIMO = 50;
       // Tope del frontend: el más alto (Premium). El límite real de cada cuenta lo valida
-      // el servidor (5.000 anónimo, 8.000 registrado, 15.000 Premium) y, si se pasa,
+      // el servidor (5.000 anónimo, 8.000 registrado, 20.000 Premium) y, si se pasa,
       // la página muestra el cartel de error con los botones para registrarse o ver Premium.
-      var LARGO_MAXIMO = 15000;
+      var LARGO_MAXIMO = 20000;
       var MAXIMO_ANONIMO = 5000; // solo se usa para decidir qué botones mostrar
       var TAMANO_MAXIMO_ARCHIVO = 4 * 1024 * 1024;
 
@@ -1098,7 +1098,7 @@
 
       var TITULO_ERROR_POR_DEFECTO = 'No pudimos completar el análisis';
 
-      // 15000 -> "15.000"
+      // 20000 -> "20.000"
       function conPuntos(numero) {
         return String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       }

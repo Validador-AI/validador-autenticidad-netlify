@@ -179,10 +179,10 @@
   function mostrarLimite() {
     if (!ui.panel) return;
     if (estado.sesion) {
-      ui.textoPanel.textContent = 'Actualizá a Premium para uso ilimitado. Tu cupo gratuito se renueva mañana.';
+      ui.textoPanel.textContent = 'Actualizá a Premium para tener 20 análisis por día. Tu cupo gratuito se renueva mañana.';
       ui.btnRegistro.hidden = true;
     } else {
-      ui.textoPanel.textContent = 'Registrate gratis para tener más, o actualizá a Premium para uso ilimitado.';
+      ui.textoPanel.textContent = 'Registrate gratis para tener más, o actualizá a Premium para tener 20 análisis por día.';
       ui.btnRegistro.hidden = false;
     }
     ui.panel.hidden = false;
