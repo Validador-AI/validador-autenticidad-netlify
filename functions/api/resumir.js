@@ -18,7 +18,7 @@
 // Antes de llamar a Gemini, esta función descuenta un análisis del cupo diario:
 //   · Anónimo (sin sesión) ..... 3 por día, contados por IP        (tabla uso_anonimo)
 //   · Registrado (gratis) ...... 10 por día, contados por usuario  (tabla user_usage)
-//   · Premium .................. ilimitado (profiles.is_premium = true)
+//   · Premium .................. 20 por día, contados por usuario (profiles.is_premium = true)
 // Como la cuenta se hace en el servidor, no se puede saltear desde el navegador
 // (borrando localStorage, llamando directo a /api/resumir, etc.).
 // Si después algo falla (Gemini, filtros de seguridad, respuesta rara), el
@@ -350,7 +350,7 @@ export async function onRequest(context) {
   let identidad = null;
 
   async function devolverCupo() {
-    if (!cupo || !cupo.permitido || cupo.premium || !identidad) return;
+    if (!cupo || !cupo.permitido || !identidad) return;
     try {
       await llamarFuncion(env, 'servidor_devolver', {
         p_user: identidad.userId,
@@ -487,7 +487,9 @@ export async function onRequest(context) {
       cupo = null; // no se descontó nada, no hay nada que devolver
       return responder(429, {
         codigo: 'limite_diario',
-        error: identidad.userId
+        error: usoActual.premium
+          ? 'Llegaste al límite de análisis de hoy (20 por día). Se renueva mañana.'
+          : identidad.userId
           ? 'Llegaste al límite de análisis de hoy. Actualizá a Premium para tener 20 análisis por día.'
           : 'Llegaste al límite de análisis de hoy. Registrate gratis para tener más, o actualizá a Premium para tener 20 análisis por día.',
         uso: usoActual,
