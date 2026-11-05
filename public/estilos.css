@@ -2257,3 +2257,23 @@ textarea { min-height: 420px !important; }
 @media (min-width: 721px) {
   .pie-columnas:not(:has(.pie-red:not([href="#"]))) { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Banner lateral de publicidad (160x600): solo en pantallas anchas */
+.anuncio-lateral { display: none; }
+@media (min-width: 1440px) {
+  .anuncio-lateral:not(:empty) {
+    display: block;
+    position: fixed;
+    right: 16px;
+    top: 90px;
+    width: 160px;
+    height: 600px;
+    z-index: 5;
+  }
+  .anuncio-lateral iframe {
+    display: block;
+    width: 160px;
+    height: 600px;
+    border: 0;
+  }
+}
