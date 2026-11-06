@@ -2281,3 +2281,29 @@ textarea { min-height: 420px !important; }
 /* Tipografía general 10% más chica.
    Si querés ajustarla, cambiá solo este número (por ejemplo 92% o 88%). */
 html { font-size: 90%; }
+
+/* Banner de publicidad (300x250) al final de las páginas */
+.anuncio-pie { display: none; }
+.anuncio-pie:not(:empty) {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  margin: 40px auto 8px;
+}
+.anuncio-pie:not(:empty)::before {
+  content: "Publicidad";
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #8A7F70;
+}
+.anuncio-pie iframe {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  height: 250px;
+  border: 0;
+}
