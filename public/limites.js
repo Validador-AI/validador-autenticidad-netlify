@@ -137,10 +137,12 @@
 
   /* ------------------------------------------------------------------------
      Publicidad (banner 300x250 al final de la página)
-     Solo se carga si la persona NO es Premium. Va dentro de un iframe aislado
-     ("sandbox", sin allow-same-origin): el anuncio no puede leer la página,
-     ni los textos, ni la sesión de la cuenta, ni redirigir la página principal.
+     - Solo se carga si la persona NO es Premium.
+     - El anuncio vive en OTRO dominio (ads.purotexto.com), dentro de un iframe:
+       el navegador le impide leer esta página, los textos y la sesión de la cuenta.
+     - "allow-same-origin" acá se refiere al dominio del anuncio (no al de la página).
      ------------------------------------------------------------------------ */
+  var ORIGEN_PUBLICIDAD = 'https://ads.purotexto.com';
   var publicidadCargada = false;
 
   function cargarPublicidad() {
@@ -149,12 +151,12 @@
     if (!cont) return;
     publicidadCargada = true;
     var f = document.createElement('iframe');
-    f.src = '/anuncio-pie.html';
+    f.src = ORIGEN_PUBLICIDAD + '/anuncio-pie.html';
     f.title = 'Publicidad';
     f.width = '300';
     f.height = '250';
     f.setAttribute('scrolling', 'no');
-    f.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
+    f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
     cont.appendChild(f);
   }
 

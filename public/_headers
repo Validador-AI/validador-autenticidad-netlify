@@ -1,0 +1,3 @@
+# El dominio de publicidad (ads.purotexto.com) no debe indexarse en Google
+https://ads.purotexto.com/*
+  X-Robots-Tag: noindex, nofollow
