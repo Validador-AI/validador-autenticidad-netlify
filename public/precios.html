@@ -170,6 +170,36 @@
     @media (prefers-reduced-motion: reduce) {
       .aviso-proximamente { transition: none; }
     }
+
+    /* ===== Pago de Premium ===== */
+    .precio-nota-pago {
+      margin: 10px 0 0;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      text-align: center;
+      color: var(--petroleo);
+      opacity: 0.8;
+    }
+    .pago-opciones { display: grid; gap: 12px; margin: 18px 0 6px; }
+    .pago-opcion {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid rgba(38, 75, 74, 0.25);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--petroleo);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .pago-opcion:hover:not(:disabled) { border-color: var(--terracota); }
+    .pago-opcion:focus-visible { outline: 3px solid var(--terracota); outline-offset: 3px; }
+    .pago-opcion:disabled { opacity: 0.6; cursor: wait; }
+    .pago-opcion strong { font-size: 1rem; }
+    .pago-opcion span { font-size: 0.85rem; opacity: 0.85; }
   </style>
 </head>
 
@@ -323,6 +353,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Sin publicidad</span></li>
         </ul>
         <button type="button" id="btn-premium" class="boton-principal precio-boton precio-boton-premium">Actualizar a Premium</button>
+        <p class="precio-nota-pago">Pagá con tarjeta (en dólares) o con Mercado Pago (en pesos).</p>
       </article>
 
     </section>
@@ -454,6 +485,26 @@
 
         <p class="modal-nota">Al registrarte creás una cuenta con email y contraseña. No compartimos tus datos.</p>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DE PAGO (elegir cómo pagar Premium) ===== -->
+  <div class="modal-overlay" id="modal-pago" hidden>
+    <div class="tarjeta modal-tarjeta" role="dialog" aria-modal="true" aria-label="Pagar Premium">
+      <button type="button" id="btn-cerrar-pago" class="modal-cerrar" aria-label="Cerrar">✕</button>
+      <h2 class="modal-titulo">Pasate a Premium</h2>
+      <p class="modal-nota">Elegí cómo querés pagar. Vas a terminar el pago en una página segura del proveedor.</p>
+      <div class="pago-opciones">
+        <button type="button" class="pago-opcion" data-proveedor="lemon">
+          <strong>Tarjeta · US$8,99 por mes</strong>
+          <span>Suscripción mensual. Se renueva sola y la cancelás cuando quieras.</span>
+        </button>
+        <button type="button" class="pago-opcion" data-proveedor="mercadopago">
+          <strong>Mercado Pago · en pesos</strong>
+          <span>Pago de 30 días de Premium. No se renueva solo: cuando se termina, volvés a pagar.</span>
+        </button>
+      </div>
+      <p id="pago-error" class="modal-error" hidden></p>
     </div>
   </div>
 
@@ -734,7 +785,7 @@
         });
       }
 
-      // "Actualizar a Premium": cartel "Próximamente"
+      // Cartel de avisos (abajo en la pantalla)
       var aviso = document.getElementById('aviso-proximamente');
       var temporizadorAviso = null;
       function mostrarAviso(mensaje) {
@@ -746,11 +797,98 @@
           aviso.classList.remove('visible');
         }, 3500);
       }
+      // "Actualizar a Premium": pide sesión y abre el modal para elegir cómo pagar
+      var modalPago = document.getElementById('modal-pago');
+      var pagoError = document.getElementById('pago-error');
+      var opcionesPago = document.querySelectorAll('.pago-opcion');
+
+      function mostrarErrorPago(mensaje) {
+        if (!pagoError) return;
+        pagoError.textContent = mensaje;
+        pagoError.hidden = false;
+      }
+      function abrirModalPago() {
+        if (!modalPago) return;
+        if (pagoError) pagoError.hidden = true;
+        opcionesPago.forEach(function (b) { b.disabled = false; });
+        modalPago.hidden = false;
+      }
+      function cerrarModalPago() {
+        if (modalPago) modalPago.hidden = true;
+      }
+
       var btnPremium = document.getElementById('btn-premium');
       if (btnPremium) {
         btnPremium.addEventListener('click', function () {
-          mostrarAviso('Próximamente: el plan Premium estará disponible muy pronto.');
+          var cliente = window.supabaseClient;
+          if (!cliente) {
+            mostrarAviso('No pudimos cargar la página de pago. Revisá tu conexión y recargá.');
+            return;
+          }
+          cliente.auth.getSession().then(function (resultado) {
+            if (!resultado.data.session) {
+              mostrarAviso('Primero creá tu cuenta gratis y después te pasás a Premium.');
+              if (window.abrirModalAuth) window.abrirModalAuth('registro');
+              return;
+            }
+            abrirModalPago();
+          });
         });
+      }
+
+      var btnCerrarPago = document.getElementById('btn-cerrar-pago');
+      if (btnCerrarPago) btnCerrarPago.addEventListener('click', cerrarModalPago);
+      if (modalPago) {
+        modalPago.addEventListener('click', function (e) {
+          if (e.target === modalPago) cerrarModalPago();
+        });
+      }
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') cerrarModalPago();
+      });
+
+      opcionesPago.forEach(function (boton) {
+        boton.addEventListener('click', function () {
+          var proveedor = boton.getAttribute('data-proveedor');
+          var cliente = window.supabaseClient;
+          if (!cliente) return;
+          if (pagoError) pagoError.hidden = true;
+          opcionesPago.forEach(function (b) { b.disabled = true; });
+
+          cliente.auth.getSession().then(function (resultado) {
+            var sesion = resultado.data.session;
+            if (!sesion) {
+              cerrarModalPago();
+              if (window.abrirModalAuth) window.abrirModalAuth('login');
+              return null;
+            }
+            return fetch('/api/crear-pago', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + sesion.access_token
+              },
+              body: JSON.stringify({ proveedor: proveedor })
+            }).then(function (r) {
+              return r.json().catch(function () { return {}; }).then(function (datos) {
+                if (r.ok && datos.url) {
+                  window.location.href = datos.url;
+                  return;
+                }
+                mostrarErrorPago(datos.error || 'No pudimos armar el pago. Probá de nuevo en un momento.');
+                opcionesPago.forEach(function (b) { b.disabled = false; });
+              });
+            });
+          }).catch(function () {
+            mostrarErrorPago('No pudimos conectar con el servidor. Probá de nuevo en un momento.');
+            opcionesPago.forEach(function (b) { b.disabled = false; });
+          });
+        });
+      });
+
+      // Si Mercado Pago o Lemon devuelven a la persona con un error de pago
+      if (new URLSearchParams(window.location.search).get('pago') === 'error') {
+        mostrarAviso('El pago no se completó. No se te cobró nada: podés intentar de nuevo.');
       }
 
       var anio = document.getElementById('anio');
