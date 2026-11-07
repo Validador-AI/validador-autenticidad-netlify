@@ -136,8 +136,9 @@
   }
 
   /* ------------------------------------------------------------------------
-     Publicidad (banner 300x250 al final de la página)
+     Publicidad (banner chato al final de la página)
      - Solo se carga si la persona NO es Premium.
+     - Pantallas con lugar: 728x90. Pantallas angostas (celular): 320x50.
      - El anuncio vive en OTRO dominio (ads.purotexto.com), dentro de un iframe:
        el navegador le impide leer esta página, los textos y la sesión de la cuenta.
      - "allow-same-origin" acá se refiere al dominio del anuncio (no al de la página).
@@ -150,11 +151,23 @@
     var cont = document.getElementById('anuncio-pie');
     if (!cont) return;
     publicidadCargada = true;
+
+    var espacio = cont.parentNode ? cont.parentNode.clientWidth : window.innerWidth;
+    var grande = espacio >= 760;
+    var ancho = grande ? 728 : 320;
+    var alto = grande ? 90 : 50;
+    var pagina = grande ? '/anuncio-728x90.html' : '/anuncio-320x50.html';
+
+    cont.style.width = ancho + 'px';
+    cont.style.maxWidth = '100%';
+
     var f = document.createElement('iframe');
-    f.src = ORIGEN_PUBLICIDAD + '/anuncio-pie.html';
+    f.src = ORIGEN_PUBLICIDAD + pagina;
     f.title = 'Publicidad';
-    f.width = '300';
-    f.height = '250';
+    f.width = String(ancho);
+    f.height = String(alto);
+    f.style.width = ancho + 'px';
+    f.style.height = alto + 'px';
     f.setAttribute('scrolling', 'no');
     f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
     cont.appendChild(f);
