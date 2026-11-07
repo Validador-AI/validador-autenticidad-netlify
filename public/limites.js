@@ -148,10 +148,17 @@
 
   function cargarPublicidad() {
     if (publicidadCargada || !estado.listo || estado.error || estado.premium) return;
-    var cont = document.getElementById('anuncio-pie');
-    if (!cont) return;
-    publicidadCargada = true;
+    // Lugares donde puede ir un banner (cada página tiene los que necesite)
+    var lugares = ['anuncio-medio', 'anuncio-pie'];
+    var hay = false;
+    lugares.forEach(function (id) {
+      var cont = document.getElementById(id);
+      if (cont) { hay = true; ponerBanner(cont); }
+    });
+    if (hay) publicidadCargada = true;
+  }
 
+  function ponerBanner(cont) {
     var espacio = cont.parentNode ? cont.parentNode.clientWidth : window.innerWidth;
     var grande = espacio >= 760;
     var ancho = grande ? 728 : 320;
