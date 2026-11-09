@@ -61,6 +61,31 @@
     }
     .error-boton:focus-visible { outline: 3px solid var(--petroleo); outline-offset: 3px; }
 
+    /* Exportar a PDF: etiqueta "Premium" y aviso para quien no es Premium */
+    .etiqueta-premium {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--terracota);
+      color: #FFF;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+    }
+    .exportar-aviso {
+      margin: 12px 0 0;
+      padding: 12px 16px;
+      border: 1.5px solid rgba(38, 75, 74, 0.3);
+      border-radius: 12px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .exportar-aviso a { color: var(--terracota); font-weight: 600; }
+
     /* Espacios de publicidad: no se ven hasta que tengan un anuncio adentro */
     .anuncio:empty { display: none; }
     @media (max-width: 600px) {
@@ -383,8 +408,13 @@
         <button type="button" id="btn-exportar-pdf" class="boton-exportar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           Exportar a PDF
+          <span id="exportar-etiqueta" class="etiqueta-premium" hidden>Premium</span>
         </button>
       </div>
+      <p id="exportar-aviso" class="exportar-aviso" role="status" hidden>
+        Exportar tu análisis a PDF es una función exclusiva del plan Premium.
+        <a href="precios.html">Ver Premium</a>
+      </p>
 
       <!-- Espacio de publicidad 1: solo aparece cuando hay un resultado -->
       <aside class="anuncio" aria-label="Publicidad"></aside>
@@ -1024,6 +1054,8 @@
       var marca = $('marca');
       var listaFrases = $('lista-frases');
       var botonExportarPdf = $('btn-exportar-pdf');
+      var etiquetaExportar = $('exportar-etiqueta');
+      var avisoExportar = $('exportar-aviso');
 
       var panelTexto = $('panel-texto');
       var panelArchivo = $('panel-archivo');
@@ -1366,8 +1398,12 @@
           puntaje: puntaje,
           veredicto: veredictoTexto,
           frases: frases,
-          fecha: new Date()
+          fecha: new Date(),
+          // El servidor informa en "uso" si la cuenta es Premium: el PDF es exclusivo de ese plan.
+          esPremium: !!(datos.uso && datos.uso.premium)
         };
+        if (etiquetaExportar) etiquetaExportar.hidden = ultimoAnalisis.esPremium;
+        if (avisoExportar) avisoExportar.hidden = true;
         resultados.hidden = false;
 
         if (reducirMovimiento) {
@@ -1398,6 +1434,13 @@
          ---------------------------------------------------------------------- */
       function exportarPDF() {
         if (!ultimoAnalisis) return;
+        if (!ultimoAnalisis.esPremium) {
+          if (avisoExportar) {
+            avisoExportar.hidden = false;
+            avisoExportar.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'nearest' });
+          }
+          return;
+        }
         if (typeof window.jspdf === 'undefined') {
           mostrarError('No pudimos cargar el generador de PDF. Revisá tu conexión y probá de nuevo.');
           return;
