@@ -16,6 +16,8 @@
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/limites.js?v=4" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="/exportar-pdf.js?v=1" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
   <style>
@@ -248,7 +250,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             Analizar con PuroTexto
           </button>
+          <button type="button" id="traductor-btn-pdf" class="boton-exportar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar a PDF
+            <span id="traductor-btn-pdf-etiqueta" class="etiqueta-premium" hidden>Premium</span>
+          </button>
         </div>
+        <p id="traductor-pdf-aviso" class="exportar-aviso" role="status" hidden></p>
       </section>
     </section>
 
@@ -684,6 +692,12 @@
         var tradSalida = document.getElementById('traductor-salida');
         var tradBtnCopiar = document.getElementById('traductor-btn-copiar');
         var tradBtnAnalizar = document.getElementById('traductor-btn-analizar');
+        // Exportar a PDF (solo Premium): lo maneja /exportar-pdf.js
+        var pdfTraductor = window.PuroTextoPDF ? PuroTextoPDF.crearBoton({
+          boton: document.getElementById('traductor-btn-pdf'),
+          etiqueta: document.getElementById('traductor-btn-pdf-etiqueta'),
+          aviso: document.getElementById('traductor-pdf-aviso')
+        }) : null;
         if (!tradTexto) return;
 
         // Límites de uso: cartel "Te quedan X análisis hoy" y aviso de límite alcanzado
@@ -891,6 +905,18 @@
             if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis(datos); // el servidor ya descontó: solo actualiza el cartel
 
             tradSalida.textContent = datos.traduccion;
+            if (pdfTraductor) {
+              var opcionIdioma = tradIdioma.options[tradIdioma.selectedIndex];
+              var tonoMarcado = document.querySelector('input[name="tono-traductor"]:checked');
+              var etiquetaTono = tonoMarcado && tonoMarcado.nextElementSibling ? tonoMarcado.nextElementSibling.textContent.trim() : '';
+              pdfTraductor.actualizar({
+                esPremium: !!(datos.uso && datos.uso.premium),
+                titulo: 'Traducción',
+                subtitulo: 'Traducido a: ' + (opcionIdioma ? opcionIdioma.text : '') + (etiquetaTono ? '  ·  Tono: ' + etiquetaTono : ''),
+                secciones: [{ titulo: 'Texto traducido', texto: datos.traduccion }],
+                nombreArchivo: 'purotexto-traduccion'
+              });
+            }
             tradResultados.hidden = false;
             tradResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
             tradResultados.focus({ preventScroll: true });

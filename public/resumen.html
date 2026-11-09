@@ -16,6 +16,8 @@
   <!-- Cliente de Supabase (autenticación) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/limites.js?v=4" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="/exportar-pdf.js?v=1" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
   <style>
@@ -222,6 +224,15 @@
           </div>
           <p id="resumen-salida" class="comparacion-texto"></p>
         </div>
+
+        <div class="accion-contenedor" style="justify-content: flex-start; margin-top: 16px;">
+          <button type="button" id="resumen-btn-pdf" class="boton-exportar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar a PDF
+            <span id="resumen-btn-pdf-etiqueta" class="etiqueta-premium" hidden>Premium</span>
+          </button>
+        </div>
+        <p id="resumen-pdf-aviso" class="exportar-aviso" role="status" hidden></p>
       </section>
     </section>
 
@@ -654,6 +665,12 @@
         var resResultados = document.getElementById('resumen-resultados');
         var resSalida = document.getElementById('resumen-salida');
         var resBtnCopiar = document.getElementById('resumen-btn-copiar');
+        // Exportar a PDF (solo Premium): lo maneja /exportar-pdf.js
+        var pdfResumen = window.PuroTextoPDF ? PuroTextoPDF.crearBoton({
+          boton: document.getElementById('resumen-btn-pdf'),
+          etiqueta: document.getElementById('resumen-btn-pdf-etiqueta'),
+          aviso: document.getElementById('resumen-pdf-aviso')
+        }) : null;
         var radiosLargo = document.querySelectorAll('input[name="largo-resumen"]');
         if (!resTexto) return;
 
@@ -862,6 +879,16 @@
             if (window.PuroTextoLimites) PuroTextoLimites.registrarAnalisis(datos); // el servidor ya descontó: solo actualiza el cartel
 
             resSalida.textContent = datos.resumen;
+            if (pdfResumen) {
+              var nombresLargo = { corto: 'Corto', medio: 'Medio', detallado: 'Detallado' };
+              pdfResumen.actualizar({
+                esPremium: !!(datos.uso && datos.uso.premium),
+                titulo: 'Resumen',
+                subtitulo: 'Largo: ' + (nombresLargo[largoElegido()] || 'Medio'),
+                secciones: [{ titulo: 'Texto resumido', texto: datos.resumen }],
+                nombreArchivo: 'purotexto-resumen'
+              });
+            }
             resResultados.hidden = false;
             resResultados.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'start' });
             resResultados.focus({ preventScroll: true });
