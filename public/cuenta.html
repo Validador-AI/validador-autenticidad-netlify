@@ -127,6 +127,21 @@
 
     .btn-cerrar-sesion { flex: none; }
 
+    /* Aviso después de pagar Premium */
+    .pago-aviso {
+      margin: 0 0 20px;
+      padding: 14px 18px;
+      border: 1.5px solid rgba(38, 75, 74, 0.3);
+      border-radius: 14px;
+      background: var(--arena);
+      color: var(--petroleo-oscuro);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .pago-aviso[data-tipo="ok"] { border-color: var(--petroleo); }
+    .pago-aviso[data-tipo="espera"] { border-color: var(--terracota); }
+    .pago-aviso strong { font-weight: 600; }
+
     /* ----- Historial ----- */
     .historial-seccion { margin-top: 48px; }
     .historial-seccion .titulo-seccion { margin-top: 0; }
@@ -559,6 +574,9 @@
 
     <h1 class="cuenta-titulo">Mi Cuenta</h1>
 
+    <!-- Aviso que aparece al volver de pagar Premium (lo completa el script) -->
+    <div id="cuenta-pago-aviso" class="pago-aviso" role="status" aria-live="polite" hidden></div>
+
     <!-- ===== PERFIL: email, plan y cerrar sesión ===== -->
     <section class="tarjeta cuenta-perfil" aria-label="Datos de tu cuenta">
       <div class="cuenta-avatar" aria-hidden="true">
@@ -787,6 +805,7 @@
 
       var usuario = null;
       var esPremium = false;
+      var premiumHasta = null;     // fecha hasta la que llega el Premium (si la hay)
       var filas = [];              // historial en memoria (más nuevo primero)
 
       /* ---------- Referencias al DOM ---------- */
@@ -964,14 +983,20 @@
       function pintarPlan() {
         elPlan.setAttribute('data-plan', esPremium ? 'premium' : 'registrado');
         elPlan.textContent = esPremium ? 'Plan Premium' : 'Plan Registrado';
-        elPlanDetalle.textContent = esPremium ? '20 análisis por día' : '10 análisis por día';
+        var detalle = esPremium ? '20 análisis por día' : '10 análisis por día';
+        if (esPremium && premiumHasta && !isNaN(premiumHasta.getTime())) {
+          detalle += ' · Tu Premium llega hasta el ' + premiumHasta.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        elPlanDetalle.textContent = detalle;
       }
 
       /* ---------- Carga de datos ---------- */
       async function obtenerPremium() {
         try {
-          var r = await sb.from('profiles').select('is_premium').eq('id', usuario.id).maybeSingle();
-          return !!(r.data && r.data.is_premium);
+          var r = await sb.from('profiles').select('is_premium, premium_hasta').eq('id', usuario.id).maybeSingle();
+          var premium = !!(r.data && r.data.is_premium);
+          premiumHasta = premium && r.data.premium_hasta ? new Date(r.data.premium_hasta) : null;
+          return premium;
         } catch (e) {
           return false;
         }
@@ -1201,7 +1226,47 @@
           if (evento === 'SIGNED_OUT') window.location.replace(PAGINA_INICIO);
         });
 
-        cargarTodo();
+        cargarTodo().then(revisarPago);
+      }
+
+      /* ---------- Aviso al volver de pagar (?pago=ok | pendiente) ---------- */
+      function mostrarAvisoPago(tipo, html) {
+        var caja = document.getElementById('cuenta-pago-aviso');
+        if (!caja) return;
+        caja.setAttribute('data-tipo', tipo);
+        caja.innerHTML = html;
+        caja.hidden = false;
+      }
+      function esperar(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+      async function revisarPago() {
+        var estadoPago = new URLSearchParams(window.location.search).get('pago');
+        if (estadoPago !== 'ok' && estadoPago !== 'pendiente') return;
+        // Que el aviso no vuelva a salir si la persona recarga la página
+        try { window.history.replaceState(null, '', window.location.pathname); } catch (e) {}
+
+        var htmlListo = '<strong>¡Gracias! Ya sos Premium.</strong> Disfrutá de 20 análisis por día, textos de hasta 20.000 caracteres y exportación a PDF.';
+        if (esPremium) { mostrarAvisoPago('ok', htmlListo); return; }
+
+        if (estadoPago === 'pendiente') {
+          mostrarAvisoPago('espera', '<strong>Tu pago está pendiente de acreditación.</strong> Apenas se acredite, tu Premium se activa solo. Puede tardar un poco según el medio de pago.');
+          return;
+        }
+
+        mostrarAvisoPago('espera', '<strong>¡Gracias por tu pago!</strong> Estamos activando tu Premium, puede tardar unos segundos…');
+        // El aviso de pago llega al servidor unos segundos después: se consulta cada 3 segundos, hasta 1 minuto.
+        for (var intento = 0; intento < 20; intento++) {
+          await esperar(3000);
+          if (await obtenerPremium()) {
+            esPremium = true;
+            pintarPlan();
+            renderHistorial();
+            mostrarAvisoPago('ok', htmlListo);
+            return;
+          }
+        }
+        mostrarAvisoPago('espera', '<strong>Tu pago se está procesando.</strong> Está tardando más de lo normal. No tenés que pagar de nuevo: recargá esta página en unos minutos. Si no se activa, escribinos a <a href="mailto:hola@purotexto.com">hola@purotexto.com</a>.');
       }
 
       iniciar();
