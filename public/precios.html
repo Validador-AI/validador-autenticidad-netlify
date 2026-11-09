@@ -180,6 +180,15 @@
       color: var(--petroleo);
       opacity: 0.8;
     }
+    .pago-periodos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0 4px; }
+    .pago-periodo-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 10px 12px; border: 2px solid rgba(38, 75, 74, 0.25); border-radius: 12px;
+      background: transparent; color: var(--petroleo); font: inherit; font-weight: 600; cursor: pointer;
+    }
+    .pago-periodo-btn small { font-size: 0.75rem; font-weight: 500; color: var(--terracota); }
+    .pago-periodo-btn.activo { border-color: var(--terracota); background: rgba(184, 78, 46, 0.08); }
+    .pago-periodo-btn:focus-visible { outline: 3px solid var(--terracota); outline-offset: 3px; }
     .pago-opciones { display: grid; gap: 12px; margin: 18px 0 6px; }
     .pago-opcion {
       display: flex;
@@ -345,6 +354,7 @@
           <span class="precio-cifra">$8.99</span>
           <span class="precio-periodo">/mes</span>
         </div>
+        <p class="precio-nota-pago" style="text-align:left;margin:0 0 4px;">O pagá el plan anual: <strong>US$89 por año</strong> (2 meses gratis).</p>
         <ul class="precio-lista">
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span><strong>20 análisis</strong> por día</span></li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Hasta <strong>20.000 caracteres</strong> por texto</span></li>
@@ -494,14 +504,18 @@
       <button type="button" id="btn-cerrar-pago" class="modal-cerrar" aria-label="Cerrar">✕</button>
       <h2 class="modal-titulo">Pasate a Premium</h2>
       <p class="modal-nota">Elegí cómo querés pagar. Vas a terminar el pago en una página segura del proveedor.</p>
+      <div class="pago-periodos" role="radiogroup" aria-label="Plan">
+        <button type="button" class="pago-periodo-btn activo" role="radio" aria-checked="true" data-periodo="mensual">Mensual</button>
+        <button type="button" class="pago-periodo-btn" role="radio" aria-checked="false" data-periodo="anual">Anual <small>2 meses gratis</small></button>
+      </div>
       <div class="pago-opciones">
         <button type="button" class="pago-opcion" data-proveedor="lemon">
-          <strong>Tarjeta · US$8,99 por mes</strong>
-          <span>Suscripción mensual. Se renueva sola y la cancelás cuando quieras.</span>
+          <strong id="pago-lemon-titulo">Tarjeta · US$8,99 por mes</strong>
+          <span id="pago-lemon-detalle">Suscripción mensual. Se renueva sola y la cancelás cuando quieras.</span>
         </button>
         <button type="button" class="pago-opcion" data-proveedor="mercadopago">
-          <strong>Mercado Pago · en pesos</strong>
-          <span>Pago de 30 días de Premium. No se renueva solo: cuando se termina, volvés a pagar.</span>
+          <strong id="pago-mp-titulo">Mercado Pago · en pesos</strong>
+          <span id="pago-mp-detalle">Pago de 30 días de Premium. No se renueva solo: cuando se termina, volvés a pagar.</span>
         </button>
       </div>
       <p id="pago-error" class="modal-error" hidden></p>
@@ -807,8 +821,51 @@
         pagoError.textContent = mensaje;
         pagoError.hidden = false;
       }
+      var periodoElegido = 'mensual';
+      var preciosPesos = null; // { mensual, anual } desde /api/precios
+      var botonesPeriodo = document.querySelectorAll('.pago-periodo-btn');
+
+      function pesos(valor) {
+        return '$' + Number(valor).toLocaleString('es-AR');
+      }
+      function actualizarTextosPago() {
+        var anual = periodoElegido === 'anual';
+        var tituloLemon = document.getElementById('pago-lemon-titulo');
+        var detalleLemon = document.getElementById('pago-lemon-detalle');
+        var tituloMp = document.getElementById('pago-mp-titulo');
+        var detalleMp = document.getElementById('pago-mp-detalle');
+        if (tituloLemon) tituloLemon.textContent = anual ? 'Tarjeta · US$89 por año' : 'Tarjeta · US$8,99 por mes';
+        if (detalleLemon) detalleLemon.textContent = anual
+          ? 'Suscripción anual: un solo cobro por año. Se renueva sola y la cancelás cuando quieras.'
+          : 'Suscripción mensual. Se renueva sola y la cancelás cuando quieras.';
+        var monto = preciosPesos && preciosPesos[anual ? 'anual' : 'mensual'];
+        if (tituloMp) tituloMp.textContent = 'Mercado Pago · ' + (monto ? pesos(monto) : 'en pesos');
+        if (detalleMp) detalleMp.textContent = anual
+          ? 'Pago único de 365 días de Premium. No se renueva solo: cuando se termina, volvés a pagar.'
+          : 'Pago de 30 días de Premium. No se renueva solo: cuando se termina, volvés a pagar.';
+        botonesPeriodo.forEach(function (b) {
+          var activo = b.getAttribute('data-periodo') === periodoElegido;
+          b.classList.toggle('activo', activo);
+          b.setAttribute('aria-checked', activo ? 'true' : 'false');
+        });
+      }
+      botonesPeriodo.forEach(function (b) {
+        b.addEventListener('click', function () {
+          periodoElegido = b.getAttribute('data-periodo');
+          actualizarTextosPago();
+        });
+      });
+      function cargarPreciosPesos() {
+        if (preciosPesos) return;
+        fetch('/api/precios').then(function (r) { return r.json(); }).then(function (d) {
+          if (d && d.ars) { preciosPesos = d.ars; actualizarTextosPago(); }
+        }).catch(function () { /* si falla, se muestra "en pesos" sin monto */ });
+      }
+
       function abrirModalPago() {
         if (!modalPago) return;
+        cargarPreciosPesos();
+        actualizarTextosPago();
         if (pagoError) pagoError.hidden = true;
         opcionesPago.forEach(function (b) { b.disabled = false; });
         modalPago.hidden = false;
@@ -868,7 +925,7 @@
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + sesion.access_token
               },
-              body: JSON.stringify({ proveedor: proveedor })
+              body: JSON.stringify({ proveedor: proveedor, periodo: periodoElegido })
             }).then(function (r) {
               return r.json().catch(function () { return {}; }).then(function (datos) {
                 if (r.ok && datos.url) {
