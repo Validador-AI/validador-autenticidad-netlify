@@ -7,13 +7,16 @@
 //
 //   POST /api/crear-pago
 //   Encabezado:  Authorization: Bearer <token de sesión>
-//   Cuerpo:      { "proveedor": "lemon" }  o  { "proveedor": "mercadopago" }
+//   Cuerpo:      { "proveedor": "lemon" | "mercadopago", "periodo": "mensual" | "anual" }
+//                (si falta "periodo", se toma "mensual")
 //   Respuesta:   200 { url }   |   4xx/5xx { error }
 //
 // Variables en Cloudflare (Settings → Variables and Secrets):
 //   Ya existentes:  SUPABASE_SERVICE_ROLE_KEY (Secret)
-//   Lemon Squeezy:  LEMON_API_KEY (Secret), LEMON_STORE_ID, LEMON_VARIANT_ID
-//   Mercado Pago:   MP_ACCESS_TOKEN (Secret), MP_PRECIO_ARS (ej: 12000)
+//   Lemon Squeezy:  LEMON_API_KEY (Secret), LEMON_STORE_ID,
+//                   LEMON_VARIANT_ID (plan mensual), LEMON_VARIANT_ID_ANUAL (plan anual)
+//   Mercado Pago:   MP_ACCESS_TOKEN (Secret),
+//                   MP_PRECIO_ARS (mensual, ej: 14900), MP_PRECIO_ARS_ANUAL (ej: 149000)
 //   Opcional:       SITIO_URL (por defecto https://purotexto.com)
 //
 // IMPORTANTE: el user_id viaja al proveedor como dato "propio" del pago. Después
@@ -82,7 +85,8 @@ async function perfilPremium(env, userId) {
 }
 
 // ----- Lemon Squeezy: suscripción mensual en dólares --------------------------
-async function crearLinkLemon(env, usuario) {
+async function crearLinkLemon(env, usuario, periodo) {
+  const variante = periodo === 'anual' ? env.LEMON_VARIANT_ID_ANUAL : env.LEMON_VARIANT_ID;
   const respuesta = await pedir('https://api.lemonsqueezy.com/v1/checkouts', {
     method: 'POST',
     headers: {
@@ -105,7 +109,7 @@ async function crearLinkLemon(env, usuario) {
         },
         relationships: {
           store: { data: { type: 'stores', id: String(env.LEMON_STORE_ID) } },
-          variant: { data: { type: 'variants', id: String(env.LEMON_VARIANT_ID) } },
+          variant: { data: { type: 'variants', id: String(variante) } },
         },
       },
     }),
@@ -121,9 +125,10 @@ async function crearLinkLemon(env, usuario) {
 }
 
 // ----- Mercado Pago: pago único de 30 días, en pesos --------------------------
-async function crearLinkMercadoPago(env, usuario) {
-  const precio = Number(env.MP_PRECIO_ARS);
-  if (!Number.isFinite(precio) || precio <= 0) throw new Error('Falta MP_PRECIO_ARS');
+async function crearLinkMercadoPago(env, usuario, periodo) {
+  const anual = periodo === 'anual';
+  const precio = Number(anual ? env.MP_PRECIO_ARS_ANUAL : env.MP_PRECIO_ARS);
+  if (!Number.isFinite(precio) || precio <= 0) throw new Error('Falta el precio en pesos del plan ' + periodo);
   const sitio = urlSitio(env);
 
   const respuesta = await pedir('https://api.mercadopago.com/checkout/preferences', {
@@ -135,8 +140,8 @@ async function crearLinkMercadoPago(env, usuario) {
     body: JSON.stringify({
       items: [
         {
-          id: 'premium-30-dias',
-          title: 'PuroTexto Premium (30 días)',
+          id: anual ? 'premium-365-dias' : 'premium-30-dias',
+          title: anual ? 'PuroTexto Premium (1 año)' : 'PuroTexto Premium (30 días)',
           quantity: 1,
           currency_id: 'ARS',
           unit_price: precio,
@@ -144,6 +149,7 @@ async function crearLinkMercadoPago(env, usuario) {
       ],
       payer: usuario.email ? { email: usuario.email } : undefined,
       external_reference: usuario.id, // vuelve en el pago: es el user_id
+      metadata: { periodo: anual ? 'anual' : 'mensual' }, // el webhook lo usa para saber cuántos días sumar
       notification_url: sitio + '/api/webhook-mercadopago',
       back_urls: {
         success: sitio + '/cuenta.html?pago=ok',
@@ -200,28 +206,32 @@ export async function onRequest(context) {
       return responder(400, { error: 'Elegí cómo querés pagar.' });
     }
 
+    const periodo = cuerpo && cuerpo.periodo === 'anual' ? 'anual' : 'mensual';
+
     // 3) Si ya tiene una suscripción activa en Lemon, no dejamos crear otra
     // (se cobraría doble). Con Mercado Pago sí se puede pagar de nuevo: suma 30 días.
     const perfil = await perfilPremium(env, usuario.id);
     const vigente = perfil && perfil.is_premium === true && (!perfil.premium_hasta || new Date(perfil.premium_hasta) > new Date());
     if (vigente && proveedor === 'lemon' && perfil.premium_proveedor === 'lemon') {
-      return responder(409, { error: 'Ya tenés una suscripción Premium activa.' });
+      return responder(409, { error: 'Ya tenés una suscripción Premium activa con tarjeta. Para cambiar de plan, escribinos a hola@purotexto.com.' });
     }
 
     // 4) Pedirle el link al proveedor.
     let url;
     if (proveedor === 'lemon') {
-      if (!env.LEMON_API_KEY || !env.LEMON_STORE_ID || !env.LEMON_VARIANT_ID) {
+      const varianteElegida = periodo === 'anual' ? env.LEMON_VARIANT_ID_ANUAL : env.LEMON_VARIANT_ID;
+      if (!env.LEMON_API_KEY || !env.LEMON_STORE_ID || !varianteElegida) {
         console.error('Faltan variables de Lemon Squeezy');
         return responder(503, { error: 'El pago con tarjeta todavía no está disponible.' });
       }
-      url = await crearLinkLemon(env, usuario);
+      url = await crearLinkLemon(env, usuario, periodo);
     } else {
-      if (!env.MP_ACCESS_TOKEN || !env.MP_PRECIO_ARS) {
+      const precioElegido = periodo === 'anual' ? env.MP_PRECIO_ARS_ANUAL : env.MP_PRECIO_ARS;
+      if (!env.MP_ACCESS_TOKEN || !precioElegido) {
         console.error('Faltan variables de Mercado Pago');
         return responder(503, { error: 'El pago con Mercado Pago todavía no está disponible.' });
       }
-      url = await crearLinkMercadoPago(env, usuario);
+      url = await crearLinkMercadoPago(env, usuario, periodo);
     }
 
     return responder(200, { url });

@@ -6,7 +6,7 @@
 //   1) se verifica la firma del aviso (que sea de verdad de Mercado Pago),
 //   2) se le pregunta a Mercado Pago el estado real del pago (no se confía en
 //      lo que diga el aviso),
-//   3) si está aprobado, se le suman 30 días de Premium a la persona,
+//   3) si está aprobado, se le suman 30 días (plan mensual) o 365 días (plan anual) de Premium,
 //   4) si fue devuelto o contracargado, se le saca.
 //
 // Variables en Cloudflare:
@@ -17,7 +17,8 @@
 
 const SUPABASE_URL_POR_DEFECTO = 'https://bprvlyzdnsykwjamumhw.supabase.co';
 const ESPERA_MS = 8000;
-const DIAS_POR_PAGO = 30;
+const DIAS_PLAN_MENSUAL = 30;
+const DIAS_PLAN_ANUAL = 365;
 const DIA_MS = 24 * 60 * 60 * 1000;
 const FORMATO_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -85,6 +86,21 @@ async function firmaValida(request, idPago, secreto) {
   const id = /^[a-z0-9]+$/i.test(idPago) ? idPago.toLowerCase() : idPago;
   const esperado = await firmar(`id:${id};request-id:${idPedido};ts:${ts};`, secreto);
   return iguales(v1.toLowerCase(), esperado);
+}
+
+// Cuántos días de Premium corresponden a este pago. El plan se anota al crear el
+// pago (metadata.periodo) y también en el nombre del ítem, por si faltara uno.
+function diasDelPago(pago) {
+  const periodo = pago && pago.metadata && pago.metadata.periodo;
+  if (periodo === 'anual') return DIAS_PLAN_ANUAL;
+  if (periodo === 'mensual') return DIAS_PLAN_MENSUAL;
+  const items = pago && pago.additional_info && pago.additional_info.items;
+  const idItem = Array.isArray(items) && items[0] ? String(items[0].id || '') : '';
+  if (idItem === 'premium-365-dias') return DIAS_PLAN_ANUAL;
+  if (idItem !== 'premium-30-dias') {
+    console.warn('No se pudo saber el plan del pago ' + (pago && pago.id) + ': se usan ' + DIAS_PLAN_MENSUAL + ' días');
+  }
+  return DIAS_PLAN_MENSUAL;
 }
 
 // ----- Supabase ---------------------------------------------------------------
@@ -212,13 +228,13 @@ export async function onRequest(context) {
     // Ya procesado antes: no se suma dos veces.
     if (registrado) return responder(200, { ok: true, repetido: true });
 
-    // 5) Sumar 30 días. Si ya tenía Premium vigente, se suman al final de lo que le quedaba.
+    // 5) Sumar los días del plan (30 o 365). Si ya tenía Premium vigente, se suman al final de lo que le quedaba.
     const perfil = await leerPerfil(env, userId);
     if (!perfil) throw new Error('No existe el perfil del usuario');
     const ahora = Date.now();
     const vigenteHasta = perfil.is_premium && perfil.premium_hasta ? new Date(perfil.premium_hasta).getTime() : 0;
     const base = vigenteHasta > ahora ? vigenteHasta : ahora;
-    const hasta = new Date(base + DIAS_POR_PAGO * DIA_MS).toISOString();
+    const hasta = new Date(base + diasDelPago(pago) * DIA_MS).toISOString();
 
     await actualizarPerfil(env, userId, {
       is_premium: true,
