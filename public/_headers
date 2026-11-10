@@ -1,3 +1,47 @@
+# =============================================================================
+# _headers — Encabezados de seguridad y de caché (Cloudflare Pages)
+# Va en public/_headers (reemplaza al anterior).
+# =============================================================================
+
 # El dominio de publicidad (ads.purotexto.com) no debe indexarse en Google
 https://ads.purotexto.com/*
   X-Robots-Tag: noindex, nofollow
+
+# ---- Seguridad: para todo el sitio (no rompen nada) ----
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# ---- Que Mi cuenta y Precios no puedan mostrarse dentro de otra página (clickjacking) ----
+/cuenta
+  X-Frame-Options: DENY
+/cuenta.html
+  X-Frame-Options: DENY
+/precios
+  X-Frame-Options: DENY
+/precios.html
+  X-Frame-Options: DENY
+
+# ---- Caché: el navegador siempre pregunta si hay una versión nueva ----
+# (si no cambió, responde "304" y no vuelve a descargar nada; si cambió, baja la nueva).
+# Así el celular no se queda con archivos viejos después de cada deploy.
+/estilos.css
+  Cache-Control: no-cache
+/tema.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+/pwa.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+/limites.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+/exportar-pdf.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+/sw.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+/manifest.json
+  Cache-Control: no-cache

@@ -8,7 +8,7 @@
    otros sitios (Supabase, Google, Lemon, Mercado Pago) ni pedidos que no sean GET.
    Para forzar que todos descarguen una versión nueva, cambiá el número de VERSION.
    ========================================================================== */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'purotexto-' + VERSION;
 const PRECARGA = ['/logo-icono.png', '/icon-192.png', '/icon-512.png', '/favicon.svg'];
 
@@ -48,8 +48,12 @@ self.addEventListener('fetch', (evento) => {
   const esPagina = pedido.mode === 'navigate';
   const clave = esPagina ? url.origin + url.pathname : pedido;
 
+  // Los archivos (css, js, imágenes) se revalidan siempre contra el servidor, así el
+  // celular nunca se queda con una copia vieja guardada por el navegador.
+  const pedidoRed = esPagina ? pedido : new Request(pedido, { cache: 'no-cache' });
+
   evento.respondWith(
-    fetch(pedido)
+    fetch(pedidoRed)
       .then((respuesta) => {
         if (respuesta.ok && respuesta.type === 'basic') {
           const copia = respuesta.clone();
