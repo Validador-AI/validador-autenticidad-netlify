@@ -2307,3 +2307,255 @@ html { font-size: 90%; }
   height: 250px;
   border: 0;
 }
+
+/* ==========================================================================
+   MODO OSCURO
+   Se activa con data-tema="oscuro" en <html> (lo pone /tema.js según la
+   elección guardada o la configuración del sistema).
+   Para deshacerlo, borrá todo lo que está debajo de este comentario.
+   ========================================================================== */
+
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+
+  --fondo: #12201F;
+  --superficie: #1B2D2C;
+  --superficie-suave: #223836;
+  --arena: #2B4442;
+  --arena-claro: #1F3432;
+
+  --linea: #2D4442;
+  --linea-fuerte: #3F5B58;
+
+  --texto: #F0E9DE;
+  --texto-suave: #A9B8B5;
+
+  /* Los "petróleo" se usan sobre todo como color de texto y de bordes: en oscuro pasan a tonos claros */
+  --petroleo: #E6DCCB;
+  --petroleo-oscuro: #F0E9DE;
+  --petroleo-suave: #5E908C;
+  --petroleo-medio: #234542;
+
+  --hueso: #F0E9DE;
+  --hueso-suave: #223836;
+  --hueso-barra: rgba(18, 32, 31, 0.85);
+
+  /* Terracota clara para textos y enlaces. Los botones mantienen #B84E2E (ver más abajo) */
+  --terracota: #E8845F;
+  --terracota-hover: #F09874;
+  --tono: #E8845F;
+  --tono-suave: #33241F;
+
+  --alerta: #E0A04E;
+  --alerta-suave: #33291A;
+  --exito: #5FC79A;
+  --exito-suave: #17332A;
+  --peligro: #E8845F;
+  --peligro-suave: #33241F;
+}
+
+/* ----- Ajustes automáticos: colores escritos a mano en el CSS original ----- */
+:where(:root[data-tema="oscuro"]) .sidebar-item:hover {
+  background: rgba(240, 233, 222, 0.14);
+}
+
+:where(:root[data-tema="oscuro"]) .topbar-movil {
+  background: rgba(18, 32, 31, 0.92);
+  border-bottom: 1px solid rgba(240, 233, 222, 0.08);
+}
+
+:where(:root[data-tema="oscuro"]) .modo:hover span {
+  background: rgba(240, 233, 222, 0.08);
+}
+
+:where(:root[data-tema="oscuro"]) textarea::placeholder {
+  color: #8FA09D;
+}
+
+:where(:root[data-tema="oscuro"]) .chip-oscuro {
+  background: rgba(240, 233, 222, 0.08);
+  border-color: rgba(240, 233, 222, 0.2);
+}
+
+:where(:root[data-tema="oscuro"]) .chip-oscuro:hover {
+  background: rgba(240, 233, 222, 0.15);
+}
+
+:where(:root[data-tema="oscuro"]) .modal-cerrar:hover {
+  background: rgba(240, 233, 222, 0.08);
+}
+
+:where(:root[data-tema="oscuro"]) .modal-tab:not(.activo):hover {
+  background: rgba(240, 233, 222, 0.08);
+}
+
+:where(:root[data-tema="oscuro"]) .btn-toggle-password:hover {
+  background: rgba(240, 233, 222, 0.08);
+}
+
+:where(:root[data-tema="oscuro"]) .boton-principal {
+  background: #B84E2E;
+}
+
+:where(:root[data-tema="oscuro"]) .boton-principal:hover:not(:disabled) {
+  background: #9E3C1F;
+}
+
+:where(:root[data-tema="oscuro"]) .error {
+  border: 1px solid #6B3A2E;
+  color: #F2B8A4;
+}
+
+:where(:root[data-tema="oscuro"]) .medidor-marca {
+  border: 3px solid var(--superficie);
+}
+
+:where(:root[data-tema="oscuro"]) .copiar:hover {
+  background: #B84E2E;
+}
+
+:where(:root[data-tema="oscuro"]) .boton-exportar:hover {
+  background: #3A5552;
+}
+
+:where(:root[data-tema="oscuro"]) .comparacion-panel--humanizado {
+  border-color: rgba(240, 233, 222, 0.25);
+}
+
+:where(:root[data-tema="oscuro"]) .panel-resultado {
+  border-color: rgba(240, 233, 222, 0.25);
+}
+
+:where(:root[data-tema="oscuro"]) .paso {
+  background: rgba(240, 233, 222, 0.06);
+  border: 1px solid rgba(240, 233, 222, 0.12);
+}
+
+:where(:root[data-tema="oscuro"]) .pie-red:hover {
+  background: #B84E2E;
+}
+
+:where(:root[data-tema="oscuro"]) a.boton-principal {
+  background-color: #B84E2E;
+}
+
+:where(:root[data-tema="oscuro"]) a.boton-principal:hover {
+  background-color: #9E3C1F;
+}
+
+:where(:root[data-tema="oscuro"]) .uso-estado--premium {
+  border-color: #2F5E4B;
+}
+
+:where(:root[data-tema="oscuro"]) .uso-estado--agotado {
+  border-color: #6B5230;
+  color: #E8C48A;
+}
+
+:where(:root[data-tema="oscuro"]) .uso-limite {
+  border: 1px solid #6B5230;
+  color: #EBCB95;
+}
+
+:where(:root[data-tema="oscuro"]) .sidebar-bottom .sidebar-premium {
+  border: 1.5px solid rgba(240, 233, 222, .25);
+}
+
+:where(:root[data-tema="oscuro"]) .sidebar-bottom .sidebar-auth {
+  border: 1.5px solid rgba(240, 233, 222, .25);
+}
+
+:where(:root[data-tema="oscuro"]) .anuncio-pie:not(:empty)::before {
+  color: #8FA09D;
+}
+
+/* ----- Ajustes puntuales ----- */
+/* Pie de página: más oscuro que el fondo para que se distinga */
+:root[data-tema="oscuro"] .pie { background: #0D1817; }
+:root[data-tema="oscuro"] .pie-columna-titulo,
+:root[data-tema="oscuro"] .pie-inferior,
+:root[data-tema="oscuro"] .pie-inferior p { color: #D9C6AF; }
+
+/* Fondos que en claro usaban petróleo/hueso con texto del color opuesto */
+:root[data-tema="oscuro"] .step-icon { background: var(--arena); }
+:root[data-tema="oscuro"] .archivo-tipo { background: #3A5C5A; }
+:root[data-tema="oscuro"] .boton-secundario:hover { background: #3A5C5A; }
+:root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) { background: #9E3C1F; }
+
+/* Logo sobre pastilla hueso, para que la coma azul-grisácea se vea bien */
+:root[data-tema="oscuro"] .sidebar-logo-icono,
+:root[data-tema="oscuro"] .topbar-logo img {
+  box-sizing: border-box;
+  padding: 3px;
+  border-radius: 9px;
+  background: #F5EFE7;
+}
+
+/* ----- Ajustes de estilos que viven dentro de cada página ----- */
+:root[data-tema="oscuro"] .error-boton--arena {
+  border-color: rgba(240, 233, 222, 0.35);
+}
+
+:root[data-tema="oscuro"] .error-boton--premium {
+  background: #B84E2E;
+}
+
+:root[data-tema="oscuro"] .error-boton--premium:hover {
+  background: #9E3C1F;
+}
+
+:root[data-tema="oscuro"] .plan-badge[data-plan="registrado"] {
+  background: rgba(240, 233, 222, 0.1);
+  border-color: rgba(240, 233, 222, 0.25);
+}
+
+:root[data-tema="oscuro"] .plan-badge[data-plan="premium"] {
+  border-color: #6B3A2E;
+}
+
+:root[data-tema="oscuro"] .pago-aviso {
+  border: 1.5px solid rgba(240, 233, 222, 0.3);
+}
+
+:root[data-tema="oscuro"] .etiqueta-premium {
+  background: #B84E2E;
+}
+
+:root[data-tema="oscuro"] .exportar-aviso {
+  border: 1.5px solid rgba(240, 233, 222, 0.3);
+}
+
+:root[data-tema="oscuro"] .precio-insignia {
+  background: #B84E2E;
+}
+
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena {
+  border-color: rgba(240, 233, 222, 0.35);
+}
+
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:link {
+  border-color: rgba(240, 233, 222, 0.35);
+}
+
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:visited {
+  border-color: rgba(240, 233, 222, 0.35);
+}
+
+:root[data-tema="oscuro"] .boton-principal.precio-boton-premium {
+  background: #B84E2E;
+}
+
+:root[data-tema="oscuro"] .boton-principal.precio-boton-premium:hover:not(:disabled) {
+  background: #9E3C1F;
+}
+
+:root[data-tema="oscuro"] .pago-periodo-btn {
+  border: 2px solid rgba(240, 233, 222, 0.25);
+}
+
+:root[data-tema="oscuro"] .pago-opcion {
+  border: 2px solid rgba(240, 233, 222, 0.25);
+}
+
+/* ----- Botón de cambio de tema (menú lateral) ----- */
+.sidebar-bottom .sidebar-tema svg { pointer-events: none; }

@@ -3,6 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    /* Tema claro/oscuro: se aplica antes de dibujar la página para que no parpadee. */
+    (function () {
+      try {
+        // Siempre arranca en claro, salvo que la persona haya elegido el oscuro con el botón
+        var t = localStorage.getItem('purotexto_tema') === 'oscuro' ? 'oscuro' : 'claro';
+        document.documentElement.setAttribute('data-tema', t);
+      } catch (e) {}
+    })();
+  </script>
   <title>PuroTexto — Análisis de naturalidad de texto en español latinoamericano</title>
   <meta name="description" content="Pegá un texto y descubrí si suena humano o generado por IA, con las frases puntuales que lo delatan y cómo reescribirlas. Especializado en español latinoamericano.">
   <link rel="canonical" href="https://purotexto.com/" />
@@ -99,6 +109,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PuroTexto">
   <script src="/pwa.js" defer></script>
+  <script src="/tema.js" defer></script>
 </head>
 
 <body>
@@ -1456,12 +1467,8 @@
         var JsPdfCtor = window.jspdf.jsPDF;
         var doc = new JsPdfCtor({ unit: 'pt', format: 'a4' });
 
-        // Tomamos los colores directamente del CSS, para no duplicarlos a mano.
-        var estiloRaiz = getComputedStyle(document.documentElement);
-        function colorVar(nombre, porDefecto) {
-          var valor = estiloRaiz.getPropertyValue(nombre).trim();
-          return valor || porDefecto;
-        }
+        // El PDF siempre usa los colores del tema claro (va impreso sobre papel blanco),
+        // aunque la persona esté viendo el sitio en modo oscuro.
         function hexARgb(hex) {
           hex = hex.replace('#', '');
           return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
@@ -1471,10 +1478,10 @@
           doc.setTextColor(rgb[0], rgb[1], rgb[2]);
         }
 
-        var petroleo = colorVar('--petroleo', '#264B4A');
-        var terracota = colorVar('--terracota', '#B84E2E');
-        var textoSuave = colorVar('--texto-suave', '#6B6358');
-        var textoColor = colorVar('--texto', '#221E18');
+        var petroleo = '#264B4A';
+        var terracota = '#B84E2E';
+        var textoSuave = '#576564';
+        var textoColor = '#1E3A3A';
 
         var anchoPagina = doc.internal.pageSize.getWidth();
         var altoPagina = doc.internal.pageSize.getHeight();

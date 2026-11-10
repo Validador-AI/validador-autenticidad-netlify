@@ -3,6 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    /* Tema claro/oscuro: se aplica antes de dibujar la página para que no parpadee. */
+    (function () {
+      try {
+        // Siempre arranca en claro, salvo que la persona haya elegido el oscuro con el botón
+        var t = localStorage.getItem('purotexto_tema') === 'oscuro' ? 'oscuro' : 'claro';
+        document.documentElement.setAttribute('data-tema', t);
+      } catch (e) {}
+    })();
+  </script>
   <title>Contacto — PuroTexto</title>
   <meta name="description" content="Escribinos a hola@purotexto.com para consultas, sugerencias o ayuda con tu cuenta o tus pagos en PuroTexto.">
   <link rel="canonical" href="https://purotexto.com/contacto" />
@@ -43,6 +53,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PuroTexto">
   <script src="/pwa.js" defer></script>
+  <script src="/tema.js" defer></script>
 </head>
 
 <body>

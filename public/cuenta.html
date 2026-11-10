@@ -3,6 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    /* Tema claro/oscuro: se aplica antes de dibujar la página para que no parpadee. */
+    (function () {
+      try {
+        // Siempre arranca en claro, salvo que la persona haya elegido el oscuro con el botón
+        var t = localStorage.getItem('purotexto_tema') === 'oscuro' ? 'oscuro' : 'claro';
+        document.documentElement.setAttribute('data-tema', t);
+      } catch (e) {}
+    })();
+  </script>
   <title>Mi Cuenta — PuroTexto</title>
   <meta name="description" content="Tu cuenta de PuroTexto: tu plan y el historial de tus análisis.">
   <!-- Página privada: que Google no la indexe -->
@@ -482,6 +492,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="PuroTexto">
   <script src="/pwa.js" defer></script>
+  <script src="/tema.js" defer></script>
 </head>
 
 <body>

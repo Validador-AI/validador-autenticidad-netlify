@@ -68,11 +68,7 @@
 
     var doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
 
-    var estiloRaiz = getComputedStyle(document.documentElement);
-    function colorVar(nombre, porDefecto) {
-      var valor = estiloRaiz.getPropertyValue(nombre).trim();
-      return valor || porDefecto;
-    }
+    // El PDF siempre usa los colores del tema claro (va sobre papel blanco), aunque el sitio esté en modo oscuro.
     function hexARgb(hex) {
       hex = hex.replace('#', '');
       return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
@@ -82,9 +78,9 @@
       doc.setTextColor(rgb[0], rgb[1], rgb[2]);
     }
 
-    var petroleo = colorVar('--petroleo', '#264B4A');
-    var textoSuave = colorVar('--texto-suave', '#6B6358');
-    var textoColor = colorVar('--texto', '#221E18');
+    var petroleo = '#264B4A';
+    var textoSuave = '#576564';
+    var textoColor = '#1E3A3A';
 
     var anchoPagina = doc.internal.pageSize.getWidth();
     var altoPagina = doc.internal.pageSize.getHeight();
