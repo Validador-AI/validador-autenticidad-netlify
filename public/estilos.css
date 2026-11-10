@@ -2339,197 +2339,121 @@ html { font-size: 90%; }
 .btn-tema:hover { color: var(--terracota); border-color: var(--terracota); background: var(--arena-claro); }
 .btn-tema:focus-visible { outline: 3px solid var(--terracota); outline-offset: 2px; }
 
-
 /* ==========================================================================
-   MODO OSCURO
+   MODO OSCURO: chocolate + tarjetas crema + petróleo
    Se activa con data-tema="oscuro" en <html> (lo pone /tema.js según la
    elección guardada). Si no hay elección, la página se ve en claro.
+   Idea: el fondo es chocolate oscuro, pero las tarjetas conservan los colores
+   de siempre del modo claro (crema con texto petróleo), y el petróleo aparece
+   en el menú, en el bloque de beneficios y en el pie.
    Para deshacerlo, borrá todo lo que está debajo de este comentario.
    ========================================================================== */
 
+/* 1) Colores de la "estructura" de la página (fondo, textos sueltos, secciones) */
 :root[data-tema="oscuro"] {
   color-scheme: dark;
 
-  /* Base cálida (carbón) en lugar de todo petróleo */
-  --fondo: #1B1815;
-  --superficie: #26221E;
-  --superficie-suave: #1F1B17;
-  --arena: #3A332C;
-  --arena-claro: #2B2621;
+  --fondo: #1A0F0A;
+  --superficie: #2A170E;
+  --superficie-suave: #211209;
+  --arena: #3A2214;
+  --arena-claro: #241309;
 
-  --linea: #3A332C;
-  --linea-fuerte: #4D443B;
+  --linea: #3D2415;
+  --linea-fuerte: #5A3A28;
 
-  --texto: #F0E9DE;
-  --texto-suave: #B5A999;
+  --texto: #F6EBDD;
+  --texto-suave: #C9B8A6;
 
-  /* Los "petróleo" se usan sobre todo como color de texto y de bordes: en oscuro pasan a tonos claros */
-  --petroleo: #E6DCCB;
-  --petroleo-oscuro: #F0E9DE;
-  --petroleo-suave: #5E908C;
-  --petroleo-medio: #234542;
+  --petroleo: #EFE3CF;
+  --petroleo-oscuro: #F6EBDD;
+  --petroleo-suave: #4FA39E;
+  --petroleo-medio: #17504E;
 
-  --hueso: #F0E9DE;
-  --hueso-suave: #2B2621;
-  --hueso-barra: rgba(27, 24, 21, 0.85);
+  --hueso: #F6EBDD;
+  --hueso-suave: #241309;
+  --hueso-barra: rgba(26, 15, 10, 0.85);
 
-  /* Terracota clara para textos y enlaces. Los botones mantienen #B84E2E (ver más abajo) */
-  --terracota: #E8845F;
-  --terracota-hover: #F09874;
-  --tono: #E8845F;
-  --tono-suave: #33241F;
+  --terracota: #E8703A;
+  --terracota-hover: #F08A5A;
+  --tono: #E8703A;
+  --tono-suave: #3A1F12;
 
   --alerta: #E0A04E;
   --alerta-suave: #33291A;
   --exito: #5FC79A;
   --exito-suave: #1B3027;
-  --peligro: #E8845F;
-  --peligro-suave: #3A241E;
+  --peligro: #F08A60;
+  --peligro-suave: #3A1F12;
 }
 
-/* ----- Ajustes automáticos: colores escritos a mano en el CSS original ----- */
-:where(:root[data-tema="oscuro"]) .sidebar-item:hover {
-  background: rgba(240, 233, 222, 0.14);
+/* 2) Tarjetas y cajas: vuelven a los colores del modo claro (crema, texto petróleo, botón terracota) */
+:root[data-tema="oscuro"] :is(.tarjeta, .tarjeta-beneficio, .faq details, .estado, .error, .pago-aviso, .exportar-aviso, .privacidad-caja, .aviso-recorte) {
+  --fondo: #E9DECD;
+  --superficie: #F5EFE7;
+  --superficie-suave: #E2D6C2;
+  --arena: #D9C6AF;
+  --arena-claro: #DFD2BD;
+  --linea: #D2C4AF;
+  --linea-fuerte: #BCAD97;
+  --texto: #1E3A3A;
+  --texto-suave: #576564;
+  --petroleo: #264B4A;
+  --petroleo-oscuro: #1E3A3A;
+  --petroleo-suave: #3A5C5A;
+  --hueso: #F5EFE7;
+  --hueso-suave: #E8DFD3;
+  --terracota: #B84E2E;
+  --terracota-hover: #9E3C1F;
+  --tono: #B84E2E;
+  --tono-suave: #FBECE8;
+  --alerta: #B8762D;
+  --alerta-suave: #FAF0E1;
+  --exito: #2D7A58;
+  --exito-suave: #E5F3EC;
+  --peligro: #B84E2E;
+  --peligro-suave: #FBECE8;
+  color: #1E3A3A;
 }
 
-:where(:root[data-tema="oscuro"]) .topbar-movil {
-  background: rgba(27, 24, 21, 0.92);
-  border-bottom: 1px solid rgba(240, 233, 222, 0.08);
-}
-
-:where(:root[data-tema="oscuro"]) .modo:hover span {
-  background: rgba(240, 233, 222, 0.08);
-}
-
-:where(:root[data-tema="oscuro"]) textarea::placeholder {
-  color: #A09484;
-}
-
-:where(:root[data-tema="oscuro"]) .chip-oscuro {
-  background: rgba(240, 233, 222, 0.08);
-  border-color: rgba(240, 233, 222, 0.2);
-}
-
-:where(:root[data-tema="oscuro"]) .chip-oscuro:hover {
-  background: rgba(240, 233, 222, 0.15);
-}
-
-:where(:root[data-tema="oscuro"]) .modal-cerrar:hover {
-  background: rgba(240, 233, 222, 0.08);
-}
-
-:where(:root[data-tema="oscuro"]) .modal-tab:not(.activo):hover {
-  background: rgba(240, 233, 222, 0.08);
-}
-
-:where(:root[data-tema="oscuro"]) .btn-toggle-password:hover {
-  background: rgba(240, 233, 222, 0.08);
-}
-
-:where(:root[data-tema="oscuro"]) .boton-principal {
-  background: #B84E2E;
-}
-
-:where(:root[data-tema="oscuro"]) .boton-principal:hover:not(:disabled) {
-  background: #9E3C1F;
-}
-
-:where(:root[data-tema="oscuro"]) .error {
-  border: 1px solid #6B3A2E;
-  color: #F2B8A4;
-}
-
-:where(:root[data-tema="oscuro"]) .medidor-marca {
-  border: 3px solid var(--superficie);
-}
-
-:where(:root[data-tema="oscuro"]) .copiar:hover {
-  background: #B84E2E;
-}
-
-:where(:root[data-tema="oscuro"]) .boton-exportar:hover {
-  background: #4D443B;
-}
-
-:where(:root[data-tema="oscuro"]) .comparacion-panel--humanizado {
-  border-color: rgba(240, 233, 222, 0.25);
-}
-
-:where(:root[data-tema="oscuro"]) .panel-resultado {
-  border-color: rgba(240, 233, 222, 0.25);
-}
-
-:where(:root[data-tema="oscuro"]) .paso {
-  background: rgba(240, 233, 222, 0.06);
-  border: 1px solid rgba(240, 233, 222, 0.12);
-}
-
-:where(:root[data-tema="oscuro"]) .pie-red:hover {
-  background: #B84E2E;
-}
-
-:where(:root[data-tema="oscuro"]) a.boton-principal {
-  background-color: #B84E2E;
-}
-
-:where(:root[data-tema="oscuro"]) a.boton-principal:hover {
-  background-color: #9E3C1F;
-}
-
-:where(:root[data-tema="oscuro"]) .uso-estado--premium {
-  border-color: #2F5E4B;
-}
-
-:where(:root[data-tema="oscuro"]) .uso-estado--agotado {
-  border-color: #6B5230;
-  color: #E8C48A;
-}
-
-:where(:root[data-tema="oscuro"]) .uso-limite {
-  border: 1px solid #6B5230;
-  color: #EBCB95;
-}
-
-:where(:root[data-tema="oscuro"]) .sidebar-bottom .sidebar-premium {
-  border: 1.5px solid rgba(240, 233, 222, .25);
-}
-
-:where(:root[data-tema="oscuro"]) .sidebar-bottom .sidebar-auth {
-  border: 1.5px solid rgba(240, 233, 222, .25);
-}
-
-:where(:root[data-tema="oscuro"]) .anuncio-pie:not(:empty)::before {
-  color: #A09484;
-}
-
-/* ----- Ajustes puntuales ----- */
-/* Menú lateral: el petróleo queda acá (y en el bloque de beneficios) como contrapunto a la base cálida */
+/* 3) Menú lateral: negro chocolate con petróleo en lo activo y en los botones */
 :root[data-tema="oscuro"] .sidebar {
-  --texto-suave: #B9C6C2;
-  --linea: #1F4543;
+  --arena: #14403F;
+  --linea: #2A1A10;
   --linea-fuerte: #2D5A56;
-  --arena: #1F4543;
-  background: #14302F;
-  border-right-color: #1F4543;
+  --texto-suave: #C9B8A6;
+  background: #0F0805;
+  border-right-color: #2A1A10;
+}
+:root[data-tema="oscuro"] .sidebar-item:hover { background: rgba(246, 235, 221, 0.10); }
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium,
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth {
+  background: #14403F;
+  border: 1.5px solid #1F5A57;
+}
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium:hover,
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth:hover { background: #1B5553; }
+
+/* Barra superior en el celular */
+:root[data-tema="oscuro"] .topbar-movil {
+  background: rgba(15, 8, 5, 0.92);
+  border-bottom: 1px solid rgba(246, 235, 221, 0.10);
 }
 
-/* Campos de escritura "hundidos" dentro de la tarjeta */
-:root[data-tema="oscuro"] .caja-escritura,
-:root[data-tema="oscuro"] .select-campo,
-:root[data-tema="oscuro"] .modal-tarjeta input[type="email"],
-:root[data-tema="oscuro"] .modal-tarjeta input[type="password"] { background: #171411; }
-
-/* Pie de página: más oscuro que el fondo y con una línea terracota arriba */
-:root[data-tema="oscuro"] .pie { background: #0F0D0B; border-top: 2px solid #B84E2E; }
+/* 4) Pie de página: petróleo profundo con una línea terracota arriba */
+:root[data-tema="oscuro"] .pie { background: #0A2527; border-top: 2px solid #E8703A; }
 :root[data-tema="oscuro"] .pie-columna-titulo,
 :root[data-tema="oscuro"] .pie-inferior,
 :root[data-tema="oscuro"] .pie-inferior p { color: #D9C6AF; }
+:root[data-tema="oscuro"] .pie-red:hover { background: #B84E2E; }
 
-/* Fondos que en claro usaban petróleo/hueso con texto del color opuesto */
-:root[data-tema="oscuro"] .step-icon { background: var(--arena); }
-:root[data-tema="oscuro"] .archivo-tipo { background: #3A5C5A; }
-:root[data-tema="oscuro"] .boton-secundario:hover { background: #4D443B; }
-:root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) { background: #9E3C1F; }
+/* 5) Detalles */
+:root[data-tema="oscuro"] .anuncio-pie:not(:empty)::before { color: #A89684; }
+:root[data-tema="oscuro"] .etiqueta-premium { background: #B84E2E; }
+:root[data-tema="oscuro"] .boton-principal,
+:root[data-tema="oscuro"] a.boton-principal { background: #B84E2E; }
+:root[data-tema="oscuro"] .boton-principal:hover:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal:hover { background: #9E3C1F; }
 
 /* Logo sobre pastilla hueso, para que la coma azul-grisácea se vea bien */
 :root[data-tema="oscuro"] .sidebar-logo-icono,
@@ -2538,70 +2462,4 @@ html { font-size: 90%; }
   padding: 3px;
   border-radius: 9px;
   background: #F5EFE7;
-}
-
-/* ----- Ajustes de estilos que viven dentro de cada página ----- */
-:root[data-tema="oscuro"] .error-boton--arena {
-  border-color: rgba(240, 233, 222, 0.35);
-}
-
-:root[data-tema="oscuro"] .error-boton--premium {
-  background: #B84E2E;
-}
-
-:root[data-tema="oscuro"] .error-boton--premium:hover {
-  background: #9E3C1F;
-}
-
-:root[data-tema="oscuro"] .plan-badge[data-plan="registrado"] {
-  background: rgba(240, 233, 222, 0.1);
-  border-color: rgba(240, 233, 222, 0.25);
-}
-
-:root[data-tema="oscuro"] .plan-badge[data-plan="premium"] {
-  border-color: #6B3A2E;
-}
-
-:root[data-tema="oscuro"] .pago-aviso {
-  border: 1.5px solid rgba(240, 233, 222, 0.3);
-}
-
-:root[data-tema="oscuro"] .etiqueta-premium {
-  background: #B84E2E;
-}
-
-:root[data-tema="oscuro"] .exportar-aviso {
-  border: 1.5px solid rgba(240, 233, 222, 0.3);
-}
-
-:root[data-tema="oscuro"] .precio-insignia {
-  background: #B84E2E;
-}
-
-:root[data-tema="oscuro"] .boton-principal.precio-boton-arena {
-  border-color: rgba(240, 233, 222, 0.35);
-}
-
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:link {
-  border-color: rgba(240, 233, 222, 0.35);
-}
-
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:visited {
-  border-color: rgba(240, 233, 222, 0.35);
-}
-
-:root[data-tema="oscuro"] .boton-principal.precio-boton-premium {
-  background: #B84E2E;
-}
-
-:root[data-tema="oscuro"] .boton-principal.precio-boton-premium:hover:not(:disabled) {
-  background: #9E3C1F;
-}
-
-:root[data-tema="oscuro"] .pago-periodo-btn {
-  border: 2px solid rgba(240, 233, 222, 0.25);
-}
-
-:root[data-tema="oscuro"] .pago-opcion {
-  border: 2px solid rgba(240, 233, 222, 0.25);
 }
