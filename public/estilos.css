@@ -2309,26 +2309,59 @@ html { font-size: 90%; }
 }
 
 /* ==========================================================================
+   BOTÓN DE TEMA (luna/sol)
+   ========================================================================== */
+/* ----- Botón de cambio de tema: chico, al lado de "V1.0 BETA" (se ve igual en claro y oscuro) ----- */
+.sidebar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 6px 14px 8px;
+}
+.sidebar-meta .badge-beta { margin: 0; }
+.btn-tema {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.btn-tema svg { width: 15px; height: 15px; pointer-events: none; }
+.btn-tema:hover { color: var(--terracota); border-color: var(--terracota); background: var(--arena-claro); }
+.btn-tema:focus-visible { outline: 3px solid var(--terracota); outline-offset: 2px; }
+
+
+/* ==========================================================================
    MODO OSCURO
    Se activa con data-tema="oscuro" en <html> (lo pone /tema.js según la
-   elección guardada o la configuración del sistema).
+   elección guardada). Si no hay elección, la página se ve en claro.
    Para deshacerlo, borrá todo lo que está debajo de este comentario.
    ========================================================================== */
 
 :root[data-tema="oscuro"] {
   color-scheme: dark;
 
-  --fondo: #12201F;
-  --superficie: #1B2D2C;
-  --superficie-suave: #223836;
-  --arena: #2B4442;
-  --arena-claro: #1F3432;
+  /* Base cálida (carbón) en lugar de todo petróleo */
+  --fondo: #1B1815;
+  --superficie: #26221E;
+  --superficie-suave: #1F1B17;
+  --arena: #3A332C;
+  --arena-claro: #2B2621;
 
-  --linea: #2D4442;
-  --linea-fuerte: #3F5B58;
+  --linea: #3A332C;
+  --linea-fuerte: #4D443B;
 
   --texto: #F0E9DE;
-  --texto-suave: #A9B8B5;
+  --texto-suave: #B5A999;
 
   /* Los "petróleo" se usan sobre todo como color de texto y de bordes: en oscuro pasan a tonos claros */
   --petroleo: #E6DCCB;
@@ -2337,8 +2370,8 @@ html { font-size: 90%; }
   --petroleo-medio: #234542;
 
   --hueso: #F0E9DE;
-  --hueso-suave: #223836;
-  --hueso-barra: rgba(18, 32, 31, 0.85);
+  --hueso-suave: #2B2621;
+  --hueso-barra: rgba(27, 24, 21, 0.85);
 
   /* Terracota clara para textos y enlaces. Los botones mantienen #B84E2E (ver más abajo) */
   --terracota: #E8845F;
@@ -2349,9 +2382,9 @@ html { font-size: 90%; }
   --alerta: #E0A04E;
   --alerta-suave: #33291A;
   --exito: #5FC79A;
-  --exito-suave: #17332A;
+  --exito-suave: #1B3027;
   --peligro: #E8845F;
-  --peligro-suave: #33241F;
+  --peligro-suave: #3A241E;
 }
 
 /* ----- Ajustes automáticos: colores escritos a mano en el CSS original ----- */
@@ -2360,7 +2393,7 @@ html { font-size: 90%; }
 }
 
 :where(:root[data-tema="oscuro"]) .topbar-movil {
-  background: rgba(18, 32, 31, 0.92);
+  background: rgba(27, 24, 21, 0.92);
   border-bottom: 1px solid rgba(240, 233, 222, 0.08);
 }
 
@@ -2369,7 +2402,7 @@ html { font-size: 90%; }
 }
 
 :where(:root[data-tema="oscuro"]) textarea::placeholder {
-  color: #8FA09D;
+  color: #A09484;
 }
 
 :where(:root[data-tema="oscuro"]) .chip-oscuro {
@@ -2415,7 +2448,7 @@ html { font-size: 90%; }
 }
 
 :where(:root[data-tema="oscuro"]) .boton-exportar:hover {
-  background: #3A5552;
+  background: #4D443B;
 }
 
 :where(:root[data-tema="oscuro"]) .comparacion-panel--humanizado {
@@ -2466,12 +2499,28 @@ html { font-size: 90%; }
 }
 
 :where(:root[data-tema="oscuro"]) .anuncio-pie:not(:empty)::before {
-  color: #8FA09D;
+  color: #A09484;
 }
 
 /* ----- Ajustes puntuales ----- */
-/* Pie de página: más oscuro que el fondo para que se distinga */
-:root[data-tema="oscuro"] .pie { background: #0D1817; }
+/* Menú lateral: el petróleo queda acá (y en el bloque de beneficios) como contrapunto a la base cálida */
+:root[data-tema="oscuro"] .sidebar {
+  --texto-suave: #B9C6C2;
+  --linea: #1F4543;
+  --linea-fuerte: #2D5A56;
+  --arena: #1F4543;
+  background: #14302F;
+  border-right-color: #1F4543;
+}
+
+/* Campos de escritura "hundidos" dentro de la tarjeta */
+:root[data-tema="oscuro"] .caja-escritura,
+:root[data-tema="oscuro"] .select-campo,
+:root[data-tema="oscuro"] .modal-tarjeta input[type="email"],
+:root[data-tema="oscuro"] .modal-tarjeta input[type="password"] { background: #171411; }
+
+/* Pie de página: más oscuro que el fondo y con una línea terracota arriba */
+:root[data-tema="oscuro"] .pie { background: #0F0D0B; border-top: 2px solid #B84E2E; }
 :root[data-tema="oscuro"] .pie-columna-titulo,
 :root[data-tema="oscuro"] .pie-inferior,
 :root[data-tema="oscuro"] .pie-inferior p { color: #D9C6AF; }
@@ -2479,7 +2528,7 @@ html { font-size: 90%; }
 /* Fondos que en claro usaban petróleo/hueso con texto del color opuesto */
 :root[data-tema="oscuro"] .step-icon { background: var(--arena); }
 :root[data-tema="oscuro"] .archivo-tipo { background: #3A5C5A; }
-:root[data-tema="oscuro"] .boton-secundario:hover { background: #3A5C5A; }
+:root[data-tema="oscuro"] .boton-secundario:hover { background: #4D443B; }
 :root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) { background: #9E3C1F; }
 
 /* Logo sobre pastilla hueso, para que la coma azul-grisácea se vea bien */
@@ -2556,6 +2605,3 @@ html { font-size: 90%; }
 :root[data-tema="oscuro"] .pago-opcion {
   border: 2px solid rgba(240, 233, 222, 0.25);
 }
-
-/* ----- Botón de cambio de tema (menú lateral) ----- */
-.sidebar-bottom .sidebar-tema svg { pointer-events: none; }

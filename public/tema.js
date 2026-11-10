@@ -1,7 +1,7 @@
 /* =============================================================================
    tema.js — Botón de modo claro / oscuro
    =============================================================================
-   · Agrega "Modo oscuro" / "Modo claro" (luna / sol) en el menú lateral.
+   · Agrega un botón chico (luna / sol) en el menú lateral, al lado de "V1.0 BETA".
    · Recuerda la elección de la persona (localStorage).
    · Si nunca eligió, la página se ve en claro (los colores de siempre), aunque
      el sistema esté en modo oscuro. El oscuro solo se activa con el botón.
@@ -32,8 +32,10 @@
   function pintarBoton() {
     if (!boton) return;
     var oscuro = temaActual() === 'oscuro';
-    boton.innerHTML = (oscuro ? SOL : LUNA) + '<span>' + (oscuro ? 'Modo claro' : 'Modo oscuro') + '</span>';
-    boton.setAttribute('aria-label', oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    var texto = oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+    boton.innerHTML = oscuro ? SOL : LUNA;
+    boton.setAttribute('aria-label', texto);
+    boton.setAttribute('title', texto);
   }
 
   function aplicar(tema, guardar) {
@@ -56,18 +58,30 @@
   });
 
   function crearBoton() {
-    var contenedor = document.querySelector('.sidebar-bottom');
-    if (!contenedor || document.getElementById('btn-tema')) return;
+    if (document.getElementById('btn-tema')) return;
+    var menu = document.querySelector('.sidebar');
+    if (!menu) return;
+
     boton = document.createElement('button');
     boton.type = 'button';
     boton.id = 'btn-tema';
-    boton.className = 'sidebar-item sidebar-auth sidebar-tema';
+    boton.className = 'btn-tema';
     boton.addEventListener('click', function () {
       aplicar(temaActual() === 'oscuro' ? 'claro' : 'oscuro', true);
     });
-    // Queda justo antes de "Iniciar sesión / Mi cuenta"
-    var botonCuenta = document.getElementById('btn-auth');
-    contenedor.insertBefore(boton, botonCuenta && botonCuenta.parentNode === contenedor ? botonCuenta : null);
+
+    // Va en la misma fila que la etiqueta "V1.0 BETA" (a la derecha)
+    var etiqueta = menu.querySelector('.badge-beta');
+    var fila = document.createElement('div');
+    fila.className = 'sidebar-meta';
+    if (etiqueta && etiqueta.parentNode === menu) {
+      menu.insertBefore(fila, etiqueta);
+      fila.appendChild(etiqueta);
+    } else {
+      // Si una página no tuviera la etiqueta, queda arriba de todo en el menú
+      menu.insertBefore(fila, menu.firstChild);
+    }
+    fila.appendChild(boton);
     pintarBoton();
   }
 
