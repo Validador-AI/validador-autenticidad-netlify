@@ -67,6 +67,59 @@
     return msg;
   }
 
+  // Si se aprieta "Iniciar sesión" antes de que Cloudflare termine de verificar
+  // (pasa sobre todo la primera vez que se abre el formulario), en vez de mostrar
+  // un error se espera unos segundos y se envía solo apenas el código esté listo.
+  var esperando = false;
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || form.id !== 'form-auth') return;
+    if (token) return;       // el código ya está: sigue el flujo normal
+    if (esperando) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    esperando = true;
+    preparar();
+
+    var btn = document.getElementById('btn-auth-submit');
+    var err = document.getElementById('auth-error');
+    if (err) err.hidden = true;
+    if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+
+    function restaurarBoton() {
+      if (btn && btn.textContent === 'Verificando...') {
+        var tab = document.getElementById('tab-registro');
+        var esRegistro = tab && tab.classList.contains('activo');
+        btn.textContent = esRegistro ? 'Crear cuenta' : 'Iniciar sesión';
+      }
+      if (btn) btn.disabled = false;
+    }
+
+    var intentos = 0;
+    var timer = setInterval(function () {
+      intentos++;
+      if (token) {
+        clearInterval(timer);
+        esperando = false;
+        restaurarBoton();
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+      } else if (intentos >= 40) { // unos 10 segundos
+        clearInterval(timer);
+        esperando = false;
+        restaurarBoton();
+        if (err) {
+          err.textContent = 'No pudimos verificar que sos una persona. Recargá la página y probá de nuevo. Si usás un bloqueador de anuncios, desactivalo para este sitio.';
+          err.hidden = false;
+        }
+      }
+    }, 250);
+  }, true);
+
   window.PTCaptcha = {
     preparar: preparar,
     reiniciar: reiniciar,
