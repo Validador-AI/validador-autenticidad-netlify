@@ -2463,3 +2463,15 @@ html { font-size: 90%; }
   border-radius: 9px;
   background: #F5EFE7;
 }
+
+/* Que el campo de contraseña conserve su estilo cuando se muestra con el ojito */
+.modal-tarjeta #auth-password {
+  width: 100%;
+  padding: 11px 42px 11px 13px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 0.95rem;
+}
