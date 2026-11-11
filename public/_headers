@@ -40,6 +40,9 @@ https://ads.purotexto.com/*
 /exportar-pdf.js
   Cache-Control: no-cache
   Content-Type: text/javascript; charset=utf-8
+/supabase-js.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
 /sw.js
   Cache-Control: no-cache
   Content-Type: text/javascript; charset=utf-8
