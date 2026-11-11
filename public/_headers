@@ -43,6 +43,9 @@ https://ads.purotexto.com/*
 /supabase-js.js
   Cache-Control: no-cache
   Content-Type: text/javascript; charset=utf-8
+/captcha-auth.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
 /sw.js
   Cache-Control: no-cache
   Content-Type: text/javascript; charset=utf-8

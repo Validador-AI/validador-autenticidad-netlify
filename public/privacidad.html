@@ -26,6 +26,7 @@
 
   <!-- Cliente de Supabase (autenticación) -->
   <script src="/supabase-js.js"></script>
+  <script src="/captcha-auth.js" defer></script>
 
   <link rel="stylesheet" href="estilos.css">
   <!-- App instalable (PWA) -->
@@ -281,7 +282,7 @@
           <div class="campo">
             <label class="campo-titulo" for="auth-password">Contraseña</label>
             <div class="campo-password-wrap">
-              <input type="password" id="auth-password" required minlength="6" autocomplete="current-password">
+              <input type="password" id="auth-password" required minlength="8" autocomplete="current-password">
               <button type="button" id="btn-toggle-password" class="btn-toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
                 <svg class="icono-ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
@@ -294,6 +295,8 @@
               </button>
             </div>
           </div>
+
+          <div id="auth-captcha" style="display:flex;justify-content:center;"></div>
 
           <p id="auth-error" class="modal-error" hidden></p>
 
@@ -470,6 +473,7 @@
             }
           }
           modal.hidden = false;
+          if (window.PTCaptcha) window.PTCaptcha.preparar();
           document.body.style.overflow = 'hidden';
         }
         function cerrarModal() {
@@ -496,8 +500,15 @@
             mostrarError('Completá tu email y tu contraseña.');
             return;
           }
-          if (password.length < 6) {
-            mostrarError('La contraseña tiene que tener al menos 6 caracteres.');
+          if (modoActual === 'registro' && (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password))) {
+            mostrarError('La contraseña tiene que tener al menos 8 caracteres, con letras y números.');
+            return;
+          }
+
+          var captchaToken = (window.PTCaptcha && window.PTCaptcha.token()) || '';
+          if (!captchaToken) {
+            if (window.PTCaptcha) window.PTCaptcha.preparar();
+            mostrarError('Estamos verificando que sos una persona. Esperá un segundo y probá de nuevo.');
             return;
           }
 
@@ -506,12 +517,12 @@
           btnSubmit.textContent = 'Un momento...';
 
           var promesa = modoActual === 'login'
-            ? supabaseClient.auth.signInWithPassword({ email: email, password: password })
-            : supabaseClient.auth.signUp({ email: email, password: password });
+            ? supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: captchaToken } })
+            : supabaseClient.auth.signUp({ email: email, password: password, options: { captchaToken: captchaToken } });
 
           promesa.then(function (resultado) {
             if (resultado.error) {
-              mostrarError(resultado.error.message || 'No pudimos completar la operación.');
+              mostrarError((window.PTCaptcha ? window.PTCaptcha.traducir(resultado.error.message) : resultado.error.message) || 'No pudimos completar la operación.');
               return;
             }
             if (modoActual === 'registro' && !resultado.data.session) {
@@ -525,6 +536,7 @@
           }).catch(function () {
             mostrarError('No pudimos conectar con el servidor. Probá de nuevo en un momento.');
           }).finally(function () {
+            if (window.PTCaptcha) window.PTCaptcha.reiniciar();
             btnSubmit.disabled = false;
             btnSubmit.textContent = textoOriginal;
           });
