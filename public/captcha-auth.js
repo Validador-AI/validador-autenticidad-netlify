@@ -11,6 +11,7 @@
   var widgetId = null;
   var token = '';
   var cargando = false;
+  var ultimoError = '';   // DIAGNÓSTICO: último código de error que informó Turnstile
 
   function montar() {
     var cont = document.getElementById('auth-captcha');
@@ -18,12 +19,13 @@
     try {
       widgetId = window.turnstile.render(cont, {
         sitekey: SITE_KEY,
-        appearance: 'interaction-only', // solo se ve si hace falta que la persona interactúe
+        appearance: 'always', // TEMPORAL para diagnóstico: el widget se ve siempre. Después se vuelve a 'interaction-only'
         theme: 'light',
         language: 'es',
-        callback: function (t) { token = t; },
+        callback: function (t) { token = t; ultimoError = ''; },
         'expired-callback': function () { token = ''; },
-        'error-callback': function () { token = ''; }
+        'error-callback': function (codigo) { token = ''; ultimoError = 'error ' + String(codigo || '?'); },
+        'timeout-callback': function () { token = ''; ultimoError = 'timeout'; }
       });
     } catch (e) {
       widgetId = null;
@@ -70,6 +72,13 @@
   // Si se aprieta "Iniciar sesión" antes de que Cloudflare termine de verificar
   // (pasa sobre todo la primera vez que se abre el formulario), en vez de mostrar
   // un error se espera unos segundos y se envía solo apenas el código esté listo.
+  function diagnostico(segundos) {
+    return ' [Diagnóstico: script de Cloudflare ' + (window.turnstile ? 'cargado' : 'NO cargado') +
+      ', widget ' + (widgetId !== null ? 'creado' : 'NO creado') +
+      (ultimoError ? ', ' + ultimoError : '') +
+      ', esperé ' + segundos + ' s]';
+  }
+
   var esperando = false;
   document.addEventListener('submit', function (e) {
     var form = e.target;
@@ -97,6 +106,7 @@
     }
 
     var intentos = 0;
+    var inicio = Date.now();
     var timer = setInterval(function () {
       intentos++;
       if (token) {
@@ -108,12 +118,12 @@
         } else {
           form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
         }
-      } else if (intentos >= 40) { // unos 10 segundos
+      } else if (intentos >= 120) { // unos 30 segundos
         clearInterval(timer);
         esperando = false;
         restaurarBoton();
         if (err) {
-          err.textContent = 'No pudimos verificar que sos una persona. Recargá la página y probá de nuevo. Si usás un bloqueador de anuncios, desactivalo para este sitio.';
+          err.textContent = 'No pudimos verificar que sos una persona. Recargá la página y probá de nuevo. Si usás un bloqueador de anuncios, desactivalo para este sitio.' + diagnostico(Math.round((Date.now() - inicio) / 1000));
           err.hidden = false;
         }
       }
