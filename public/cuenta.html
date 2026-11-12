@@ -1006,6 +1006,16 @@
           detalle += ' · Tu Premium llega hasta el ' + premiumHasta.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
         }
         elPlanDetalle.textContent = detalle;
+
+        // Si es Premium, el botón del menú deja de decir "Hazte Premium"
+        if (esPremium) {
+          var itemsPremium = document.querySelectorAll('.sidebar-premium');
+          for (var i = 0; i < itemsPremium.length; i++) {
+            var textoPremium = itemsPremium[i].querySelector('span');
+            if (textoPremium) textoPremium.textContent = 'Tu plan Premium';
+            itemsPremium[i].setAttribute('href', 'cuenta.html');
+          }
+        }
       }
 
       /* ---------- Carga de datos ---------- */

@@ -187,7 +187,20 @@
   /* ------------------------------------------------------------------------
      Interfaz: cartel "Te quedan X análisis hoy" y aviso de límite alcanzado
      ------------------------------------------------------------------------ */
+  // Si la persona es Premium, el botón del menú deja de ofrecer "Hazte Premium"
+  // y pasa a decir "Tu plan Premium" (lleva a Mi cuenta).
+  function actualizarMenuPremium() {
+    if (!estado.premium) return;
+    var items = document.querySelectorAll('.sidebar-premium');
+    for (var i = 0; i < items.length; i++) {
+      var texto = items[i].querySelector('span');
+      if (texto) texto.textContent = 'Tu plan Premium';
+      items[i].setAttribute('href', 'cuenta.html');
+    }
+  }
+
   function pintarBanner() {
+    actualizarMenuPremium();
     if (!ui.banner) return;
 
     if (!estado.listo || estado.error) {
