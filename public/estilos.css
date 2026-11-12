@@ -2475,3 +2475,56 @@ html { font-size: 90%; }
   font-family: var(--fuente);
   font-size: 0.95rem;
 }
+
+/* ==========================================================================
+   MODO OSCURO: arreglo de textos que se perdían
+   Pegá este bloque COMPLETO al final de estilos.css.
+   Para volver atrás, borrá todo lo que está entre este comentario y el final.
+   ========================================================================== */
+
+/* "¿Cómo funciona?": las tarjetas de los 3 pasos vuelven a ser crema,
+   como el resto de las tarjetas del modo oscuro */
+:root[data-tema="oscuro"] .paso {
+  background: var(--superficie);
+  border-color: var(--linea);
+}
+
+/* Aviso de privacidad de la página principal: va directo sobre el fondo oscuro,
+   así que usa colores claros (en las demás páginas está dentro de una tarjeta crema y no se toca) */
+html:root[data-tema="oscuro"] body main > .privacidad-caja {
+  --texto: #F6EBDD;
+  --texto-suave: #C9B8A6;
+  --petroleo: #EFE3CF;
+  --petroleo-oscuro: #F6EBDD;
+  --terracota: #E8703A;
+  --linea: #3D2415;
+  --linea-fuerte: #5A3A28;
+  color: #F6EBDD;
+}
+
+/* Demo ("Ver cómo funciona"): el recuadro vuelve a ser crema, para que se lea el texto de ejemplo */
+:root[data-tema="oscuro"] .demo-mini-editor {
+  background: var(--superficie);
+}
+
+/* Botón "Ver cómo funciona": contorno petróleo sobre la tarjeta crema */
+:root[data-tema="oscuro"] .demo-play-btn.boton-principal {
+  background: transparent;
+  color: var(--petroleo);
+  border-color: var(--petroleo);
+}
+:root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) {
+  background: var(--petroleo);
+  color: var(--hueso);
+}
+
+/* Botón de arena del plan (Precios): fondo arena con texto oscuro */
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena,
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:hover {
+  background: var(--arena);
+}
+
+/* Enlaces dentro de tarjetas y preguntas frecuentes: terracota en vez del lila del navegador */
+:root[data-tema="oscuro"] :is(.tarjeta, .tarjeta-beneficio, .faq details, .estado, .error, .pago-aviso, .exportar-aviso, .aviso-recorte) a:not([class]) {
+  color: var(--terracota);
+}
