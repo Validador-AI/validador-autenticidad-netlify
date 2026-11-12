@@ -137,42 +137,52 @@
       <h1 class="seccion-titulo">Política de Privacidad</h1>
       <p class="prosa-fecha">Última actualización: Noviembre de 2026</p>
 
-      <div class="error" role="note" style="margin-top: 0; margin-bottom: 28px;">
-        <strong>Borrador — falta tu revisión</strong>
-        <span>Este texto es un punto de partida redactado a partir de lo que ya decimos en el resto del sitio (que los textos no se guardan, el login con Supabase, el uso de Gemini, etc.). No es un documento legal validado. Revisalo, corregilo y, si hace falta, confirmalo con alguien con conocimiento legal antes de considerarlo definitivo.</span>
-      </div>
-
       <div class="prosa">
-        <p>En PuroTexto nos importa ser claros sobre qué datos manejamos y para qué. Esta política explica qué información recopilamos cuando usás el sitio y las herramientas.</p>
+        <p>En PuroTexto nos importa ser claros sobre qué datos manejamos y para qué. Esta política explica qué información recopilamos cuando usás el sitio y las herramientas, con quién la compartimos y qué podés hacer vos.</p>
 
         <h2>1. Los textos que analizás</h2>
-        <p>Cuando pegás un texto en cualquiera de nuestras herramientas (Detector de IA, Parafraseador, Resumen, Traductor, Verificador de Gramática, Comparación de Textos), ese texto se envía a Google (Gemini) únicamente para procesarlo y devolverte un resultado. <strong>No guardamos el contenido de tus textos en nuestros servidores.</strong> Se procesan durante la consulta y se descartan.</p>
+        <p>Cuando pegás un texto en cualquiera de nuestras herramientas (Detector de IA, Parafraseador, Resumen, Traductor, Verificador de Gramática, Comparación de Textos), ese texto se envía a Google (Gemini) para procesarlo y devolverte un resultado. Con los planes gratuitos (sin cuenta o con cuenta gratuita) usamos el servicio gratuito de la API de Gemini. Según las condiciones de ese servicio, Google puede usar los textos y los resultados para mejorar sus productos, y personas revisoras pueden leerlos (Google los desconecta de tu cuenta antes de que los vean). Por eso te pedimos que no pegues información sensible, confidencial ni datos personales de terceros.</p>
+        <ul>
+          <li><strong>Si no tenés cuenta:</strong> no guardamos tu texto. Se procesa durante la consulta y se descarta.</li>
+          <li><strong>Si tenés cuenta:</strong> el Detector de IA guarda en tu historial el texto que analizaste y su resultado (puntaje, veredicto y frases señaladas), para que puedas consultarlo en «Mi cuenta». Podés borrar cada análisis cuando quieras desde ahí. Las otras herramientas no guardan tus textos.</li>
+        </ul>
 
         <h2>2. Datos de tu cuenta</h2>
-        <p>Si creás una cuenta para iniciar sesión, guardamos tu email y, si elegís ingresar con Google, la información básica de perfil que Google comparte para la autenticación (nombre y email). Usamos Supabase como proveedor de autenticación. No compartimos estos datos con terceros salvo que la ley lo exija.</p>
+        <p>Si creás una cuenta, guardamos tu email y tu plan (Gratuito, Registrado o Premium, con la fecha de vencimiento si corresponde). Si elegís ingresar con Google, recibimos la información básica de perfil que Google comparte para la autenticación (nombre y email). Usamos Supabase como proveedor de autenticación y de base de datos. Si te registrás con email y contraseña, la contraseña la maneja Supabase y se guarda cifrada: nosotros no podemos verla.</p>
 
-        <h2>3. Qué NO hacemos</h2>
+        <h2>3. Pagos</h2>
+        <p>El plan Premium se paga con tarjeta a través de Lemon Squeezy (en dólares) o con Mercado Pago (en pesos). El pago se realiza en el sitio de cada proveedor: <strong>nosotros no vemos ni guardamos el número de tu tarjeta ni tus datos bancarios.</strong> Sí guardamos un registro mínimo de cada pago (proveedor, número de referencia, tipo de evento, monto y moneda) asociado a tu cuenta, para activar y administrar tu Premium. Cada proveedor trata tus datos de pago según su propia política de privacidad.</p>
+
+        <h2>4. Límites de uso y seguridad</h2>
+        <p>Para aplicar los límites diarios de cada plan contamos cuántos análisis hacés por cuenta. Si no tenés cuenta, usamos una versión codificada (un «hash») de tu dirección IP, no la dirección en sí. Al iniciar sesión o registrarte usamos Cloudflare Turnstile, un sistema que verifica que quien usa el formulario no sea un programa automático; para hacerlo puede analizar información técnica de tu navegador y tu dirección IP.</p>
+
+        <h2>5. Qué NO hacemos</h2>
         <ul>
           <li>No vendemos tus datos ni tus textos a terceros.</li>
           <li>No usamos tus textos para entrenar modelos de IA propios.</li>
           <li>No compartimos tus textos ni los datos de tu cuenta con anunciantes.</li>
         </ul>
 
-        <h2 id="cookies">4. Cookies</h2>
-        <p>PuroTexto usa almacenamiento local del navegador (cookies o similares) para mantener tu sesión iniciada y recordar preferencias básicas de uso del sitio. Si no tenés el plan Premium, mostramos publicidad de terceros (Adsterra), que puede usar cookies o tecnologías similares para mostrar los anuncios. Los anuncios se cargan aislados del resto del sitio: no tienen acceso a tus textos ni a tu cuenta. Los usuarios Premium no ven publicidad y a ellos no se les carga ningún código publicitario.</p>
+        <h2 id="cookies">6. Cookies y almacenamiento local</h2>
+        <p>PuroTexto usa almacenamiento local del navegador (cookies o similares) para mantener tu sesión iniciada, recordar preferencias básicas y, si instalás el sitio como aplicación, guardar archivos para que cargue más rápido y funcione mejor sin conexión. Si no tenés el plan Premium, mostramos publicidad de terceros (Adsterra), que puede usar cookies o tecnologías similares para mostrar los anuncios. Los anuncios se cargan aislados del resto del sitio: no tienen acceso a tus textos ni a tu cuenta. Los usuarios Premium no ven publicidad y a ellos no se les carga ningún código publicitario.</p>
 
-        <h2>5. Servicios de terceros que usamos</h2>
+        <h2>7. Servicios de terceros que usamos</h2>
         <ul>
           <li><strong>Google Gemini</strong>, para procesar los textos que analizás.</li>
-          <li><strong>Supabase</strong>, para el inicio de sesión y la gestión de cuentas.</li>
-          <li><strong>Cloudflare</strong>, para alojar el sitio y las funciones del servidor.</li>
+          <li><strong>Google (inicio de sesión)</strong>, si elegís ingresar con tu cuenta de Google.</li>
+          <li><strong>Supabase</strong>, para el inicio de sesión, las cuentas y el historial.</li>
+          <li><strong>Cloudflare</strong>, para alojar el sitio y las funciones del servidor, y para verificar a las personas con Turnstile.</li>
+          <li><strong>Lemon Squeezy</strong> y <strong>Mercado Pago</strong>, para procesar los pagos del plan Premium.</li>
           <li><strong>Adsterra</strong>, para mostrar publicidad a quienes no son Premium.</li>
         </ul>
 
-        <h2>6. Tus derechos</h2>
-        <p>Podés pedirnos en cualquier momento que te digamos qué datos de cuenta tenemos sobre vos, o que los eliminemos, escribiéndonos a <a href="contacto.html">hola@purotexto.com</a>.</p>
+        <h2>8. Cuánto tiempo guardamos tus datos</h2>
+        <p>Tu historial de análisis se conserva hasta que lo borres o elimines tu cuenta. Los datos de tu cuenta se conservan mientras la mantengas. Los registros de pagos se conservan el tiempo necesario para cumplir obligaciones legales y contables.</p>
 
-        <h2>7. Cambios a esta política</h2>
+        <h2>9. Tus derechos</h2>
+        <p>Podés pedirnos en cualquier momento que te digamos qué datos tenemos sobre vos, que los corrijamos o que eliminemos tu cuenta y tus datos, escribiéndonos a <a href="contacto.html">hola@purotexto.com</a>. Si estás en Argentina, la Ley 25.326 de Protección de los Datos Personales te reconoce los derechos de acceso, rectificación y supresión, y podés presentar reclamos ante la Agencia de Acceso a la Información Pública.</p>
+
+        <h2>10. Cambios a esta política</h2>
         <p>Podemos actualizar esta política a medida que el sitio crezca. Si hacemos cambios importantes, lo vamos a indicar en esta misma página.</p>
 
         <p>Contacto: <a href="contacto.html">hola@purotexto.com</a></p>
