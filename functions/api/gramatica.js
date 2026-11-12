@@ -351,6 +351,14 @@ function resumenDeUso(cupo) {
 // Cloudflare Pages ejecuta esta función cada vez que alguien visita /api/gramatica.
 // "context" trae, entre otras cosas: request (el pedido) y env (las variables de
 // entorno y secretos).
+// Países donde las condiciones de la API de Gemini exigen usar el servicio pago:
+// Espacio Económico Europeo (UE + Islandia, Liechtenstein y Noruega), Reino Unido y Suiza.
+const PAISES_SERVICIO_PAGO = new Set([
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT',
+  'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
+  'IS', 'LI', 'NO', 'GB', 'CH',
+]);
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -460,14 +468,19 @@ export async function onRequest(context) {
       maximo = maximoDeCaracteres(tipoCuenta);
 
       // Dos claves de Gemini: la gratuita (GEMINI_API_KEY) sirve para anónimos y
-      // registrados; Premium usa la paga (GEMINI_API_KEY_PREMIUM) si está cargada.
-      // Mientras no exista la variable, Premium sigue con la gratuita (y queda un aviso en los logs).
-      if (tipoCuenta === 'premium') {
-        if (env.GEMINI_API_KEY_PREMIUM) {
-          apiKey = env.GEMINI_API_KEY_PREMIUM;
-        } else {
-          console.warn('Falta GEMINI_API_KEY_PREMIUM: este análisis Premium usa la clave gratuita.');
+      // registrados; la paga (GEMINI_API_KEY_PREMIUM) se usa para Premium y para quienes
+      // entran desde países donde las condiciones de Google exigen el servicio pago.
+      // Si hace falta la clave paga y no está cargada, se frena el pedido: NUNCA se cae a la gratuita.
+      const pais = String((request.cf && request.cf.country) || '').toUpperCase();
+      const requierePaga = tipoCuenta === 'premium' || PAISES_SERVICIO_PAGO.has(pais);
+      if (requierePaga) {
+        if (!env.GEMINI_API_KEY_PREMIUM) {
+          console.error('Falta GEMINI_API_KEY_PREMIUM y este pedido necesita el servicio pago de Gemini.');
+          return responder(503, {
+            error: 'El servicio no está disponible en este momento. Probá de nuevo más tarde.',
+          });
         }
+        apiKey = env.GEMINI_API_KEY_PREMIUM;
       }
     } catch (e) {
       console.error('No se pudo verificar la cuenta:', e.message);
