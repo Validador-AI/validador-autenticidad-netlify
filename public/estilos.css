@@ -2512,11 +2512,7 @@ html { font-size: 90%; }
 :root[data-tema="oscuro"] .boton-principal.precio-boton-arena,
 :root[data-tema="oscuro"] a.boton-principal.precio-boton-arena,
 :root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:link,
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:visited,
-:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:hover:not(:disabled),
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:hover,
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:focus,
-:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:active {
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:visited {
   background: var(--arena-solida);
   color: #1E3A3A !important;
   border-color: transparent;
@@ -2673,6 +2669,160 @@ html { font-size: 90%; }
 /* Botón de tema (luna/sol) */
 :root[data-tema="oscuro"] .btn-tema { border-color: rgba(217, 198, 175, 0.4); color: var(--arena-solida); }
 :root[data-tema="oscuro"] .btn-tema:hover { background: rgba(232, 112, 63, 0.16); }
+
+
+/* ==========================================================================
+   EFECTOS (hover, foco y "apretado") + más petróleo para que no sea todo chocolate
+   ========================================================================== */
+
+/* Fondo con más petróleo: tres resplandores (terracota arriba, petróleo a los lados) */
+:root[data-tema="oscuro"] body {
+  background:
+    radial-gradient(1000px 600px at 92% -8%, rgba(232, 112, 63, 0.22), transparent 62%),
+    radial-gradient(900px 720px at -6% 42%, rgba(63, 119, 116, 0.34), transparent 62%),
+    radial-gradient(900px 620px at 104% 102%, rgba(63, 119, 116, 0.28), transparent 60%),
+    #19110D;
+  background-attachment: fixed;
+}
+
+/* Tarjetas: arena + una esquina de petróleo */
+:root[data-tema="oscuro"] :is(.tarjeta, .paso, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
+  background: linear-gradient(155deg, rgba(217, 198, 175, 0.12) 0%, rgba(63, 119, 116, 0.11) 100%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+/* Tarjetas que se levantan y brillan al pasar el mouse */
+:root[data-tema="oscuro"] :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
+  transform: translateY(-5px);
+  border-color: rgba(232, 112, 63, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 208, 0.10),
+    0 22px 48px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(232, 112, 63, 0.18),
+    0 0 36px rgba(232, 112, 63, 0.12);
+}
+:root[data-tema="oscuro"] .precio-tarjeta--premium:hover {
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.45), 0 0 44px rgba(232, 112, 63, 0.28);
+}
+:root[data-tema="oscuro"] .tarjeta-beneficio:hover {
+  transform: translateY(-6px);
+  background: rgba(26, 15, 10, 0.5);
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.5), 0 0 30px rgba(140, 192, 186, 0.16);
+}
+
+/* Cuadro de texto: se enciende al escribir */
+:root[data-tema="oscuro"] .entrada:focus-within {
+  border-color: rgba(232, 112, 63, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 208, 0.08),
+    0 0 0 4px rgba(232, 112, 63, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Pestañas "Pegar texto / Subir archivo" y las de la ventana de acceso */
+:root[data-tema="oscuro"] .modos { background: rgba(26, 15, 10, 0.5); border: 1px solid rgba(217, 198, 175, 0.16); }
+:root[data-tema="oscuro"] .modo span { color: #CFBFA9; }
+:root[data-tema="oscuro"] .modo:hover span {
+  background: rgba(63, 119, 116, 0.38);
+  color: var(--hueso);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(140, 192, 186, 0.35);
+  transform: translateY(-1px);
+}
+:root[data-tema="oscuro"] .modo input:checked + span {
+  background: linear-gradient(135deg, rgba(232, 112, 63, 0.30), rgba(232, 112, 63, 0.14));
+  color: var(--hueso);
+  box-shadow: inset 0 -2px 0 var(--terracota), 0 4px 14px rgba(232, 112, 63, 0.18);
+}
+:root[data-tema="oscuro"] .modo input:checked:hover + span {
+  background: linear-gradient(135deg, rgba(232, 112, 63, 0.40), rgba(232, 112, 63, 0.20));
+  transform: none;
+}
+:root[data-tema="oscuro"] .modo input:focus-visible + span { outline: 2px solid var(--terracota); outline-offset: 2px; }
+:root[data-tema="oscuro"] .modal-tab:not(.activo):hover { background: rgba(63, 119, 116, 0.38); color: var(--hueso); }
+
+/* Menú lateral: al pasar el mouse se enciende en petróleo, el texto y el ícono pasan a terracota claro */
+:root[data-tema="oscuro"] .sidebar-item { transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease; }
+:root[data-tema="oscuro"] .sidebar-item:not(.activo):hover {
+  background: linear-gradient(90deg, rgba(63, 119, 116, 0.50), rgba(63, 119, 116, 0.12));
+  border-left-color: rgba(232, 112, 63, 0.65);
+  color: #F6A27C;
+  transform: translateX(3px);
+}
+:root[data-tema="oscuro"] .sidebar-item:not(.activo):hover svg { color: #F6A27C; }
+:root[data-tema="oscuro"] .sidebar-item.activo {
+  background: linear-gradient(90deg, rgba(232, 112, 63, 0.30), rgba(232, 112, 63, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(232, 112, 63, 0.25);
+}
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth:hover {
+  background: rgba(63, 119, 116, 0.42);
+  border-color: rgba(140, 192, 186, 0.6);
+  transform: translateY(-1px);
+}
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium:hover { box-shadow: 0 8px 22px rgba(232, 112, 63, 0.38); transform: translateY(-1px); }
+
+/* Botones: se levantan al pasar el mouse y se hunden al apretar */
+:root[data-tema="oscuro"] .boton-principal:hover:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal:hover { transform: translateY(-2px); }
+:root[data-tema="oscuro"] .boton-principal:active:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal:active { transform: translateY(0) scale(0.98); box-shadow: 0 3px 10px rgba(232, 112, 63, 0.3); }
+
+/* Precios: "Probar gratis" y "Crear cuenta" pasan de arena a petróleo claro con borde y brillo */
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:hover:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:hover,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:focus-visible {
+  background: linear-gradient(135deg, #4F8E8A, #3F7774);
+  color: #FFF !important;
+  border-color: rgba(190, 225, 219, 0.7);
+  box-shadow: 0 10px 26px rgba(63, 119, 116, 0.5);
+  transform: translateY(-3px);
+}
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:active:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:active {
+  background: #356A67;
+  color: #FFF !important;
+  transform: translateY(0) scale(0.98);
+}
+
+/* Chips, copiar, exportar, secundarios y el botón de tema */
+:root[data-tema="oscuro"] :is(.chip, .chip-oscuro, .copiar, .boton-exportar, .boton-secundario, .btn-limpiar, .btn-tema) {
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+:root[data-tema="oscuro"] :is(.chip, .chip-oscuro):hover {
+  background: rgba(63, 119, 116, 0.42);
+  border-color: rgba(140, 192, 186, 0.7);
+  color: var(--hueso);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+:root[data-tema="oscuro"] :is(.boton-exportar, .boton-secundario):hover {
+  background: rgba(63, 119, 116, 0.42);
+  border-color: rgba(140, 192, 186, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+:root[data-tema="oscuro"] :is(.chip, .chip-oscuro, .copiar, .boton-exportar, .boton-secundario):active { transform: translateY(0) scale(0.98); }
+:root[data-tema="oscuro"] .zona:hover { border-color: var(--terracota); box-shadow: 0 0 0 4px rgba(232, 112, 63, 0.12); }
+:root[data-tema="oscuro"] .btn-tema:hover { transform: rotate(18deg); }
+
+/* Preguntas frecuentes */
+:root[data-tema="oscuro"] .faq details:hover {
+  border-color: rgba(140, 192, 186, 0.55);
+  background: linear-gradient(155deg, rgba(217, 198, 175, 0.16), rgba(63, 119, 116, 0.18));
+  transform: none;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+:root[data-tema="oscuro"] .faq summary { transition: color 0.25s ease; }
+:root[data-tema="oscuro"] .faq summary:hover { color: #F6A27C; }
+
+/* Pie: los enlaces se encienden */
+:root[data-tema="oscuro"] .pie a { transition: color 0.25s ease, transform 0.25s ease; }
+:root[data-tema="oscuro"] .pie-columna a:hover { color: #F6A27C; transform: translateX(3px); }
+
+/* Respeta a quien tiene activada la opción "reducir movimiento" */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-tema="oscuro"] * { transition-duration: 0.01ms !important; }
+  :root[data-tema="oscuro"] :is(.paso, .precio-tarjeta, .historial-card, .tarjeta-beneficio, .sidebar-item, .chip, .modo span, .boton-principal):hover { transform: none !important; }
+}
 
 /* Que el campo de contraseña conserve su estilo cuando se muestra con el ojito */
 .modal-tarjeta #auth-password {
