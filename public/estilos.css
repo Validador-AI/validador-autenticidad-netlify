@@ -2340,122 +2340,328 @@ html { font-size: 90%; }
 .btn-tema:focus-visible { outline: 3px solid var(--terracota); outline-offset: 2px; }
 
 /* ==========================================================================
-   MODO OSCURO: chocolate + tarjetas crema + petróleo
+   MODO OSCURO "BRASA"
    Se activa con data-tema="oscuro" en <html> (lo pone /tema.js según la
    elección guardada). Si no hay elección, la página se ve en claro.
-   Idea: el fondo es chocolate oscuro, pero las tarjetas conservan los colores
-   de siempre del modo claro (crema con texto petróleo), y el petróleo aparece
-   en el menú, en el bloque de beneficios y en el pie.
+   Idea: fondo chocolate con un resplandor terracota arriba y otro petróleo
+   abajo; las tarjetas son de arena TRANSLÚCIDA (se ve el fondo a través),
+   con borde fino de arena; el color arena de la etiqueta "V1.0 BETA" es el
+   color de los textos de títulos y detalles; terracota vivo para lo
+   importante y petróleo traslúcido en menú, beneficios y pie.
    Para deshacerlo, borrá todo lo que está debajo de este comentario.
    ========================================================================== */
 
-/* 1) Colores de la "estructura" de la página (fondo, textos sueltos, secciones) */
+/* 1) Paleta: todo el sitio se recolorea desde acá */
 :root[data-tema="oscuro"] {
   color-scheme: dark;
 
   --fondo: #1A0F0A;
-  --superficie: #2A170E;
-  --superficie-suave: #211209;
-  --arena: #3A2214;
-  --arena-claro: #241309;
+  --superficie: rgba(217, 198, 175, 0.075);
+  --superficie-suave: rgba(217, 198, 175, 0.12);
+  --arena: rgba(217, 198, 175, 0.16);
+  --arena-claro: rgba(217, 198, 175, 0.11);
+  --arena-solida: #D9C6AF;
 
-  --linea: #3D2415;
-  --linea-fuerte: #5A3A28;
+  --linea: rgba(217, 198, 175, 0.16);
+  --linea-fuerte: rgba(217, 198, 175, 0.32);
 
-  --texto: #F6EBDD;
-  --texto-suave: #C9B8A6;
+  --texto: #EADCC6;
+  --texto-suave: #BCAB95;
 
-  --petroleo: #EFE3CF;
-  --petroleo-oscuro: #F6EBDD;
-  --petroleo-suave: #4FA39E;
-  --petroleo-medio: #17504E;
+  --petroleo: #E6D6BE;
+  --petroleo-oscuro: #F3E8D6;
+  --petroleo-suave: #8CC0BA;
+  --petroleo-medio: #3F7774;
 
-  --hueso: #F6EBDD;
-  --hueso-suave: #241309;
-  --hueso-barra: rgba(26, 15, 10, 0.85);
+  --hueso: #F3E8D6;
+  --hueso-suave: #E6D6BE;
+  --hueso-barra: rgba(26, 15, 10, 0.82);
 
-  --terracota: #E8703A;
-  --terracota-hover: #F08A5A;
-  --tono: #E8703A;
-  --tono-suave: #3A1F12;
+  --terracota: #E8703F;
+  --terracota-hover: #F0845A;
+  --tono: #E8703F;
+  --tono-suave: rgba(232, 112, 63, 0.14);
 
-  --alerta: #E0A04E;
-  --alerta-suave: #33291A;
-  --exito: #5FC79A;
-  --exito-suave: #1B3027;
+  --alerta: #E3A850;
+  --alerta-suave: rgba(227, 168, 80, 0.13);
+  --exito: #6CCBA0;
+  --exito-suave: rgba(108, 203, 160, 0.12);
   --peligro: #F08A60;
-  --peligro-suave: #3A1F12;
+  --peligro-suave: rgba(240, 138, 96, 0.14);
 }
 
-/* 2) Tarjetas y cajas: vuelven a los colores del modo claro (crema, texto petróleo, botón terracota) */
-:root[data-tema="oscuro"] :is(.tarjeta, .tarjeta-beneficio, .faq details, .estado, .error, .pago-aviso, .exportar-aviso, .privacidad-caja, .aviso-recorte) {
-  --fondo: #E9DECD;
-  --superficie: #F5EFE7;
-  --superficie-suave: #E2D6C2;
-  --arena: #D9C6AF;
-  --arena-claro: #DFD2BD;
-  --linea: #D2C4AF;
-  --linea-fuerte: #BCAD97;
-  --texto: #1E3A3A;
-  --texto-suave: #576564;
-  --petroleo: #264B4A;
-  --petroleo-oscuro: #1E3A3A;
-  --petroleo-suave: #3A5C5A;
-  --hueso: #F5EFE7;
-  --hueso-suave: #E8DFD3;
-  --terracota: #B84E2E;
-  --terracota-hover: #9E3C1F;
-  --tono: #B84E2E;
-  --tono-suave: #FBECE8;
-  --alerta: #B8762D;
-  --alerta-suave: #FAF0E1;
-  --exito: #2D7A58;
-  --exito-suave: #E5F3EC;
-  --peligro: #B84E2E;
-  --peligro-suave: #FBECE8;
+/* 2) Fondo: chocolate con dos resplandores (terracota arriba, petróleo abajo) */
+:root[data-tema="oscuro"] body {
+  background:
+    radial-gradient(900px 560px at 88% -6%, rgba(232, 112, 63, 0.20), transparent 62%),
+    radial-gradient(900px 640px at 4% 104%, rgba(63, 119, 116, 0.30), transparent 62%),
+    #1A0F0A;
+  background-attachment: fixed;
+}
+
+/* 3) Tarjetas: arena translúcida con borde fino y brillo arriba */
+:root[data-tema="oscuro"] :is(.tarjeta, .paso, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
+  background: linear-gradient(160deg, rgba(217, 198, 175, 0.115), rgba(217, 198, 175, 0.05));
+  border: 1px solid rgba(217, 198, 175, 0.20);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 208, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+:root[data-tema="oscuro"] .entrada:hover { border-color: rgba(217, 198, 175, 0.34); }
+:root[data-tema="oscuro"] .precio-tarjeta--premium { border: 1.5px solid var(--terracota); }
+:root[data-tema="oscuro"] .tarjeta-beneficio {
+  background: rgba(26, 15, 10, 0.38);
+  border: 1px solid rgba(217, 198, 175, 0.18);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+:root[data-tema="oscuro"] .tarjeta-beneficio:hover {
+  border-color: rgba(232, 112, 63, 0.55);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 44px rgba(0, 0, 0, 0.45);
+}
+
+/* 4) Bloques de sección: beneficios en petróleo traslúcido, FAQ en arena suave */
+:root[data-tema="oscuro"] .seccion-beneficios {
+  background: linear-gradient(150deg, rgba(63, 119, 116, 0.42), rgba(38, 75, 74, 0.22));
+  border: 1px solid rgba(140, 192, 186, 0.28);
+  color: var(--texto);
+}
+:root[data-tema="oscuro"] #faq {
+  background: rgba(217, 198, 175, 0.055);
+  border: 1px solid rgba(217, 198, 175, 0.12);
+}
+:root[data-tema="oscuro"] .faq details[open] { border-color: rgba(232, 112, 63, 0.6); }
+
+/* 5) Campos y cajas pequeñas */
+:root[data-tema="oscuro"] textarea::placeholder { color: rgba(217, 198, 175, 0.5); }
+:root[data-tema="oscuro"] :is(.contador-box, .btn-limpiar) {
+  background: rgba(26, 15, 10, 0.55);
+  border-color: rgba(217, 198, 175, 0.25);
+  color: var(--texto-suave);
+}
+:root[data-tema="oscuro"] .btn-limpiar:hover { background: var(--peligro-suave); color: var(--peligro); }
+:root[data-tema="oscuro"] :is(.chip, .chip-oscuro, .zona, .archivo-elegido, .cita) {
+  background: rgba(217, 198, 175, 0.10);
+  border-color: rgba(217, 198, 175, 0.26);
+  color: var(--petroleo);
+}
+:root[data-tema="oscuro"] :is(.chip, .chip-oscuro):hover {
+  background: rgba(217, 198, 175, 0.20);
+  border-color: var(--arena-solida);
+  color: var(--hueso);
+}
+:root[data-tema="oscuro"] .zona:hover,
+:root[data-tema="oscuro"] .zona.arrastrando { background: rgba(217, 198, 175, 0.18); }
+:root[data-tema="oscuro"] .archivo-tipo { background: var(--arena-solida); color: #1E3A3A; }
+:root[data-tema="oscuro"] .step-icon,
+:root[data-tema="oscuro"] .paso .step-icon {
+  background: rgba(232, 112, 63, 0.16);
+  color: var(--terracota);
+}
+:root[data-tema="oscuro"] .modos span { color: var(--texto-suave); }
+
+:root[data-tema="oscuro"] .cita { border-left-color: var(--terracota); }
+
+/* 6) Botones */
+:root[data-tema="oscuro"] .boton-principal,
+:root[data-tema="oscuro"] a.boton-principal {
+  background: linear-gradient(135deg, #C9532F 0%, #E8703F 100%);
+  color: #FFF;
+  border-color: transparent;
+  box-shadow: 0 8px 24px rgba(232, 112, 63, 0.28);
+}
+:root[data-tema="oscuro"] .boton-principal:hover:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal:hover {
+  background: linear-gradient(135deg, #D9603A 0%, #F08A5A 100%);
+  box-shadow: 0 10px 28px rgba(232, 112, 63, 0.4);
+}
+:root[data-tema="oscuro"] .demo-play-btn.boton-principal {
+  background: transparent;
+  color: var(--petroleo);
+  border: 1.5px solid rgba(217, 198, 175, 0.55);
+  box-shadow: none;
+}
+:root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) {
+  background: rgba(217, 198, 175, 0.16);
+  color: var(--hueso);
+  border-color: var(--arena-solida);
+}
+:root[data-tema="oscuro"] .boton-secundario {
+  background: transparent;
+  color: var(--petroleo);
+  border-color: rgba(217, 198, 175, 0.5);
+}
+:root[data-tema="oscuro"] .boton-secundario:hover {
+  background: rgba(217, 198, 175, 0.16);
+  color: var(--hueso);
+  box-shadow: none;
+}
+:root[data-tema="oscuro"] .boton-exportar {
+  background: rgba(217, 198, 175, 0.14);
+  border-color: rgba(217, 198, 175, 0.5);
+  color: var(--hueso);
+}
+:root[data-tema="oscuro"] .boton-exportar:hover { background: rgba(217, 198, 175, 0.24); }
+:root[data-tema="oscuro"] .copiar {
+  background: rgba(26, 15, 10, 0.5);
+  border-color: rgba(217, 198, 175, 0.4);
+  color: var(--petroleo);
+}
+:root[data-tema="oscuro"] .copiar:hover { background: var(--terracota); border-color: var(--terracota); color: #FFF; }
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:link,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:visited,
+:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:hover:not(:disabled),
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:hover,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:focus,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-arena:active {
+  background: var(--arena-solida);
+  color: #1E3A3A !important;
+  border-color: transparent;
+  box-shadow: none;
+}
+:root[data-tema="oscuro"] .boton-principal.precio-boton-premium,
+:root[data-tema="oscuro"] a.boton-principal.precio-boton-premium {
+  background: linear-gradient(135deg, #C9532F 0%, #E8703F 100%);
+  color: #FFF;
+  border-color: transparent;
+}
+:root[data-tema="oscuro"] .etiqueta-premium,
+:root[data-tema="oscuro"] .precio-insignia { background: var(--terracota); color: #FFF; }
+
+/* 7) Etiqueta V1.0 BETA y "pastillas": el arena de siempre, con texto oscuro */
+:root[data-tema="oscuro"] .badge-beta {
+  background: var(--arena-solida);
   color: #1E3A3A;
 }
 
-/* 3) Menú lateral: negro chocolate con petróleo en lo activo y en los botones */
+/* 8) Resultados, avisos y errores */
+:root[data-tema="oscuro"] .reescritura {
+  background: rgba(108, 203, 160, 0.10);
+  border: 1px solid rgba(108, 203, 160, 0.25);
+}
+:root[data-tema="oscuro"] :is(.estado, .exportar-aviso, .pago-aviso, .aviso-recorte) {
+  background: rgba(217, 198, 175, 0.09);
+  border: 1px solid rgba(217, 198, 175, 0.24);
+  color: var(--texto);
+}
+:root[data-tema="oscuro"] .error {
+  background: rgba(240, 138, 96, 0.12);
+  border: 1px solid rgba(240, 138, 96, 0.40);
+  color: #F6C9B2;
+}
+:root[data-tema="oscuro"] .error strong { color: #FFD8C4; }
+:root[data-tema="oscuro"] .uso-estado--premium { border-color: rgba(108, 203, 160, 0.4); }
+:root[data-tema="oscuro"] .uso-estado--agotado { border-color: rgba(227, 168, 80, 0.4); color: #F0CB92; }
+:root[data-tema="oscuro"] .uso-limite {
+  border-color: rgba(227, 168, 80, 0.4);
+  border-left-color: var(--alerta);
+  color: #F0D9B5;
+}
+:root[data-tema="oscuro"] .medidor-pista { opacity: 0.95; }
+:root[data-tema="oscuro"] .medidor-marca { border-color: #1A0F0A; }
+
+/* Enlaces dentro de tarjetas y avisos: terracota claro */
+:root[data-tema="oscuro"] :is(.tarjeta, .tarjeta-beneficio, .faq details, .estado, .error, .pago-aviso, .exportar-aviso, .aviso-recorte, .prosa) a:not([class]) {
+  color: #F2966C;
+}
+
+/* 9) Menú lateral: petróleo traslúcido que se oscurece hacia abajo */
 :root[data-tema="oscuro"] .sidebar {
-  --arena: #14403F;
-  --linea: #2A1A10;
-  --linea-fuerte: #2D5A56;
-  --texto-suave: #C9B8A6;
-  background: #0F0805;
-  border-right-color: #2A1A10;
+  background:
+    linear-gradient(180deg, rgba(63, 119, 116, 0.34) 0%, rgba(38, 75, 74, 0.16) 38%, rgba(26, 15, 10, 0.0) 100%),
+    rgba(20, 11, 7, 0.88);
+  border-right: 1px solid rgba(217, 198, 175, 0.14);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
-:root[data-tema="oscuro"] .sidebar-item:hover { background: rgba(246, 235, 221, 0.10); }
-:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium,
+:root[data-tema="oscuro"] .sidebar-item { color: #CFBFA9; }
+:root[data-tema="oscuro"] .sidebar-item:hover { background: rgba(217, 198, 175, 0.10); color: var(--hueso); }
+:root[data-tema="oscuro"] .sidebar-item:hover svg { color: var(--terracota); }
+:root[data-tema="oscuro"] .sidebar-item.activo,
+:root[data-tema="oscuro"] .sidebar-item.activo:hover {
+  background: linear-gradient(90deg, rgba(232, 112, 63, 0.22), rgba(217, 198, 175, 0.10));
+  color: var(--hueso);
+}
+:root[data-tema="oscuro"] .sidebar-grupo-titulo { color: var(--arena-solida); opacity: 0.8; }
+:root[data-tema="oscuro"] .sidebar-bottom { border-top-color: rgba(217, 198, 175, 0.16); }
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium {
+  background: linear-gradient(135deg, #C9532F, #E8703F);
+  border: 1.5px solid transparent;
+  color: #FFF;
+}
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium svg { color: #FFF; }
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium:hover { background: linear-gradient(135deg, #D9603A, #F08A5A); }
 :root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth {
-  background: #14403F;
-  border: 1.5px solid #1F5A57;
+  background: rgba(217, 198, 175, 0.10);
+  border: 1.5px solid rgba(217, 198, 175, 0.32);
+  color: var(--hueso);
 }
-:root[data-tema="oscuro"] .sidebar-bottom .sidebar-premium:hover,
-:root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth:hover { background: #1B5553; }
+:root[data-tema="oscuro"] .sidebar-bottom .sidebar-auth:hover { background: rgba(217, 198, 175, 0.2); }
+
+/* En el celular el menú es un panel que se desliza: lo hago más opaco para que no se transparente el contenido */
+@media (max-width: 900px) {
+  :root[data-tema="oscuro"] .sidebar {
+    background:
+      linear-gradient(180deg, rgba(63, 119, 116, 0.34) 0%, rgba(38, 75, 74, 0.16) 38%, rgba(26, 15, 10, 0) 100%),
+      #150B07;
+  }
+}
 
 /* Barra superior en el celular */
 :root[data-tema="oscuro"] .topbar-movil {
-  background: rgba(15, 8, 5, 0.92);
-  border-bottom: 1px solid rgba(246, 235, 221, 0.10);
+  background: rgba(26, 15, 10, 0.88);
+  border-bottom: 1px solid rgba(217, 198, 175, 0.14);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
-/* 4) Pie de página: petróleo profundo con una línea terracota arriba */
-:root[data-tema="oscuro"] .pie { background: #0A2527; border-top: 2px solid #E8703A; }
+/* 10) Pie de página: petróleo profundo con una línea terracota arriba */
+:root[data-tema="oscuro"] .pie {
+  background: linear-gradient(180deg, rgba(38, 75, 74, 0.55), rgba(15, 37, 38, 0.85));
+  border-top: 2px solid var(--terracota);
+}
 :root[data-tema="oscuro"] .pie-columna-titulo,
 :root[data-tema="oscuro"] .pie-inferior,
-:root[data-tema="oscuro"] .pie-inferior p { color: #D9C6AF; }
-:root[data-tema="oscuro"] .pie-red:hover { background: #B84E2E; }
+:root[data-tema="oscuro"] .pie-inferior p { color: var(--arena-solida); }
+:root[data-tema="oscuro"] .pie-red:hover { background: var(--terracota); }
 
-/* 5) Detalles */
+/* 11) Ventanas (inicio de sesión, detalle de historial) */
+:root[data-tema="oscuro"] .tarjeta.modal-tarjeta,
+:root[data-tema="oscuro"] .modal-tarjeta,
+:root[data-tema="oscuro"] .modal-caja {
+  background: #241610;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid rgba(217, 198, 175, 0.26);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+:root[data-tema="oscuro"] .modal-overlay { background: rgba(10, 5, 3, 0.7); }
+:root[data-tema="oscuro"] .modal-tab.activo { background: rgba(217, 198, 175, 0.18); color: var(--hueso); }
+:root[data-tema="oscuro"] .boton-google {
+  background: rgba(217, 198, 175, 0.10);
+  border-color: rgba(217, 198, 175, 0.32);
+  color: var(--hueso);
+}
+
+/* 12) Mi cuenta y Precios (usan estilos propios en cada página) */
+:root[data-tema="oscuro"] :is(.detalle-frases li, .detalle-bloque pre, .detalle-texto p, .historial-fragmento) {
+  background: rgba(217, 198, 175, 0.09);
+  color: var(--texto);
+}
+:root[data-tema="oscuro"] .aviso-proximamente { background: #2D5B58; color: #F3E8D6; }
+:root[data-tema="oscuro"] .pago-periodo-btn { border-color: rgba(217, 198, 175, 0.32); }
+:root[data-tema="oscuro"] .pago-periodo-btn.activo { background: rgba(232, 112, 63, 0.16); border-color: var(--terracota); }
+:root[data-tema="oscuro"] .pago-opcion { border-color: rgba(217, 198, 175, 0.32); }
+:root[data-tema="oscuro"] .modal-detalle::backdrop { background: rgba(10, 5, 3, 0.7); }
+
+/* 13) Detalles */
 :root[data-tema="oscuro"] .anuncio-pie:not(:empty)::before { color: #A89684; }
-:root[data-tema="oscuro"] .etiqueta-premium { background: #B84E2E; }
-:root[data-tema="oscuro"] .boton-principal,
-:root[data-tema="oscuro"] a.boton-principal { background: #B84E2E; }
-:root[data-tema="oscuro"] .boton-principal:hover:not(:disabled),
-:root[data-tema="oscuro"] a.boton-principal:hover { background: #9E3C1F; }
+:root[data-tema="oscuro"] .anuncio { border-color: rgba(217, 198, 175, 0.22); }
 
-/* Logo sobre pastilla hueso, para que la coma azul-grisácea se vea bien */
+/* Logo sobre pastilla hueso, para que la coma petróleo se vea bien */
 :root[data-tema="oscuro"] .sidebar-logo-icono,
 :root[data-tema="oscuro"] .topbar-logo img {
   box-sizing: border-box;
@@ -2463,6 +2669,10 @@ html { font-size: 90%; }
   border-radius: 9px;
   background: #F5EFE7;
 }
+
+/* Botón de tema (luna/sol) */
+:root[data-tema="oscuro"] .btn-tema { border-color: rgba(217, 198, 175, 0.4); color: var(--arena-solida); }
+:root[data-tema="oscuro"] .btn-tema:hover { background: rgba(232, 112, 63, 0.16); }
 
 /* Que el campo de contraseña conserve su estilo cuando se muestra con el ojito */
 .modal-tarjeta #auth-password {
@@ -2474,57 +2684,4 @@ html { font-size: 90%; }
   color: var(--texto);
   font-family: var(--fuente);
   font-size: 0.95rem;
-}
-
-/* ==========================================================================
-   MODO OSCURO: arreglo de textos que se perdían
-   Pegá este bloque COMPLETO al final de estilos.css.
-   Para volver atrás, borrá todo lo que está entre este comentario y el final.
-   ========================================================================== */
-
-/* "¿Cómo funciona?": las tarjetas de los 3 pasos vuelven a ser crema,
-   como el resto de las tarjetas del modo oscuro */
-:root[data-tema="oscuro"] .paso {
-  background: var(--superficie);
-  border-color: var(--linea);
-}
-
-/* Aviso de privacidad de la página principal: va directo sobre el fondo oscuro,
-   así que usa colores claros (en las demás páginas está dentro de una tarjeta crema y no se toca) */
-html:root[data-tema="oscuro"] body main > .privacidad-caja {
-  --texto: #F6EBDD;
-  --texto-suave: #C9B8A6;
-  --petroleo: #EFE3CF;
-  --petroleo-oscuro: #F6EBDD;
-  --terracota: #E8703A;
-  --linea: #3D2415;
-  --linea-fuerte: #5A3A28;
-  color: #F6EBDD;
-}
-
-/* Demo ("Ver cómo funciona"): el recuadro vuelve a ser crema, para que se lea el texto de ejemplo */
-:root[data-tema="oscuro"] .demo-mini-editor {
-  background: var(--superficie);
-}
-
-/* Botón "Ver cómo funciona": contorno petróleo sobre la tarjeta crema */
-:root[data-tema="oscuro"] .demo-play-btn.boton-principal {
-  background: transparent;
-  color: var(--petroleo);
-  border-color: var(--petroleo);
-}
-:root[data-tema="oscuro"] .demo-play-btn.boton-principal:hover:not(:disabled) {
-  background: var(--petroleo);
-  color: var(--hueso);
-}
-
-/* Botón de arena del plan (Precios): fondo arena con texto oscuro */
-:root[data-tema="oscuro"] .boton-principal.precio-boton-arena,
-:root[data-tema="oscuro"] .boton-principal.precio-boton-arena:hover {
-  background: var(--arena);
-}
-
-/* Enlaces dentro de tarjetas y preguntas frecuentes: terracota en vez del lila del navegador */
-:root[data-tema="oscuro"] :is(.tarjeta, .tarjeta-beneficio, .faq details, .estado, .error, .pago-aviso, .exportar-aviso, .aviso-recorte) a:not([class]) {
-  color: var(--terracota);
 }
