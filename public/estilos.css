@@ -2341,6 +2341,81 @@ html { font-size: 90%; }
 
 
 /* ==========================================================================
+   SECCIÓN "¿POR QUÉ PUROTEXTO?" (virtudes en la home)
+   Usa las mismas variables que el resto, así que se adapta sola al modo
+   claro y al oscuro. Para sacarla: borrá este bloque y la sección
+   <section id="virtudes"> de index.html.
+   ========================================================================== */
+.virtudes-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0 0 20px;
+}
+.virtudes-cifra {
+  padding: 18px 10px;
+  border-radius: 16px;
+  background: var(--arena);
+  text-align: center;
+}
+.virtudes-cifra strong {
+  display: block;
+  font-family: var(--fuente-titulos);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--terracota);
+}
+.virtudes-cifra span {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--petroleo-oscuro);
+}
+@media (max-width: 560px) {
+  .virtudes-cifras { gap: 8px; }
+  .virtudes-cifra { padding: 14px 6px; }
+  .virtudes-cifra strong { font-size: 1.45rem; }
+  .virtudes-cifra span { font-size: 0.74rem; }
+}
+
+.virtudes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 680px) { .virtudes-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .virtudes-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.virtud {
+  padding: 22px;
+  background: rgba(38, 75, 74, 0.06);
+  border: 1px solid rgba(38, 75, 74, 0.12);
+  border-radius: 16px;
+}
+.virtud .step-icon { background: var(--arena); color: var(--petroleo); margin-bottom: 14px; }
+.virtud h3 {
+  margin: 0 0 8px;
+  font-family: var(--fuente-titulos);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--petroleo);
+}
+.virtud p { margin: 0; font-size: 0.92rem; color: var(--petroleo-suave); }
+
+.virtudes-nota {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+.virtudes-cta { margin-top: 20px; text-align: center; }
+
+/* ==========================================================================
    EFECTOS SUAVES DEL MODO CLARO
    Mismos efectos que el modo oscuro (tarjetas que se levantan, pestañas,
    botones de Precios, cuadro de texto que se enciende, etc.) pero más
@@ -2350,10 +2425,10 @@ html { font-size: 90%; }
    ========================================================================== */
 
 /* Tarjetas: se levantan un poquito y el borde se entibia hacia terracota */
-:root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta) {
+:root:not([data-tema="oscuro"]) :is(.paso, .virtud, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta) {
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
-:root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
+:root:not([data-tema="oscuro"]) :is(.paso, .virtud, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
   transform: translateY(-3px);
   border-color: rgba(184, 78, 46, 0.35);
   box-shadow:
@@ -2442,7 +2517,7 @@ html { font-size: 90%; }
 /* Respeta a quien tiene activada la opción "reducir movimiento" */
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-tema="oscuro"]) * { transition-duration: 0.01ms !important; }
-  :root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta, .sidebar-item, .chip, .modo span, .boton-principal, .faq details):hover { transform: none !important; }
+  :root:not([data-tema="oscuro"]) :is(.paso, .virtud, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta, .sidebar-item, .chip, .modo span, .boton-principal, .faq details):hover { transform: none !important; }
 }
 
 /* ==========================================================================
@@ -2506,7 +2581,7 @@ html { font-size: 90%; }
 }
 
 /* 3) Tarjetas: arena translúcida con borde fino y brillo arriba */
-:root[data-tema="oscuro"] :is(.tarjeta, .paso, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
+:root[data-tema="oscuro"] :is(.tarjeta, .paso, .virtud, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
   background: linear-gradient(160deg, rgba(217, 198, 175, 0.115), rgba(217, 198, 175, 0.05));
   border: 1px solid rgba(217, 198, 175, 0.20);
   box-shadow:
@@ -2792,13 +2867,13 @@ html { font-size: 90%; }
 }
 
 /* Tarjetas: arena + una esquina de petróleo */
-:root[data-tema="oscuro"] :is(.tarjeta, .paso, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
+:root[data-tema="oscuro"] :is(.tarjeta, .paso, .virtud, .faq details, .cp-tarjeta, .herramienta-tarjeta, .historial-card, .precio-tarjeta, .contacto-tarjeta) {
   background: linear-gradient(155deg, rgba(217, 198, 175, 0.12) 0%, rgba(63, 119, 116, 0.11) 100%);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
 }
 
 /* Tarjetas que se levantan y brillan al pasar el mouse */
-:root[data-tema="oscuro"] :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
+:root[data-tema="oscuro"] :is(.paso, .virtud, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
   transform: translateY(-5px);
   border-color: rgba(232, 112, 63, 0.55);
   box-shadow:
@@ -2927,7 +3002,7 @@ html { font-size: 90%; }
 /* Respeta a quien tiene activada la opción "reducir movimiento" */
 @media (prefers-reduced-motion: reduce) {
   :root[data-tema="oscuro"] * { transition-duration: 0.01ms !important; }
-  :root[data-tema="oscuro"] :is(.paso, .precio-tarjeta, .historial-card, .tarjeta-beneficio, .sidebar-item, .chip, .modo span, .boton-principal):hover { transform: none !important; }
+  :root[data-tema="oscuro"] :is(.paso, .virtud, .precio-tarjeta, .historial-card, .tarjeta-beneficio, .sidebar-item, .chip, .modo span, .boton-principal):hover { transform: none !important; }
 }
 
 /* Que el campo de contraseña conserve su estilo cuando se muestra con el ojito */
