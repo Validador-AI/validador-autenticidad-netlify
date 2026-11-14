@@ -2339,6 +2339,112 @@ html { font-size: 90%; }
 .btn-tema:hover { color: var(--terracota); border-color: var(--terracota); background: var(--arena-claro); }
 .btn-tema:focus-visible { outline: 3px solid var(--terracota); outline-offset: 2px; }
 
+
+/* ==========================================================================
+   EFECTOS SUAVES DEL MODO CLARO
+   Mismos efectos que el modo oscuro (tarjetas que se levantan, pestañas,
+   botones de Precios, cuadro de texto que se enciende, etc.) pero más
+   discretos: se levantan menos y las sombras son más tenues.
+   Solo actúan en modo claro. Para sacarlos, borrá todo lo que está entre
+   este comentario y el que dice "MODO OSCURO".
+   ========================================================================== */
+
+/* Tarjetas: se levantan un poquito y el borde se entibia hacia terracota */
+:root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta) {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+:root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta):hover {
+  transform: translateY(-3px);
+  border-color: rgba(184, 78, 46, 0.35);
+  box-shadow:
+    0 2px 4px rgba(38, 75, 74, 0.05),
+    0 12px 26px rgba(38, 75, 74, 0.11);
+}
+:root:not([data-tema="oscuro"]) .precio-tarjeta--premium:hover {
+  border-color: var(--terracota);
+  box-shadow: 0 2px 4px rgba(38, 75, 74, 0.05), 0 14px 30px rgba(184, 78, 46, 0.16);
+}
+
+/* Cuadro de texto: se enciende con un halo suave al escribir */
+:root:not([data-tema="oscuro"]) .entrada:focus-within {
+  border-color: rgba(184, 78, 46, 0.55);
+  box-shadow: 0 0 0 4px rgba(184, 78, 46, 0.09);
+}
+
+/* Pestañas "Pegar texto / Subir archivo": se tiñen al pasar el mouse; la elegida lleva una línea terracota */
+:root:not([data-tema="oscuro"]) .modo span { transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+:root:not([data-tema="oscuro"]) .modo:hover span {
+  background: rgba(38, 75, 74, 0.10);
+  color: var(--petroleo);
+  box-shadow: 0 3px 10px rgba(38, 75, 74, 0.10);
+  transform: translateY(-1px);
+}
+:root:not([data-tema="oscuro"]) .modo input:checked + span {
+  box-shadow: inset 0 -2px 0 var(--terracota), 0 3px 10px rgba(38, 75, 74, 0.08);
+}
+:root:not([data-tema="oscuro"]) .modo input:checked:hover + span { transform: none; }
+:root:not([data-tema="oscuro"]) .modo input:focus-visible + span { outline: 2px solid var(--terracota); outline-offset: 2px; }
+
+/* Menú lateral: además del cambio de color, se corre un poquito */
+:root:not([data-tema="oscuro"]) .sidebar-item { transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease; }
+:root:not([data-tema="oscuro"]) .sidebar-item:not(.activo):hover { transform: translateX(2px); }
+:root:not([data-tema="oscuro"]) .sidebar-bottom .sidebar-premium:hover,
+:root:not([data-tema="oscuro"]) .sidebar-bottom .sidebar-auth:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(38, 75, 74, 0.14);
+}
+
+/* Botones: se levantan al pasar el mouse y se hunden al apretar */
+:root:not([data-tema="oscuro"]) .boton-principal:hover:not(:disabled),
+:root:not([data-tema="oscuro"]) a.boton-principal:hover { transform: translateY(-2px); }
+:root:not([data-tema="oscuro"]) .boton-principal:active:not(:disabled),
+:root:not([data-tema="oscuro"]) a.boton-principal:active { transform: translateY(0) scale(0.98); }
+
+/* Precios: "Probar gratis" y "Crear cuenta" se oscurecen un poco y se perfilan en petróleo */
+:root:not([data-tema="oscuro"]) .boton-principal.precio-boton-arena:hover:not(:disabled),
+:root:not([data-tema="oscuro"]) a.boton-principal.precio-boton-arena:hover,
+:root:not([data-tema="oscuro"]) a.boton-principal.precio-boton-arena:focus-visible {
+  background: #CDB99F;
+  border-color: var(--petroleo);
+  box-shadow: 0 8px 18px rgba(38, 75, 74, 0.18);
+  transform: translateY(-2px);
+}
+:root:not([data-tema="oscuro"]) .boton-principal.precio-boton-arena:active:not(:disabled),
+:root:not([data-tema="oscuro"]) a.boton-principal.precio-boton-arena:active {
+  background: #C4AE92;
+  transform: translateY(0) scale(0.98);
+}
+
+/* Chips de ejemplo, Copiar, Exportar y secundarios */
+:root:not([data-tema="oscuro"]) :is(.chip, .chip-oscuro, .copiar, .boton-exportar, .boton-secundario, .btn-limpiar) {
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+:root:not([data-tema="oscuro"]) :is(.chip, .chip-oscuro, .boton-exportar, .boton-secundario):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(38, 75, 74, 0.12);
+}
+:root:not([data-tema="oscuro"]) :is(.chip, .chip-oscuro, .copiar, .boton-exportar, .boton-secundario):active { transform: translateY(0) scale(0.98); }
+:root:not([data-tema="oscuro"]) .zona:hover { border-color: var(--terracota); box-shadow: 0 0 0 3px rgba(184, 78, 46, 0.09); }
+
+/* Preguntas frecuentes */
+:root:not([data-tema="oscuro"]) .faq details { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+:root:not([data-tema="oscuro"]) .faq details:hover {
+  border-color: rgba(184, 78, 46, 0.35);
+  box-shadow: 0 6px 16px rgba(38, 75, 74, 0.08);
+}
+:root:not([data-tema="oscuro"]) .faq summary { transition: color 0.25s ease; }
+:root:not([data-tema="oscuro"]) .faq summary:hover { color: var(--terracota); }
+
+/* Pie: los enlaces se corren un poquito */
+:root:not([data-tema="oscuro"]) .pie-columna a { transition: color 0.25s ease, transform 0.25s ease; }
+:root:not([data-tema="oscuro"]) .pie-columna a:hover { transform: translateX(2px); }
+
+/* Respeta a quien tiene activada la opción "reducir movimiento" */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-tema="oscuro"]) * { transition-duration: 0.01ms !important; }
+  :root:not([data-tema="oscuro"]) :is(.paso, .precio-tarjeta, .historial-card, .cp-tarjeta, .herramienta-tarjeta, .sidebar-item, .chip, .modo span, .boton-principal, .faq details):hover { transform: none !important; }
+}
+
 /* ==========================================================================
    MODO OSCURO "BRASA"
    Se activa con data-tema="oscuro" en <html> (lo pone /tema.js según la
