@@ -16,6 +16,21 @@
   <title>Acerca de — PuroTexto</title>
   <meta name="description" content="PuroTexto es una herramienta de análisis de texto pensada para hispanohablantes, hecha en Argentina. Conocé qué podés hacer y para quién es.">
   <link rel="canonical" href="https://purotexto.com/acerca" />
+  <!-- Vista previa al compartir (WhatsApp, Instagram, Facebook, X) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PuroTexto">
+  <meta property="og:locale" content="es_LA">
+  <meta property="og:title" content="Acerca de — PuroTexto">
+  <meta property="og:description" content="PuroTexto es una herramienta de análisis de texto pensada para hispanohablantes, hecha en Argentina. Conocé qué podés hacer y para quién es.">
+  <meta property="og:url" content="https://purotexto.com/acerca">
+  <meta property="og:image" content="https://purotexto.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PuroTexto: analizá la naturalidad de tu texto en español latinoamericano">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Acerca de — PuroTexto">
+  <meta name="twitter:description" content="PuroTexto es una herramienta de análisis de texto pensada para hispanohablantes, hecha en Argentina. Conocé qué podés hacer y para quién es.">
+  <meta name="twitter:image" content="https://purotexto.com/og-image.png">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
@@ -573,7 +588,7 @@
         var opcionesObserver = {
           root: null,
           rootMargin: '0px 0px -50px 0px',
-          threshold: 0.15
+          threshold: 0.01
         };
 
         var observadorScroll = new IntersectionObserver(function (entradas, observer) {
